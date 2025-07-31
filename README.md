@@ -1,5 +1,5 @@
 # dpp_web_app
-# Dpp-Browser
+
 
 **Description:** This is a React Web app that lets you read Digital Product Passports.
 
@@ -15,7 +15,7 @@
 
   ```bash
   git clone REPOSITORY_URL
-  cd dpp-browser
+  cd dpp_web_app
   ```
 2. **Install Dependecies:**
   ```bash
