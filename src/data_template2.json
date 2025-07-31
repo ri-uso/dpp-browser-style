@@ -1,0 +1,210 @@
+{
+  "summary": {
+    "company_code": "StaffJersey",
+    "company_uuid": "uuidStaffJersey",
+    "company_webservice": "wwwStaffJersey",
+    "company_shortname": "Staff Jersey",
+    "company_legalname": "Staff Jersey srl",
+    "company_vat": "",
+    "company_address": "",
+    "company_email": "",
+    "company_phonenumber": "",
+    "company_website": "",
+    "company_note": "",
+    "productfamily_code": "MED000X-60620",
+    "productfamily_name": "MED000X-60620",
+    "productfamily_description": "Camice Alta Perform. 040300B 100% PL AZZURRO",
+    "productfamily_uom": "Qta'",
+    "item_code": "MED000X-60620-XL",
+    "item_description": "Camice Alta Perform. 040300B 100% PL VERDE Taglia XL",
+    "batch_code": "C685",
+    "language": "it"
+  },
+  "data": [
+    {
+      "language": "it",
+      "ID": "ItemName",
+      "label": "Articolo",
+      "description": null,
+      "value_text": "MED000X 60620 XL",
+      "value_number": null,
+      "value_number_unit_of_measure": null,
+      "value_url": null,
+      "value_url_type": null
+    },
+    {
+      "language": "it",
+      "ID": "ItemDescription",
+      "label": "Descrizione",
+      "description": null,
+      "value_text": "Camice Alta Perform. 040300B 100% PL VERDE Taglia XL",
+      "value_number": null,
+      "value_number_unit_of_measure": null,
+      "value_url": null,
+      "value_url_type": null
+    },
+    {
+      "language": "it",
+      "ID": "ProductFamilyName",
+      "label": "Famiglia Prodotto",
+      "description": null,
+      "value_text": "MED000X-60620",
+      "value_number": null,
+      "value_number_unit_of_measure": null,
+      "value_url": null,
+      "value_url_type": null
+    },
+    {
+      "language": "it",
+      "ID": "ProductFamilyDescription",
+      "label": "Descrizione",
+      "description": null,
+      "value_text": "Camice Alta Perform. 040300B 100% PL AZZURRO",
+      "value_number": null,
+      "value_number_unit_of_measure": null,
+      "value_url": null,
+      "value_url_type": null
+    },
+    {
+      "language": "it",
+      "ID": "ProductFamilyUoM",
+      "label": "Unità di Misura",
+      "description": null,
+      "value_text": "Qta'",
+      "value_number": null,
+      "value_number_unit_of_measure": null,
+      "value_url": null,
+      "value_url_type": null
+    },
+    {
+      "language": "it",
+      "ID": "CONS_ACQUA",
+      "label": "Consumo Acqua",
+      "description": "Quantità di acqua consumata per la produzione.",
+      "value_type": "Value",
+      "property_language": "it",
+      "value_text": null,
+      "value_number": 50,
+      "value_number_unit_of_measure": "litri",
+      "value_url": null,
+      "value_url_type": null
+    },
+    {
+      "language": "it",
+      "ID": "CERT_MATERIALI",
+      "label": "Certificazione GOTS",
+      "description": "Certificazione dei materiali relativi a questa famiglia",
+      "value_type": "URL",
+      "property_language": "it",
+      "value_text": null,
+      "value_number": null,
+      "value_number_unit_of_measure": null,
+      "value_url": "https://sitoazienda.com/certificazione-materiali.pdf",
+      "value_url_type": "P"
+    },
+    {
+      "language": "it",
+      "ID": "CERT_AZIENDALE",
+      "label": "Certificazione aziendale",
+      "description": "Certificazione qualità aziendale",
+      "value_type": "String",
+      "property_language": "it",
+      "value_text": "ISO 9000",
+      "value_number": null,
+      "value_number_unit_of_measure": null,
+      "value_url": null,
+      "value_url_type": null
+    },
+    {
+      "language": "it",
+      "ID": "CONS_ENERGIA",
+      "label": "Consumo energia elettrica",
+      "description": "Quantità di energia elettrica consumata per la produzione.",
+      "value_type": "Value",
+      "property_language": "it",
+      "value_text": null,
+      "value_number": 45,
+      "value_number_unit_of_measure": "kWh",
+      "value_url": null,
+      "value_url_type": null
+    },
+    {
+      "language": "it",
+      "ID": "CONS_ACQUA",
+      "label": "Consumo Acqua",
+      "description": "Quantità di acqua consumata per la produzione.",
+      "value_type": "Value",
+      "property_language": "it",
+      "value_text": null,
+      "value_number": 50,
+      "value_number_unit_of_measure": "litri",
+      "value_url": null,
+      "value_url_type": null
+    },
+    {
+      "language": "it",
+      "ID": "CERT_MATERIALI",
+      "label": "Certificazione GOTS",
+      "description": "Certificazione dei materiali relativi a questa famiglia",
+      "value_type": "URL",
+      "property_language": "it",
+      "value_text": null,
+      "value_number": null,
+      "value_number_unit_of_measure": null,
+      "value_url": "https://sitoazienda.com/certificazione-materiali.pdf",
+      "value_url_type": "P"
+    },
+    {
+      "language": "it",
+      "ID": "CERT_AZIENDALE",
+      "label": "Certificazione aziendale",
+      "description": "Certificazione qualità aziendale",
+      "value_type": "String",
+      "property_language": "it",
+      "value_text": "ISO 9000",
+      "value_number": null,
+      "value_number_unit_of_measure": null,
+      "value_url": null,
+      "value_url_type": null
+    }
+  ],
+  "forms": [
+    {
+      "form_language": "it",
+      "form_name": "Consumi",
+      "fields": [
+        {
+          "ID": "CONS_ENERGIA"
+        },
+        {
+          "ID": "CONS_ACQUA"
+        }
+      ]
+    },
+    {
+      "form_language": "it",
+      "form_name": "Certificazioni",
+      "fields": [
+        {
+          "ID": "CERT_AZIENDALE"
+        },
+        {
+          "ID": "CERT_MATERIALI"
+        }
+      ]
+    }
+  ],
+  "linked_batches": [
+    {
+      "partner_code": "INTERFIL",
+      "company_shortname": "INTERFIL",
+      "company_uuid": "a4c62c25-9bd1-4746-add8-10a6d1888fc2",
+      "company_webservice": "",
+      "productfamily_code": null,
+      "item_code": null,
+      "batch_code": null,
+      "batch_qty": 5000,
+      "batch_qty_unit_of_measure": "KG"
+    }
+  ]
+}

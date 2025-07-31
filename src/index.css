@@ -1,0 +1,49 @@
+.logout-link {
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.logout-link:hover {
+  color: red;
+}
+
+.title {
+  padding: 20px;
+  text-align: center;
+}
+
+.row .row:first-of-type .label {
+  border-top: 1px solid #989898;
+}
+
+.label {
+  background: #f1f1f1;
+  border-bottom: 1px solid #989898;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.row .row:first-of-type .value {
+  border-top: 1px solid #989898;
+}
+
+.value {
+  border-bottom: 1px solid #989898;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.clickable-card-blue {
+  background-color: #ADD8E6 !important;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.clickable-card-blue:hover {
+  text-decoration: underline;
+}

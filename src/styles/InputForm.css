@@ -1,0 +1,113 @@
+
+  .input-form-section {
+    display: grid;
+    grid-template-columns: 1fr; /* ✅ Default: singola colonna */
+    gap: 2rem;
+    margin-bottom: 2rem ;
+  }
+  
+.qr-column {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.form-column {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+  .qr-button-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.8rem;
+    padding: 1rem;
+    margin-top: 2rem;
+    width: 100%;
+
+  }
+  .qr-button-wrapper button {
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+  }
+  .qr {
+    width: 180px;
+    max-width: 100%;
+    height: auto;
+    object-fit: contain;
+     transition: background-color 00.3s ease;
+  }
+  .qr-code {
+    font-weight: bold;
+    font-size: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .qr:hover {
+    border: 1px solid #333;
+    border-radius: 8px;
+   /* background-color: #003366ac;*/
+   background-color: #40bfb4
+  }
+  .qr-subtitle {
+    font-weight: normal;
+    font-size: 0.9rem;
+    color: #555;
+    max-width: 280px;
+    line-height: 1.4;
+    margin-top: 0.3rem;
+  }
+  
+  .input-form-section .btn-primary {
+    background-color: #40bfb4;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    font-weight: bold;
+    color: white;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: background-color 0.3s ease, transform 0.3s ease , box-shadow 0.5s ease;
+  }
+  
+  .input-form-section .btn-primary:hover {
+    background-color:#ffffff;
+    border: 1px solid #40bfb4;
+    color: #40bfb4;
+    transform: scale(0.9);
+        box-shadow: 0 9px 8px #495057;
+  }
+  .input-form-section .btn-primary:focus {
+  outline: 2px solid #003366;
+  outline-offset: 2px;
+}
+
+  @media (min-width: 768px) {
+    .input-form-section {
+      grid-template-columns: 1fr 2fr; /* ✅ Diventa due colonne su schermi medi */
+    }
+  }
+  
+  .input-form-section .form-group {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .input-form-section label {
+    font-weight: 600;
+    color: #333;
+    font-family: system-ui;
+    margin-bottom: 0.5rem;
+  }
+  
+  .input-form-section input.form-control {
+    border: 1px solid #bbb;
+  padding: 0.75rem;
+  font-size: 1rem;
+  border-radius: 6px;
+  }
+  

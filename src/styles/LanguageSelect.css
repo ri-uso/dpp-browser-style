@@ -1,0 +1,23 @@
+/* components/LanguageSelect.css */
+
+.language-select-wrapper {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+}
+.selected-language {
+    padding: 6px 15px;
+    background-color: transparent;
+    border-radius: 6px;
+    border: 1px solid #dee2e6;
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.1);
+    font-weight: 500;
+}
+.language-select {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 200px;
+  z-index: 10;
+  font-size: 14px;
+}

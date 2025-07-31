@@ -1,0 +1,101 @@
+.btn-back {
+       margin: 15px;
+    background-color: transparent;
+    cursor: pointer;
+    display: flex;
+        color: #000000;
+    justify-content: end;
+    bottom: -1rem;
+    gap: 8px;
+    transition: transform 0.5s ease-in-out ;
+    position: relative;
+    border-radius: 8px;
+    border: none;
+    font-size: 1rem;
+}
+.btn-back:hover {
+    transform: scale(1.5);
+}
+.back_text{
+color: #ff9900;
+    font-size: 21px;
+    margin: 1rem;
+    text-decoration: underline;
+}
+
+.forms-list {
+  display: flex;
+  flex-direction: column;
+  z-index: 1;
+}
+
+.forms-list-wrapper {
+  display: flex;
+  justify-items: center;
+  flex-direction: column;
+  justify-content: center;
+
+}
+
+.nome-prodotto {
+border: 1px solid #ccc;
+border-radius: 12px;
+padding: 1.5rem;
+box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+background-color: #dbeafe;
+margin-bottom: 2rem;
+margin: 2rem;
+}
+.compare-btn {
+     background: linear-gradient(193deg, #40bfb4, #a50ccba6);;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    font-size: 1rem;
+    border-radius: 12px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+    margin-top: 20px;
+    display: inline-flex;
+    justify-content: center;
+    margin: 1rem;
+    gap: 8px;
+
+}
+
+.compare-btn:hover {
+  background: transparent;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px #40bfb4;
+  color: #40bfb4;
+}
+
+.compare-btn:active {
+  transform: scale(0.98);
+}
+.btnLabel {
+   background-color: transparent;
+    border: none;
+    cursor: pointer;
+    margin-bottom: 2rem;
+    padding: 9px;
+    border-radius: 100%;
+    margin-top: 2rem;
+    transition: transform 0.5s ease;
+}
+.btnLabel:hover {
+  transform: scale(1.5);
+}
+/* src/styles/responsive.css 
+
+@media (max-width: 1200px) {
+ 
+.forms-list {
+  display: flex;
+  flex-direction: column;
+  z-index: 1;
+}
+
+
+}

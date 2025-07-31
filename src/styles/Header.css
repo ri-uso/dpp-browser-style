@@ -1,0 +1,176 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+/* Nuovo blocco per l'immagine custom dell'header */
+.custom-header-image {
+  text-align: center;
+  padding: 1rem 0;   /* Spazio sopra e sotto l'immagine */
+  background-color: #ffffff; /* o un colore di sfondo coerente */
+}
+
+.header-custom-img {
+  max-width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+/*
+✅ Perché il tuo codice "funziona bene anche senza media queries"
+Hai utilizzato:
+
+✅ flex-wrap: wrap
+
+✅ larghezze fluide (width: 100%, max-width: 600px)
+
+✅ unità responsive (rem, %, vw)
+
+✅ proprietà come clamp() in alcuni punti
+
+✅ padding e gap anziché margini fissi
+
+Tutti questi accorgimenti rendono il layout naturalmente flessibile su molte dimensioni di schermo, senza bisogno di media queries personalizzate.
+
+*/
+.header {
+  display: flex;
+  flex-wrap: wrap; /* ✅ Permette il wrapping su dispositivi piccoli */
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  gap: 1rem;
+   flex-wrap: wrap;
+  position: relative;
+}
+
+.header::after {
+    content: "";
+  width: 100%;
+  height: 1px;
+  background-color: #ddd;
+  display: block;
+  margin-top: 1rem;
+}
+
+.lingue-login {
+  display: flex;
+  flex-wrap: wrap; /* ✅ Permette rientro */
+  gap: 1rem;
+  align-items: center;
+  justify-content: flex-end;
+  flex-grow: 1;
+  position: static; /* ✅ Evita offset fisso */
+}
+
+
+.login {
+  font-size: 0.85rem;
+  min-width: auto;
+  text-align: right;
+}
+.custom-select {
+  color:white;
+   border: none;
+    border-radius: 20px;
+    padding: 8px 12px;
+    background: #40bfb4;
+    font-size: 0.85rem;
+    transition: background-color 0.5s ease-in;
+}
+
+
+.custom-select:hover{
+  background-color: white;
+  border: 1px solid #40bfb4;
+  color:#40bfb4;
+}
+.lingue-login-btn {
+  min-width: 140px;
+  height: 40px;
+  font-size: 0.85rem;
+  border-radius: 20px;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.my-google-button {
+  background-color: #40bfb4;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 20px;
+  font-weight: 500;
+  font-size: 0.85rem;
+  transition: background-color 0.5s ease;
+  cursor: pointer;
+}
+
+.my-google-button:hover {
+  background-color: white;
+  color: #40bfb4;
+  border: 1px solid #40bfb4;
+}
+
+/*
+
+Hai ragione: .ReactFlagsSelect-module_selectBtn__19wW7 è una classe generata dinamicamente da un modulo CSS (CSS Modules) usato internamente dalla libreria react-flags-select. Quando vedi una classe così (Nomefile-modulename__hash), significa che è scoperta solo nel DOM, ma non è disponibile per l'override diretto con il tuo CSS classico.
+
+🔧 Problema
+Non riesci a sovrascrivere .ReactFlagsSelect-module_selectBtn__19wW7 nel tuo CSS perché:
+
+È scoperta solo nel DOM, ma il nome effettivo cambia a ogni build (hash dinamico).
+
+È protetta dalla scoping isolation dei CSS Modules.
+
+✅ Soluzioni pratiche
+✅ 1. Override tramite selettore figlio (più specifico)
+Puoi usare un selettore molto specifico:
+
+/* override il bottone del selettore 
+.ReactFlagsSelect-module_flagsSelect__2pfa2.custom-select > div {
+
+  color: black !important;
+  border: none !important;
+ 
+}
+   oppure :
+   ✅ 3. Override con inline style via JS (con ref)
+Se le opzioni sopra non funzionano, un'alternativa JS è modificare direttamente via DOM:
+
+useEffect(() => {
+  const btn = document.querySelector('.ReactFlagsSelect-module_selectBtn__19wW7');
+  if (btn) {
+    btn.style.backgroundColor = '#007bff';
+    btn.style.color = 'white';
+    btn.style.border = 'none';
+  }
+}, []);
+*/
+@media (max-width: 600px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+
+  .lingue-login {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .language-select,
+  .login {
+    text-align: left!important;
+  }
+}
+@media (max-width: 1200px) {
+
+.lingue-login {
+  justify-content: center;
+}
+
+  }
+@media (max-width: 992px) {  }
+@media (max-width: 768px) {  }
+@media (max-width: 576px) {  }

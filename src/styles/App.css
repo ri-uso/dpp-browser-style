@@ -1,0 +1,25 @@
+body {margin:0}
+.error-container {
+        display: flex
+;
+    flex-direction: column;
+    flex: 0 0 25px;
+    width: 100%;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 3rem;
+    margin-bottom: 3rem;
+    color: #f60404;
+    align-items: center;
+}
+.btn-error{
+    min-height: 4rem;
+    background-color: transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease-in-out;
+}
+.btn-error:hover {
+    background-color: #007bff;
+    color: white;
+}
