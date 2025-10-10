@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import LinkedCard from './LinkedCard';
 import translations from "./Translations.json";
-import "../styles/LinkedBatches.css";
+
 function LinkedBatches( {loadNewElement, linked_batches, language} ) {
 
   return (

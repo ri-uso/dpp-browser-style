@@ -1,0 +1,106 @@
+#reader, #reader * {
+  font-family: inherit !important;
+  box-sizing: border-box;
+  border-radius: 16px !important;
+}
+
+/*  Area placeholder */
+#reader__scan_region{
+  width: 100% !important;
+  min-height: 120px !important;
+  padding: 8px !important;
+  display: grid !important;
+  place-items: center !important;
+  text-align: center !important;
+  background: transparent !important;
+}
+#reader__scan_region br{ display:none !important; }
+#reader__scan_region img{
+  width: 56px !important;
+  height: auto !important;
+  opacity: .9 !important;
+  filter: grayscale(1) contrast(1.05);
+}
+
+/* Dashboard container */
+#reader__dashboard,
+#reader__dashboard_section{
+  width: 100% !important;
+  padding: 8px 0 !important;
+  text-align: center !important;
+}
+#reader__dashboard_section_csr > div{
+  text-align: center !important;
+}
+
+/* btn (camera permission / file selection) */
+#html5-qrcode-button-camera-permission,
+#html5-qrcode-button-file-selection{
+  appearance: none !important;
+  background: var(--grad, linear-gradient(90deg, #8892c4 0%, #69a8ba 50%, #40b5a4 100%)) !important;
+  color: #000 !important;
+  border: 2px solid #000 !important;
+  border-radius: 12px !important;
+  padding: .6rem 1rem !important;
+  font-weight: 700 !important;
+  font-size: clamp(.9rem, 1.6vw, .95rem) !important;
+  box-shadow: 0 1px 2px rgba(0,0,0,.06) !important;
+  cursor: pointer !important;
+  transition: transform .18s ease, box-shadow .18s ease, filter .18s ease !important;
+}
+#html5-qrcode-button-camera-permission:hover,
+#html5-qrcode-button-file-selection:hover{
+  filter: brightness(1.04) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 6px 14px rgba(0,0,0,.12) !important;
+}
+#html5-qrcode-button-camera-permission:focus,
+#html5-qrcode-button-file-selection:focus{
+  outline: none !important;
+  box-shadow:
+    0 0 0 3px rgba(255,255,255,.9),
+    0 0 0 6px rgba(64,181,164,.35) !important;
+}
+
+/* Dropzone “Choose image / Or drop…” */
+#reader__dashboard_section > div > div[style*="dashed"]{
+  width: 100% !important;
+  max-width: 560px !important;
+  margin: 10px auto !important;
+  padding: 12px 14px !important;
+  border: 1px dashed #e5e7eb !important;
+  border-radius: 12px !important;
+  background: #fff !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+#reader__dashboard_section > div > div[style*="dashed"] > div{
+  font-weight: 400 !important;
+  color: #374151 !important;
+  font-size: .95rem !important;
+}
+
+/* Link (Scan Image / Use Camera) */
+#html5-qrcode-anchor-scan-type-change{
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  margin-top: 8px !important;
+  color: #374151 !important;
+  font-size: .9rem !important;
+  text-decoration: none !important;
+  border-bottom: 1px dashed rgba(55,65,81,.35) !important;
+  cursor: pointer !important;
+}
+#html5-qrcode-anchor-scan-type-change:hover{
+  color: #111 !important;
+  border-bottom-color: #111 !important;
+}
+
+/* Responsive */
+@media (max-width: 420px){
+  #reader__scan_region{ min-height: 100px !important; }
+  #reader__scan_region img{ width: 48px !important; }
+}

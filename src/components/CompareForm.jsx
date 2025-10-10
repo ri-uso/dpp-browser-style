@@ -1,7 +1,6 @@
 
 import PropTypes from 'prop-types';
 import translations from "./Translations.json";
-import "../styles/CompareForm.css";
 
 const renderValue = (value, language) => {
   if (!value || typeof value !== 'object') return null;

@@ -5,7 +5,6 @@ import translations from "./Translations.json";
 import PropTypes from 'prop-types';
 import { isTokenValid, getCookie } from '../utilities.jsx';
 import { jwtDecode } from "jwt-decode";
-import "../styles/Header.css";
 
 const languages = {
   IT: "IT",
@@ -101,7 +100,7 @@ function Header({ setLanguage, language }) {
         <img src="./images/HeaderDPP.png" alt="Header DPP" className="header-custom-img" />
       </div>
    
-      <div className="header d-flex justify-content-between align-items-stretch">
+      
         <div className='lingue-login'>
           <div className='Lingue'> 
             <Select
@@ -134,7 +133,7 @@ function Header({ setLanguage, language }) {
             </GoogleOAuthProvider>
           </div>
         </div>
-      </div>
+      
     </section>
   );
 }

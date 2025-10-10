@@ -3,7 +3,6 @@ import Scanner from './Scanner';
 import translations from "./Translations.json";
 import PropTypes from 'prop-types';
 import {getApiUrl} from '../utilities.jsx'
-import '../styles/InputForm.css';
 
 function InputForm({ loadNewElement, language }) {
   /*
@@ -63,12 +62,15 @@ function InputForm({ loadNewElement, language }) {
       <button className="mt-2 mb-2 btn-qr" onClick={handleShowButtonClick}>
         <img src="/images/qr-code.png" className="qr" alt="QR code" />
       </button>
-      <p className='qr-code'>
-        {btnLabel}
-        <span className='qr-subtitle'>
-          Vuoi saperne di più? Scansiona il QR code e scopri tutto sul tuo prodotto!
-        </span>
-      </p>
+     <p className="qr-code">
+  {btnLabel}
+  <br />
+  <span className="qr-subtitle">Scan me</span>
+  <span className="visually-hidden">
+    Scan the QR code with your camera to learn more about your product
+  </span>
+</p>
+
     </div>
   </div>
 

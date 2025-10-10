@@ -1,0 +1,206 @@
+/* =========================
+   QR area pulita + Form coerente
+   ========================= */
+
+/* Tokens minimi */
+:root{
+  --grad: linear-gradient(90deg, #8892c4 0%, #69a8ba 50%, #40b5a4 100%);
+  --form-max: clamp(520px, 46vw, 720px);
+}
+
+/* --- Sezione: layout generale --- */
+.input-form-section{
+  display:grid;
+  grid-template-columns: 1fr;             /* mobile: 1 colonna */
+  gap: clamp(20px, 6vw, 32px);            /* ↑ più spazio tra QR e form su mobile */
+  max-width: 1200px;
+  margin: 0 auto 2rem;
+  padding-inline: clamp(16px, 4vw, 40px);
+  align-items: start;
+}
+.input-form-section > *{ min-width: 0; }
+
+@media (min-width: 900px){
+  .input-form-section{
+    grid-template-columns: 280px minmax(0, 1fr); /* QR fisso + form fluido */
+    gap: clamp(24px, 4vw, 40px);
+  }
+}
+
+/* --- Colonna QR: niente “card”, elementi nel flow --- */
+.input-form-section .qr-column{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  text-align:center;
+  margin: 0 auto;
+}
+
+/* Spazio extra sotto su mobile (tra Scan me e il form) */
+@media (max-width: 899px){
+  .input-form-section .qr-column{ margin-bottom: .75rem; }
+}
+
+/* Bottoniera/CTA (sopra lo scanner, ma nel flow) */
+.input-form-section .qr-column .qr-button-wrapper{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:.6rem;
+  margin: 0;
+}
+
+/* Bottone QR: bianco, evidente, cliccabile */
+.input-form-section .qr-column .btn-qr{
+  display:grid; place-items:center;
+  width: clamp(170px, 34vw, 240px);
+  height: clamp(170px, 34vw, 240px);
+  background:#fff;                /* ← bianco */
+  border: 2px solid #000;
+  border-radius:14px;
+  box-shadow:0 10px 26px rgba(0,0,0,.14);
+  cursor:pointer;
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+.input-form-section .qr-column .btn-qr:hover{
+  transform: translateY(-3px);
+  box-shadow: 0 16px 36px rgba(0,0,0,.18);
+}
+
+/* Immagine QR dentro al bottone */
+.input-form-section .qr-column .btn-qr .qr{
+  width:84%; height:auto; display:block;
+}
+
+/* Titolo + pill */
+.input-form-section .qr-column .qr-code{
+  margin:0;
+  color:#000;
+  font-weight:700;
+  line-height:1.2;
+  font-size: clamp(1rem, 1.9vw, 1.1rem);
+}
+.input-form-section .qr-column .qr-subtitle{
+  display:inline-block;
+  margin-top:.35rem;
+  padding:.45rem .75rem;
+  border-radius:12px;
+  background: trasparent !important;
+  color:#000;
+  font-weight:600;
+  letter-spacing:.2px;
+  border: 2px solid #000;
+  box-shadow: 0 1px 2px rgba(0,0,0,.06);
+}
+
+/* Scanner: in flow, confinato alla colonna; si mostra sotto la CTA */
+.input-form-section .qr-column #reader{
+  width:100%;
+  margin-top: 12px;       /* piccolo respiro sotto la CTA */
+  border-radius:12px;
+  background:#fff;
+  box-shadow: 0 0 0 1px rgba(0,0,0,.06) inset;
+  overflow:hidden;
+}
+.input-form-section .qr-column #reader > div,
+.input-form-section .qr-column #reader video{
+  width:100%; height:100%; object-fit:cover; display:block;
+}
+
+/* Quando parte il video, nascondi bottone + testi */
+@supports selector(:has(*)){
+  .input-form-section .qr-column:has(#reader video) .qr-button-wrapper{ display:none; }
+}
+
+/* --- Form card a destra (coerente con brand) --- */
+.input-form-section .form-column{
+  background:#fff;
+  border:1px solid #e5e7eb;
+  border-radius:16px;
+  box-shadow:0 1px 2px rgba(0,0,0,.06);
+  padding:clamp(1rem,2vw,1.5rem);
+}
+
+.input-form-section .form-column form{
+  display:grid;
+  grid-template-columns: 1fr;
+  gap:1rem 1.25rem;
+  width: 100%;
+  max-width: var(--form-max);
+  margin: 0 auto;
+  text-align:left;
+}
+@media (min-width:900px){
+  .input-form-section .form-column form{
+    grid-template-columns: repeat(2, minmax(220px,1fr));
+  }
+  .input-form-section .form-column form .form-group:last-of-type{
+    grid-column: 1 / -1; /* URL a tutta riga */
+  }
+}
+
+.input-form-section .form-group{ margin:0; }
+.input-form-section label{
+  font-weight:600;
+  color:#111827;
+  margin-bottom:.45rem;
+}
+
+.input-form-section .form-control{
+  display:block; width:100%;
+  border:1px solid #cbd5e1;
+  background:#fff;
+  border-radius:10px;
+  padding:.75rem .9rem;
+  font-size:1rem; line-height:1.4;
+  transition:border-color .15s ease, box-shadow .15s ease, background-color .15s ease;
+}
+.input-form-section .form-control:hover,
+.input-form-section .form-control:focus{
+  outline:none;
+  border-color:#40bfb4;
+  box-shadow:0 0 0 4px color-mix(in srgb, #40bfb4 22%, transparent);
+}
+
+/* Bottone INVIA: gradiente compatto e centrato */
+.input-form-section .form-column > .btn-primary{
+  margin:.75rem auto 0;
+  align-self:center;
+  background: var(--grad);
+  color:#000;
+  border: 2px solid #000;
+  border-radius:12px;
+  font-weight:700;
+  padding:.6rem 1rem;
+  width:auto;
+  min-width:160px; max-width:220px;
+  font-size:.95rem;
+  box-shadow:0 1px 2px rgba(0,0,0,.06);
+  cursor:pointer;
+}
+.input-form-section .form-column > .btn-primary:hover{
+  filter:brightness(1.03);
+  transform: translateY(-1px);
+  box-shadow:0 4px 10px rgba(0,0,0,.12);
+}
+.input-form-section .form-column > .btn-primary:focus{
+  outline:none;
+  box-shadow:
+    0 0 0 3px rgba(255,255,255,.9),
+    0 0 0 6px rgba(64,181,164,.35);
+}
+
+/* Mobile: opzionale full-width del bottone */
+@media (max-width:600px){
+  .input-form-section .form-column > .btn-primary{
+    width:100%;
+    font-size:1rem;
+    padding:.9rem 1.1rem;
+  }
+}
+
+/* Motion safety */
+@media (prefers-reduced-motion: reduce){
+  .input-form-section .form-column > .btn-primary,
+  .input-form-section .qr-column .btn-qr{ transition:none; }
+}

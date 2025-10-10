@@ -1,3 +1,4 @@
+
 // src/components/MainPage.jsx
 import InputForm from "./components/InputForm";
 import OutputForm from "./components/OutputForm";
@@ -8,10 +9,10 @@ import translations from "./components/Translations.json";
 import PropTypes from 'prop-types';
 import  {useEffect} from "react";
 import { Columns2 } from "lucide-react"; // icona da lucide-react
-import 'bootstrap/dist/css/bootstrap.min.css';
+
 import AOS from 'aos';
 import {ArrowLeft} from "lucide-react";
-import "./styles/MainPage.css";
+
 function MainPage({
   data,
   language,

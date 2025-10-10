@@ -1,0 +1,218 @@
+/* ==== Minimal, scoped styles for React-Bootstrap modals ==== */
+/* Use very high z-index to sit above your Google button (z-index:10000) */
+.rb-modal.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 11020;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(12px, 3vw, 24px);
+}
+
+.rb-modal-backdrop.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 11010;
+  background: rgba(17, 24, 39, 0.48);
+  backdrop-filter: blur(2px);
+}
+
+/* Dialog sizing */
+.rb-modal-dialog {
+  margin: 0;                    /* we center via flex on .rb-modal */
+  width: min(92vw, 560px);
+}
+
+/* Content “card” */
+.rb-modal-content {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow:
+    0 20px 60px rgba(0,0,0,.18),
+    0 2px 8px rgba(0,0,0,.08);
+}
+
+/* Sections */
+.rb-modal-content .modal-header,
+.rb-modal-content .modal-body,
+.rb-modal-content .modal-footer {
+  padding: 14px 16px;
+}
+
+.rb-modal-content .modal-header {
+  border-bottom: 1px solid #eef2f7;
+}
+
+.rb-modal-content .modal-footer {
+  border-top: 1px solid #eef2f7;
+  gap: .75rem;
+}
+
+/* Title */
+.rb-modal-content .modal-title {
+  font-weight: 700;
+  font-size: 1.05rem;
+  letter-spacing: .2px;
+  color: #111827;
+}
+
+/* Close button (Bootstrap’s .btn-close needs CSS if you don’t import Bootstrap) */
+.rb-modal-content .btn-close {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  width: 32px; height: 32px;
+  padding: 0;
+  opacity: .6;
+  cursor: pointer;
+  position: relative;
+}
+.rb-modal-content .btn-close:hover { opacity: 1; }
+.rb-modal-content .btn-close::before {
+  content: "×";
+  display: block;
+  line-height: 1;
+  font-size: 22px;
+  color: #111827;
+}
+
+/* Buttons (scoped; won’t affect the rest of your app) */
+.rb-modal-content .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  border-radius: 12px;
+  padding: .6rem 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: 0;
+}
+
+.rb-modal-content .btn-primary {
+  /* match your brand gradient + black outline look */
+  background: linear-gradient(90deg, #8892c4 0%, #69a8ba 50%, #40b5a4 100%);
+  color: #000;
+  border: 2px solid #000;
+  box-shadow: 0 1px 2px rgba(0,0,0,.06);
+}
+.rb-modal-content .btn-primary:hover {
+  filter: brightness(1.03);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(0,0,0,.12);
+}
+
+.rb-modal-content .btn-secondary {
+  background: #f3f4f6;
+  color: #111827;
+  border: 1px solid #e5e7eb;
+}
+.rb-modal-content .btn-secondary:hover {
+  background: #e5e7eb;
+}
+
+/* Utility */
+.d-flex { display: flex; }
+.justify-content-between { justify-content: space-between; }
+
+/* List in SelectListPopup (replaces Bootstrap’s list-group) */
+.rb-modal-content .list-group {
+  display: grid;
+  gap: 8px;
+  margin: 0; padding: 0;
+  list-style: none;
+}
+
+.rb-modal-content .list-group-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: .65rem .8rem;
+  background: #fff;
+  transition: background-color .15s ease, border-color .15s ease;
+}
+.rb-modal-content .list-group-item:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+.rb-modal-content .list-group-item.active {
+  background: #eef2ff;
+  border-color: #c7d2fe;
+}
+
+/* “Reset” button spacing (replacement for mt-2) */
+.rb-modal-content .reset-btn { margin-top: .5rem; }
+
+/* Checkbox styling in footer */
+.rb-modal-content .form-check {
+  display: inline-flex; align-items: center; gap: .5rem;
+}
+.rb-modal-content .form-check-input {
+  width: 1rem; height: 1rem;
+  accent-color: #40b5a4;
+}
+
+/* Prevent body scroll when modal is open (React-Bootstrap adds the class) */
+.modal-open { overflow: hidden; }
+
+.compare-btn {
+  all: unset; /* ✅ Rimuove gli stili di default del browser */
+  box-sizing: border-box;
+
+  /* ✅ Centramento orizzontale */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 1rem auto; /* <-- centra in un container block */
+  text-align: center;
+
+  background: var(--grad);
+  color: #000;
+  border: 2px solid #000;
+  border-radius: 12px;
+  font-weight: 700;
+  padding: .6rem 1rem;
+  width: auto;
+  min-width: 160px;
+  max-width: 220px;
+  font-size: .95rem;
+  box-shadow: 0 1px 2px rgba(0,0,0,.06);
+  cursor: pointer;
+  gap: .5rem;
+  transition: all 0.2s ease;
+}
+
+/* ✅ Hover / focus */
+.compare-btn:hover,
+.compare-btn:focus {
+  background: var(--grad);
+  color: #000;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,.1);
+}
+
+/* ✅ Stato attivo (clic) */
+.compare-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0,0,0,.08);
+}
+
+/* ✅ Nessun bordo blu */
+.compare-btn:focus-visible {
+  outline: 2px solid #000;
+  outline-offset: 3px;
+}
+
+/* ✅ Icona SVG centrata */
+.compare-btn svg {
+  width: 20px;
+  height: 20px;
+  stroke-width: 2;
+  vertical-align: middle;
+}

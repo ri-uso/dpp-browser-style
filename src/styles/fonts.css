@@ -1,0 +1,7 @@
+@import url("https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700&display=swap");
+:root{ --app-font: "Urbanist", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; }
+
+html, body, #root { font-family: var(--app-font) !important; }
+
+h1, h2, h3 { font-weight: 700; letter-spacing: .2px; }
+t-brand  { font-family: var(--font-heading) !important; }

@@ -1,79 +1,254 @@
-import CompareForm from "./CompareForm";
-import PropTypes from 'prop-types';
-import {ArrowLeft} from "lucide-react";
+import PropTypes from "prop-types";
+import { useEffect } from "react";
 import "../styles/CompareForms.css";
-import "../styles/CompareForm.css"
 
-const getFormNameList = (dataList) => {
-
-  if (!Array.isArray(dataList) || dataList.length === 0) return [];
- 
-  return dataList
-    .map(data => data.forms.map(f => f.form_name))
-
-    .reduce((a, b) => a.filter(name => b.includes(name)));
-
-};
-
-
-function CompareForms({ dataList, setShowCompare, language }) {
-
-
-    const getHeaderColorClass = (total, idx) => {
-  if (total === 1) return 'bg-color-center';
-  if (total === 2) return idx === 0 ? 'bg-color-left' : 'bg-color-right';
-  if (total === 3) return ['bg-color-left', 'bg-color-center', 'bg-color-right'][idx];
-  if (total === 4) return ['bg-color-left', 'bg-color-center', 'bg-color-center', 'bg-color-right'][idx];
-  return 'bg-color-extra'; 
-};
-
-  const form_name_list = getFormNameList(dataList);
-  return (
-    <>
-    <button
-      className="btn-back mb-3"
-      onClick={() => setShowCompare(false)}
-    >
-      <ArrowLeft size={24} />
-      </button>
-      
-    <section className="compare-forms-section mb-6">
-       
-<div className="product-header-list sticky-top bg-white z-3 py-2 border-bottom mb-4">
-  {dataList.map((data, idx) => (
-    <h2
-      key={idx}
-      className={`product-header-item text-center ${getHeaderColorClass(dataList.length, idx)}`}
-    >
-      {data.summary.item_name || data.summary.item_code}
-    </h2>
-  ))}
-</div>
-
-   {form_name_list.map((form_name, index) => (
-  <CompareForm
-            key={index}
-            formName={form_name}
-          dataList={dataList}
-            language={language}
-  />
-))}
-
-    </section>
-    </>
-  )
+/* --------- helpers --------- */
+function pickDatum(product, id, lang) {
+  if (!product?.data) return null;
+  const list = product.data.filter((d) => d.ID === id);
+  if (!list.length) return null;
+  const langLc = (lang || "").toLowerCase();
+  return list.find((d) => (d.property_language || "").toLowerCase() === langLc) || list[0];
 }
+
+function normalize(valueObj) {
+  if (!valueObj) return "";
+  if (valueObj.value_url)
+    return (valueObj.value_text || valueObj.value_url || "").trim().toLowerCase();
+  if (valueObj.value_text) return valueObj.value_text.trim().toLowerCase();
+  if (valueObj.value_number != null) return String(valueObj.value_number).trim();
+  return "";
+}
+
+function shapeValue(d, forceLinkIds = new Set(["CERT_AMBIENTALE"])) {
+  if (!d) return { kind: "empty" };
+
+  if (d.value_url) {
+    const url = d.value_url;
+    const given = (d.value_text || "").trim();
+    const urlish = /^https?:\/\//i.test(given);
+    const label = forceLinkIds.has(d.ID) ? "Link" : given && !urlish ? given : "Link";
+    return { kind: "link", url, label };
+  }
+
+  if (d.value_text) return { kind: "text", text: d.value_text };
+  if (d.value_number != null) {
+    const u = d.value_number_unit_of_measure ? ` ${d.value_number_unit_of_measure}` : "";
+    return { kind: "text", text: `${d.value_number}${u}` };
+  }
+  return { kind: "empty" };
+}
+
+function Cell({ value }) {
+  if (!value || value.kind === "empty") return <span className="cmp-muted">—</span>;
+  if (value.kind === "link") {
+    return (
+      <a className="cmp-link" href={value.url} target="_blank" rel="noopener noreferrer">
+        {value.label}
+      </a>
+    );
+  }
+  return <span>{value.text}</span>;
+}
+Cell.propTypes = { value: PropTypes.any };
+
+/* --------- main (multi-prodotto) --------- */
+export default function CompareForms({ dataList, language, setShowCompare = () => {} }) {
+  // ✅ Calcolo automatico dell’altezza della hero
+  useEffect(() => {
+    function updateHeroHeight() {
+      const hero = document.querySelector(
+        ".hero, .main-hero, header.hero, #hero, .custom-header-image"
+      );
+      if (hero) {
+        const rect = hero.getBoundingClientRect();
+        const height = rect.height;
+        document.documentElement.style.setProperty("--hero-height", `${height}px`);
+      } else {
+        document.documentElement.style.setProperty("--hero-height", "240px");
+      }
+    }
+
+    updateHeroHeight();
+    window.addEventListener("resize", updateHeroHeight);
+    return () => window.removeEventListener("resize", updateHeroHeight);
+  }, []);
+
+  // ✅ Movimento dinamico dell'header su mobile (attacco perfetto in alto)
+  useEffect(() => {
+    const header = document.querySelector(".cmp-header");
+    const wrap = document.querySelector(".cmp-wrap");
+    if (!header || !wrap) return;
+
+    const updateHeaderPosition = () => {
+      const heroHeight =
+        parseInt(
+          getComputedStyle(document.documentElement).getPropertyValue("--hero-height")
+        ) || 0;
+
+      const scrollY = window.scrollY;
+      const offset = Math.max(heroHeight - scrollY, 0);
+
+      // Sposta l'header sotto la hero finché si scorre
+      header.style.transform = `translateY(${offset}px)`;
+
+      // ✅ Azzera del tutto lo spazio quando arriva in cima
+      if (offset <= 0) {
+        wrap.style.paddingTop = `${heroHeight}px`;
+      } else {
+        // durante lo scroll riduce gradualmente il padding
+        wrap.style.paddingTop = `${heroHeight - offset * 0.8}px`;
+      }
+    };
+
+    const handleScroll = () => {
+      if (window.innerWidth <= 640) updateHeaderPosition();
+      else {
+        header.style.transform = "";
+        wrap.style.paddingTop = "";
+      }
+    };
+
+    updateHeaderPosition();
+    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("resize", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", handleScroll);
+    };
+  }, []);
+
+  const products = (Array.isArray(dataList) ? dataList : []).filter(Boolean);
+  if (products.length < 2) {
+    return (
+      <div className="cmp-wrap">
+        <p className="cmp-muted">Seleziona almeno due prodotti da confrontare.</p>
+      </div>
+    );
+  }
+
+  const forms = Array.isArray(products[0]?.forms) ? products[0].forms : [];
+  const titles = products.map(
+    (p) => p?.summary?.item_name || p?.summary?.item_code || "Prodotto"
+  );
+
+  return (
+    <div className="cmp-wrap" style={{ "--cols": products.length }}>
+      {/* Header sticky su desktop, mobile sotto hero e sempre visibile */}
+      <header className="cmp-header">
+        <button
+          type="button"
+          className="cmp-close"
+          aria-label="Chiudi confronto"
+          onClick={() => setShowCompare(false)}
+        >
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M18 6 6 18M6 6l12 12" />
+          </svg>
+        </button>
+
+        {/* Desktop header */}
+        <div
+          className="cmp-row cmp-row--head cmp-head-desktop"
+          style={{ "--cols": products.length }}
+        >
+          <div className="cmp-cell feat-col cmp-head-col" />
+          {titles.map((t, i) => (
+            <div className="cmp-cell prod-col cmp-head-col" key={`h-${i}`}>
+              {t}
+            </div>
+          ))}
+        </div>
+
+        {/* Mobile header */}
+        <div className="cmp-head-rail" role="tablist" aria-label="Prodotti in confronto">
+          {titles.map((t, i) => (
+            <div className="cmp-head-pill" role="tab" key={`hp-${i}`} title={t}>
+              {t}
+            </div>
+          ))}
+        </div>
+      </header>
+
+      {/* Tabella di confronto */}
+      <div
+        className="cmp-table"
+        role="table"
+        aria-label="Confronto prodotti"
+        style={{ "--cols": products.length }}
+      >
+        {forms.map((section, sIdx) => {
+          const fields = Array.isArray(section.fields) ? section.fields : [];
+          return (
+            <section className="cmp-section" key={`sec-${sIdx}`}>
+              <div className="cmp-sec-title">
+                <span className="cmp-sec-title-span">{section.form_name}</span>
+              </div>
+
+              {fields.map((f, idx) => {
+                const id = f.ID;
+                const normVals = products.map((p) => normalize(pickDatum(p, id, language)));
+                const isDiff = new Set(normVals).size > 1;
+
+                let label = id;
+                for (const p of products) {
+                  const d = pickDatum(p, id, language);
+                  if (d?.label) {
+                    label = d.label;
+                    break;
+                  }
+                }
+
+                return (
+                  <div
+                    className={`cmp-row${isDiff ? " is-diff" : ""}`}
+                    key={`row-${sIdx}-${id}-${idx}`}
+                    role="row"
+                    style={{ "--cols": products.length }}
+                  >
+                    <div className="cmp-cell feat-col" role="cell">
+                      <span className="cmp-feat-label">{label}</span>
+                    </div>
+
+                    <div className="cmp-prods">
+                      {products.map((p, pi) => {
+                        const v = shapeValue(pickDatum(p, id, language));
+                        return (
+                          <div
+                            className="cmp-cell prod-col"
+                            role="cell"
+                            key={`c-${sIdx}-${id}-${pi}`}
+                          >
+                            <Cell value={v} />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+            </section>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 CompareForms.propTypes = {
-  dataList: PropTypes.arrayOf(
-    PropTypes.shape({
-      forms: PropTypes.array.isRequired,
-      summary: PropTypes.object.isRequired,
-      data: PropTypes.array.isRequired,
-    })
-  ).isRequired,
-  setShowCompare: PropTypes.func.isRequired,
+  dataList: PropTypes.array.isRequired,
   language: PropTypes.string.isRequired,
+  setShowCompare: PropTypes.func,
 };
-  
-export default CompareForms;
-  
+
+

@@ -1,14 +1,14 @@
 import PropTypes from "prop-types";
-import '../styles/Footer.css';
 
-function Footer({ imageSrc }) {
-    return (
-        <footer className="custom-footer">
-            <img src={imageSrc} alt="Footer" className="footer-image" />
-        </footer>
-    )
+export default function FooterImage(){
+  return (
+    <footer className="custom-footer">
+      <img
+        src="/images/Footer-DPP-browser.png"
+        alt="Progetto realizzato grazie ai fondi europei della Regione Emilia-Romagna"
+        className="footer-image"
+        loading="lazy"
+      />
+    </footer>
+  );
 }
-Footer.propTypes = {
-    imageSrc: PropTypes.string.isRequired
-}
-export default Footer;

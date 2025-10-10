@@ -1,7 +1,7 @@
 
 import PropTypes from 'prop-types';
 import {getApiUrl} from '../utilities.jsx'
-import "../styles/LinkedBatches.css";
+
 function LinkedCard( {loadNewElement, linked_batch, language} ) {
 
   const handleCardClick = () => {
