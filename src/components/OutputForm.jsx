@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 import translations from "./Translations.json";
-import "../styles/OutputForm.css";
+import "../styles/outputForm.css";
 
 function OutputForm({ form, data_list = [], language = "IT" }) {
   // fields sicuri
