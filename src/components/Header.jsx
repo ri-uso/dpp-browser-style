@@ -5,6 +5,7 @@ import translations from "./Translations.json";
 import PropTypes from 'prop-types';
 import { isTokenValid, getCookie } from '../utilities.jsx';
 import { jwtDecode } from "jwt-decode";
+import { Link } from "react-router-dom";
 
 const languages = {
   IT: "IT",
@@ -97,7 +98,14 @@ function Header({ setLanguage, language }) {
     <section>
  
       <div className="custom-header-image">
-        <img src="./images/HeaderDPP.png" alt="Header DPP" className="header-custom-img" />
+        <Link to="/">
+          <img 
+            src="./images/HeaderDPP.png" 
+            alt="Header DPP" 
+            className="header-custom-img" 
+            style={{ cursor: "pointer" }} 
+          />
+        </Link>
       </div>
    
       
