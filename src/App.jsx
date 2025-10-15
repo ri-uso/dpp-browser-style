@@ -161,6 +161,16 @@ function App() {
       try {
         const jsonData = JSON.parse(text);
         setData(jsonData);
+        const parsed = new URL(api_url);
+        const host = parsed.hostname;
+        if (jsonData?.linked_batches && Array.isArray(jsonData.linked_batches)) {
+          jsonData.linked_batches = jsonData.linked_batches.map(batch => {
+            if (!batch.company_webservice || batch.company_webservice.trim() === "") {
+              return { ...batch, company_webservice: host };
+            }
+            return batch;
+          });
+        } 
         return jsonData;
       } catch (e) {
         setError("La risposta non è un JSON valido.");
