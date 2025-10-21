@@ -54,15 +54,6 @@ header {
   padding: 0;
 }
 
-.lingue-select, .login-icon {
-  transition: transform .18s ease !important;
-  display: block;
-}
-
-.lingue-select button:hover, .login-icon:hover {
-  transform: translateY(-3px) rotate(-2.5deg) !important;
-}
-
 .lingue-select button {
   border: none;
 }
