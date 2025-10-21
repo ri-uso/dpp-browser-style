@@ -13,7 +13,7 @@
         "compare_text": "Confronta",
         "yes_text": "Sì",
         "no_text": "No",
-"compare_popup_body_text": "Vuoi confrontare questi {count} prodotti?",
+        "compare_popup_body_text": "Vuoi confrontare questi {count} prodotti?",
         "select_item_text": "Seleziona un oggetto",
         "ask_to_compare_text": "Chiedi sempre di confrontare",
         "traceability_text": "Tracciabilità",
@@ -40,8 +40,8 @@
         "ask_to_compare_text": "Always ask to compare",
         "traceability_text": "Traceability",
         "link_text": "Link",
-           "btn_back":"Return to the main page",
-           "btn_login":"Login with Google"
+        "btn_back":"Return to the main page",
+        "btn_login":"Login with Google"
     },
     "ES": {
         "dpp_title_text": "Pasaporte Digital del Producto",
@@ -62,8 +62,8 @@
         "ask_to_compare_text": "Pide siempre comparar",
         "traceability_text": "Trazabilidad",
         "link_text": "Enlace",
-           "btn_back":"Regresar a la página principal",
-           "btn_login":"iniciar sesión con google"
+        "btn_back":"Regresar a la página principal",
+        "btn_login":"iniciar sesión con google"
     },
     "FR": {
         "dpp_title_text": "Passeport Produit Numérique",
@@ -84,7 +84,7 @@
         "ask_to_compare_text": "Demandez toujours de comparer",
         "traceability_text": "Traçabilité",
         "link_text": "Lien",
-           "btn_back":"Retour à la page principale",
-           "btn_login": "connectez-vous avec Google"
+        "btn_back":"Retour à la page principale",
+        "btn_login": "connectez-vous avec Google"
     }
 }

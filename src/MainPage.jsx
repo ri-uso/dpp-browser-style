@@ -7,11 +7,11 @@ import ComparePopup from "./components/ComparePopup";
 import SelectListPopup from "./components/SelectListPopup";
 import translations from "./components/Translations.json";
 import PropTypes from 'prop-types';
-import  {useEffect} from "react";
+import { useEffect } from "react";
 import { Columns2 } from "lucide-react"; // icona da lucide-react
 
 import AOS from 'aos';
-import {ArrowLeft} from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 function MainPage({
   data,
@@ -33,74 +33,74 @@ function MainPage({
 }) {
   useEffect(() => {
     AOS.init({
-        duration: 700,
-        easing:'ease-in-out',
-        once: true,
+      duration: 700,
+      easing: 'ease-in-out',
+      once: true,
     });
-},[]);
+  }, []);
   return (
     <>
-     {showOutput ? (
-  <>
-    
+      {showOutput ? (
+        <>
 
-    {data && (
-  <>
 
-    <button
-      className="btn-back mb-3"
-      onClick={() => setShowOutput(false)}
-    >
-      <ArrowLeft size={24} />
-    </button>
-    
+          {data && (
+            <>
 
-<div className="forms-list-wrapper" data-aos="fade-right">
- <h2 className="nome-prodotto mb-4">{data.summary.item_name}</h2>
-  <div className="forms-list">
-    {data && data.forms.map((form, index) => (
-      <div className="output-row" key={index}>
-        <OutputForm
-          form={form}
-          data_list={data.data}
-          language={language}
-        />
-      </div>
-    ))}
-  </div>
-</div>
-</>
-)}
-  </>
-) : (
-  <InputForm loadNewElement={loadNewElement} language={language} />
-)}
+              <button
+                className="btn-back mb-3"
+                onClick={() => setShowOutput(false)}
+              >
+                <ArrowLeft size={24} />
+              </button>
 
-{showOutput && data && (
-  <>
-    {data_history.length > 1 && (
-      <button className="compare-btn" onClick={() => setShowSelectPopup(true)}>
-        <Columns2 size={20} />
-        {translations[language].compare_text}
-      </button>
-    )}
 
-    {data.linked_batches.length > 0 && (
-      <LinkedBatches
-        loadNewElement={loadNewElement}
-        linked_batches={data.linked_batches}
-        language={language}
-      />
-    )}
-  </>
-)}
+              <div className="forms-list-wrapper" data-aos="fade-right">
+                <h2 className="nome-prodotto mb-4">{data.summary.item_name}</h2>
+                <div className="forms-list">
+                  {data && data.forms.map((form, index) => (
+                    <div className="output-row" key={index}>
+                      <OutputForm
+                        form={form}
+                        data_list={data.data}
+                        language={language}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+        </>
+      ) : (
+        <InputForm loadNewElement={loadNewElement} language={language} />
+      )}
+
+      {showOutput && data && (
+        <>
+          {data_history.length > 1 && (
+            <button className="compare-btn" onClick={() => setShowSelectPopup(true)}>
+              <Columns2 size={20} />
+              {translations[language].compare_text}
+            </button>
+          )}
+
+          {data.linked_batches.length > 0 && (
+            <LinkedBatches
+              loadNewElement={loadNewElement}
+              linked_batches={data.linked_batches}
+              language={language}
+            />
+          )}
+        </>
+      )}
 
       <ComparePopup
         show={show_confirmation_popup}
         handleClose={handleCloseConfirmationPopup}
         handleConfirm={handleConfirmPopup}
         language={language}
-         productCount={data_history.length}
+        productCount={data_history.length}
       />
 
       {show_select_popup &&
@@ -140,8 +140,7 @@ MainPage.propTypes = {
   handleCloseSelectPopup: PropTypes.func.isRequired,
   handleConfirmCompare: PropTypes.func.isRequired,
   showOutput: PropTypes.bool.isRequired,
-setShowOutput: PropTypes.func.isRequired,
-
+  setShowOutput: PropTypes.func.isRequired,
 };
 
 export default MainPage;
