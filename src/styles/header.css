@@ -9,7 +9,6 @@ body {
   margin: 0;
   padding: 0;
   overflow-x: hidden;
-  margin-top: 150px;
 }
 
 /* Img header */
@@ -69,7 +68,7 @@ header {
 }
 
 .lingue-select button::after {
-  display: none !important;  /* rimuove la freccetta */
+  display: none !important;  /* Remove the arrow*/
 }
 
 .logout-link {

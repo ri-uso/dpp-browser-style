@@ -37,7 +37,10 @@
   
 }
 
-main{ flex-grow: 1; }
+main {
+  flex-grow: 1;
+  padding-top: 150px;
+}
 
 /* ---------- Reset (light) ---------- */
 *,*::before,*::after{box-sizing:border-box}
