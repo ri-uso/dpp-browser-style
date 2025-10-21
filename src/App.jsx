@@ -1,19 +1,16 @@
 import { useState, useEffect } from 'react';
-
-import Header from "./components/Header";
 import CompareForms from "./components/CompareForms.jsx";
-import { isTokenValid, getCookie, compareDppDatas } from './utilities.jsx';
-import { jwtDecode } from "jwt-decode";
+import { compareDppDatas } from './utilities.jsx';
+import { getIdToken } from "./components/AuthService.jsx";
 import MainPage from "./MainPage";
-import Footer from "./components/Footer.jsx"
 import translations from "./components/Translations.json";
+import PropTypes from 'prop-types';
 
-function App() {
+function App({ language }) {
   const [data, setData] = useState();
   const [error, setError] = useState(null);
   const [back_button_visible, setBackButtonVisible] = useState(false);
   const [parent_list, setParentList] = useState([]);
-  const [language, setLanguage] = useState('IT');
   const [compare_list, setCompareList] = useState([]);
   const [show_compare, setShowCompare] = useState(false);
   const [data_history, setDataHistory] = useState([]);
@@ -22,10 +19,7 @@ function App() {
   const [ask_to_compare, setAskToCompare] = useState(true);
   const [showOutput, setShowOutput] = useState(false);
 
-
   const [loading, setLoading] = useState(false);
-
-  const footerImg = '/images/Footer-DPP-browser.png';
 
   const handleAskToCompareCheckbox = (event) => {
     setAskToCompare(event.target.checked);
@@ -128,20 +122,7 @@ function App() {
 
       setError(null);
 
-      let token = getCookie("jwtToken");
-      if (token) {
-        try {
-          const decodedToken = jwtDecode(token);
-          if (!isTokenValid(decodedToken)) {
-            token = null;
-          }
-        } catch (error) {
-          console.log(error);
-          token = null;
-        }
-      } else {
-        token = null;
-      }
+      const token = await getIdToken();
 
       const response = await fetch(api_url, {
         method: 'GET',
@@ -237,9 +218,7 @@ function App() {
   };
 
   return (
-    <div className="container m-2">
-      <Header setLanguage={setLanguage} language={language} />
-
+    <main className="container">
       {error ? (
         <div className="error-container">
           <p>{error}</p>
@@ -284,13 +263,12 @@ function App() {
           loading={loading}   
         />
       )}
-
-      <Footer imageSrc={footerImg} />
-    </div>
+    </main>
   );
 }
 
-
-
+App.propTypes = {
+  language: PropTypes.string.isRequired
+};
 
 export default App;

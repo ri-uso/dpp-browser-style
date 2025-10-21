@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import Select from 'react-flags-select';
-import { useGoogleLogin, GoogleOAuthProvider } from '@react-oauth/google';
+import { onAuthStateChanged } from "firebase/auth";
+import { handleLogout } from "./AuthService.jsx";
+import { auth } from "./Firebase";
+import { FaUser } from 'react-icons/fa';
 import translations from "./Translations.json";
 import PropTypes from 'prop-types';
-import { isTokenValid, getCookie } from '../utilities.jsx';
-import { jwtDecode } from "jwt-decode";
 import { Link } from "react-router-dom";
 
 const languages = {
@@ -16,53 +17,11 @@ const languages = {
 
 function Header({ setLanguage, language }) {
   const [selectedCountry, setCountry] = useState('IT');
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userProfile, setUserProfile] = useState(null);
-  
-  const onLoginSuccess = (response) => {
-    setIsLoggedIn(true);
-    const userObject = jwtDecode(response.credential);
-    setUserProfile(userObject);
-    document.cookie = `jwtToken=${response.credential}; max-age=172800; secure; SameSite=Strict`;
-    console.log(response.credential);
-  };
-  
-  const onLoginError = (response) => {
-    console.log(response);
-  };
-
-  const login = useGoogleLogin({
-    onSuccess: onLoginSuccess,
-    onError: onLoginError,
-  });
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
     setLanguage(languages[selectedCountry]);
   }, [selectedCountry, setLanguage]);
-
-  useEffect(() => {
-    const token = getCookie("jwtToken");
-    if (token) {
-      try {
-        const decodedToken = jwtDecode(token);
-        if (isTokenValid(decodedToken)) {
-          setIsLoggedIn(true);
-          setUserProfile(decodedToken);
-        }
-      } catch (error) {
-        console.log(error);
-        setIsLoggedIn(false);
-      }
-    } else {
-      setIsLoggedIn(false);
-    }
-  }, []);
-
-  const handleLogout = () => {
-    setIsLoggedIn(false);
-    setUserProfile(null);
-    document.cookie = `jwtToken=${null};`;
-  };
 
   const [screenWidth, setScreenWidth] = useState(window.innerWidth);
   useEffect(() => {
@@ -73,29 +32,18 @@ function Header({ setLanguage, language }) {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const emailParts = userProfile && userProfile.email ? userProfile.email.split('@') : [];
-  const username = emailParts[0] || '';
-  
-  const customLabelsFull = { IT: "Italiano", GB: "English", ES: "Español", FR: "Français" };
-  const customLabelsShort = { IT: "IT", GB: "EN", ES: "ES", FR: "FR" };
-  const clientId = "28880670233-rfbhtbqpefv7mqpdikeevvmgg3mrg7gv.apps.googleusercontent.com";
-
   useEffect(() => {
-    const btn = document.querySelector('.ReactFlagsSelect-module_selectBtn__19wW7');
-    if (btn) {
-      btn.style.color = 'white';
-      btn.style.border = 'none';
-      btn.addEventListener('mouseenter', () => {
-        btn.style.color = 'black';
-      });
-      btn.addEventListener('mouseleave', () => {
-        btn.style.color = 'white';
-      });
-    }
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      setUser(firebaseUser);
+    });
+    return () => unsubscribe();
   }, []);
 
+  const customLabelsFull = { IT: "Italiano", GB: "English", ES: "Español", FR: "Français" };
+  const customLabelsShort = { IT: "IT", GB: "EN", ES: "ES", FR: "FR" };
+
   return (
-    <section>
+    <header>
  
       <div className="custom-header-image">
         <Link to="/">
@@ -110,39 +58,38 @@ function Header({ setLanguage, language }) {
    
       
         <div className='lingue-login'>
-          <div className='Lingue'> 
+          <div className='lingue-select'> 
             <Select
               countries={["IT", "GB", "ES", "FR"]}
               customLabels={screenWidth > 420 ? customLabelsFull : customLabelsShort}
               onSelect={setCountry}
               selected={selectedCountry}
-              className='custom-select lingue-login-btn'
+              showSelectedLabel={false}
+              showOptionLabel={false}
             />
           </div>
           <div className="login">
-            <GoogleOAuthProvider clientId={clientId}>
-              {isLoggedIn ? (
-                <div className="d-flex align-items-center">
-                  <div>
-                    <p className="ms-2 mb-0">
-                      {screenWidth > 420 ? userProfile.email : username}
-                    </p>
-                    <span className="ms-2 cursor-pointer logout-link" onClick={handleLogout}>
-                      Logout
-                    </span>
-                  </div>
-                  <img src={userProfile.picture} alt="Profile" className="ms-2 rounded-circle img-fluid" style={{ height: '35px', width: '35px' }} />
+            {user ? (
+              <div className="d-flex align-items-center">
+                <div>
+                  <p className="ms-2 mb-0">
+                    {screenWidth > 420 ? user.email : user.displayName}
+                  </p>
+                  <span className="ms-2 logout-link" onClick={handleLogout}>
+                    Logout
+                  </span>
                 </div>
-              ) : (
-                <button onClick={() => login()} className="my-google-button lingue-login-btn">
-                  {translations[language].btn_login}
-                </button>
-              )}
-            </GoogleOAuthProvider>
+                <img src={user.photoURL} alt="Profile" className="ms-2 rounded-circle img-fluid" style={{ height: '35px', width: '35px' }} />
+              </div>
+            ) : (
+              <Link to="/login" className="login-icon">
+                <FaUser style={{ marginRight: '8px' }} />
+              </Link>
+            )}
           </div>
         </div>
       
-    </section>
+    </header>
   );
 }
 

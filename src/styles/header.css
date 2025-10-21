@@ -1,208 +1,82 @@
-*,*::before,*::after{box-sizing:border-box}
-html,body{margin:0;padding:0;overflow-x:hidden}
+*,
+*::before,
+*::after {
+  box-sizing: border-box
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  margin-top: 150px;
+}
 
 /* Img header */
-.custom-header-image{
-  margin:0;
-  padding-top: 50px;
+.custom-header-image {
+  margin: 0;
+  padding-top: 60px;
   padding-bottom: 40px;
-  line-height:0;
-  display:flex; justify-content:center; align-items:center;
+  line-height: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
-.header-custom-img{
-  display:block; margin:0 auto;
-  width: clamp(270px, 42vw, 760px);
-  height: auto;
-  max-height: clamp(64px, 12svh, 140px);
+
+.header-custom-img {
+  display: block;
+  margin: 0 auto;
+  height: 50px;
   object-fit: contain;
 }
 
 /* Toolbar */
-.header{
-  position:relative;
-  display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;
-  gap:1rem;padding:1rem 2rem;background:#fff
-}
-.header::after{content:"";display:block;background:#ddd;margin-top:1rem;width:100%}
-.lingue-login{
-  display:flex;flex-wrap:wrap;gap:1rem;align-items:center;justify-content:flex-end;
-  flex-grow:1;overflow:visible
-}
-@media(max-width:1200px){.lingue-login{justify-content:center}}
-@media(max-width:600px){
-  .header{flex-direction:column;align-items:flex-start;padding:1rem}
-  .lingue-login{flex-direction:column;align-items:flex-start;gap:.75rem}
-  .language-select,.login{text-align:left!important}
+header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1;
 }
 
-/* Google */
-.my-google-button{
-  position:fixed;
-  top:8px;
-  right:clamp(12px,4vw,24px);
-  z-index:10000;
-  width:40px; height:40px;
-  padding:0; border:none; border-radius:0; box-shadow:none;
-  background: transparent center/24px 24px no-repeat;
-  cursor:pointer;
-  background-image:url("data:image/svg+xml;utf8,<svg width='256' height='262' viewBox='0 0 256 262' xmlns='http://www.w3.org/2000/svg'><path fill='%234285F4' d='M255.9 133.5c0-11.1-.9-19.2-2.9-27.6H130.7v50.1h71.9c-1.5 12.4-9.6 31-27.6 43.5l-.3 2.1 40.1 31 2.8.3c25.9-23.8 38.3-58.9 38.3-99.4z'/><path fill='%2334A853' d='M130.7 261.1c35.2 0 64.8-11.6 86.4-31.6l-41.2-31.9c-11 7.7-25.7 13.1-45.2 13.1-34.6 0-63.9-23-74.3-54.9l-2.1.2-40.3 31.2-.5 1.9c21.1 41.9 64.5 71 117.2 71z'/><path fill='%23FBBC05' d='M56.4 155.7c-2.8-8.4-4.4-17.4-4.4-26.6s1.6-18.2 4.2-26.6l-.1-1.8L15.3 69.1l-1.9.9C6.3 84.3 2.5 101.3 2.5 119.1s3.6 34.9 10.4 49l43.5-33.1z'/><path fill='%23EA4335' d='M130.7 50.5c24.5 0 41.1 10.6 50.5 19.5l36.8-35.8C195.4 12.3 165.9 0 130.7 0 78 0 34.6 29.1 13.5 71l43.1 33.6c10.4-31.9 39.7-54.1 74.1-54.1z'/></svg>");
-  transition: transform .18s ease;
-  transform-origin: 50% 60%;
-  will-change: transform;
+.lingue-login {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  justify-content: flex-end;
+  flex-grow: 1;
+  overflow: visible;
+  position: fixed;
+  top: 10px;
+  right: 20px;
 }
 
-.my-google-button{
-  font-size: 0 !important;
-  line-height: 0 !important;
-  color: transparent !important;
-  text-indent: -9999px;  
-  white-space: nowrap;
-  overflow: hidden;
+.lingue-select > div {
+  padding: 0;
 }
 
-.my-google-button span,
-.my-google-button .label,
-.my-google-button .text{
-  display: none !important;
-}
-
-
-.my-google-button:hover,
-.my-google-button:focus-visible{
-  transform: translateY(-3px) rotate(-2.5deg);
-}
-.my-google-button:active{
-  transform: translateY(-1px) scale(0.98);
-}
-
-/* Google Mobile */
-@media(max-width:640px){.my-google-button{top:6px;right:12px}}
-@media(max-width:420px){
-  .my-google-button{
-    width:32px;height:32px;
-    background-size:18px 18px;
-    top:6px; right:10px;
-  }
-}
-
-/* Flags */
-.lingue-login [class^="ReactFlagsSelect-module_flagsSelect"],
-.lingue-login [class*="ReactFlagsSelect-module_flagsSelect"]{
-  position:fixed;
-  top:8px;
-  right: calc(clamp(12px,4vw,24px) + 60px) !important; 
-  z-index:10001;
-}
-@media(max-width:640px){
-  .lingue-login [class^="ReactFlagsSelect-module_flagsSelect"],
-  .lingue-login [class*="ReactFlagsSelect-module_flagsSelect"]{
-    top:6px; right:calc(12px + 56px) !important;
-  }
-}
-
-.lingue-login button[class^="ReactFlagsSelect-module_selectBtn"],
-.lingue-login button[class*="ReactFlagsSelect-module_selectBtn"]{
-  display:inline-flex;align-items:center;justify-content:center;
-  width:40px;height:40px;padding:0;border-radius:999px;border:none!important;background:transparent!important;box-shadow:none;
+.lingue-select, .login-icon {
   transition: transform .18s ease !important;
-  transform-origin: 50% 60%;
-  will-change: transform; backface-visibility: hidden;
+  display: block;
 }
 
-.lingue-login button[class*="ReactFlagsSelect-module_selectBtn"]:hover,
-.lingue-login button[class*="ReactFlagsSelect-module_selectBtn"]:focus-visible{
+.lingue-select button:hover, .login-icon:hover {
   transform: translateY(-3px) rotate(-2.5deg) !important;
 }
-.lingue-login button[class*="ReactFlagsSelect-module_selectBtn"]:active{
-  transform: translateY(-1px) scale(0.98) !important;
-}
-@media (max-width: 480px){
-  .lingue-login button[class*="ReactFlagsSelect-module_selectBtn"]{
-    transition-duration: .14s !important;
-  }
+
+.lingue-select button {
+  border: none;
 }
 
-.lingue-login [class^="ReactFlagsSelect-module_selectFlag"],
-.lingue-login [class*="ReactFlagsSelect-module_selectFlag"]{
-  display:inline-block!important;width:24px;height:18px;background-size:cover!important;
-  transform:scale(1.12);transform-origin:center;
+.lingue-select button::after {
+  display: none !important;  /* rimuove la freccetta */
 }
 
-.lingue-login [class^="ReactFlagsSelect-module_label"],
-.lingue-login [class*="ReactFlagsSelect-module_label"]{display:none!important}
-
-
-.lingue-login [class^="ReactFlagsSelect-module_options"],
-.lingue-login [class*="ReactFlagsSelect-module_options"]{
-  position:absolute;top:calc(100% + 6px);right:0;left:auto;
-  width:56px;min-width:56px;max-height:60vh;overflow:auto;
-  padding:6px;border-radius:10px;background:#fff;box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:10002;
-}
-.lingue-login li[class^="ReactFlagsSelect-module_option"],
-.lingue-login li[class*="ReactFlagsSelect-module_option"]{
-  display:flex;align-items:center;justify-content:center;height:40px;padding:0;border-radius:8px
-}
-.lingue-login li[class^="ReactFlagsSelect-module_option"]:hover,
-.lingue-login li[class*="ReactFlagsSelect-module_option"]:hover{background:#f3f4f6}
-
-.lingue-login [class*="ReactFlagsSelect-module_flagsSelect"]::after,
-.lingue-login [class*="ReactFlagsSelect-module_flagsSelect"]::before,
-.lingue-login button[class*="ReactFlagsSelect-module_selectBtn"]::after,
-.lingue-login button[class*="ReactFlagsSelect-module_selectBtn"]::before{
-  content:none!important; display:none!important;
+.logout-link {
+  cursor: pointer;
+  transition: color 0.3s ease;
 }
 
-.lingue-login [class*="ReactFlagsSelect"] :is([class*="arrow"], [class*="chevron"], [class*="Caret"], [data-indicator]){
-  display:none!important;
-}
-
-@media (max-width: 640px){
-  .header{
-    position: relative;
-    padding: 10px 12px;       /* un filo di respiro */
-    min-height: 44px;         /* spazio per le icone */
-  }
-
-  .my-google-button{
-    position: absolute !important;
-    top: 8px !important;
-    right: 12px !important;
-    width: 32px !important;
-    height: 32px !important;
-    background-size: 18px 18px !important;
-    z-index: 10;
-  }
-
-  .lingue-login [class^="ReactFlagsSelect-module_flagsSelect"],
-  .lingue-login [class*="ReactFlagsSelect-module_flagsSelect"]{
-    position: absolute !important;
-    top: 8px !important;
-    right: 12px !important;               
-    transform: translateX(-40px);        
-    width: 40px;                          
-    min-width: 40px;
-    z-index: 11;
-  }
-
-  .lingue-login button[class^="ReactFlagsSelect-module_selectBtn"],
-  .lingue-login button[class*="ReactFlagsSelect-module_selectBtn"]{
-    width: 32px !important;
-    height: 32px !important;
-    padding: 0 !important;
-  }
-
-  .lingue-login [class^="ReactFlagsSelect-module_selectFlag"],
-  .lingue-login [class*="ReactFlagsSelect-module_selectFlag"]{
-    width: 24px !important;
-    height: 18px !important;
-    transform: scale(1) !important;
-  }
-
-
-  .lingue-login [class^="ReactFlagsSelect-module_options"],
-  .lingue-login [class*="ReactFlagsSelect-module_options"]{
-    top: calc(100% + 6px) !important;
-    right: 0 !important;
-    left: auto !important;
-  }
+.logout-link:hover {
+  color: red;
 }

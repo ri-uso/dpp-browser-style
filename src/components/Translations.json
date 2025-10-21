@@ -19,7 +19,7 @@
         "traceability_text": "Tracciabilità",
         "link_text": "Link",
         "btn_back":"Torna alla pagina principale",
-        "btn_login":"Accedi con Google"
+        "login_with": "Accedi con"
     },
     "EN": {
         "dpp_title_text": "Digital Product Passport",
@@ -41,7 +41,7 @@
         "traceability_text": "Traceability",
         "link_text": "Link",
         "btn_back":"Return to the main page",
-        "btn_login":"Login with Google"
+        "login_with": "Login with"
     },
     "ES": {
         "dpp_title_text": "Pasaporte Digital del Producto",
@@ -63,7 +63,7 @@
         "traceability_text": "Trazabilidad",
         "link_text": "Enlace",
         "btn_back":"Regresar a la página principal",
-        "btn_login":"iniciar sesión con google"
+        "login_with": "Iniciar sesión con"
     },
     "FR": {
         "dpp_title_text": "Passeport Produit Numérique",
@@ -85,6 +85,6 @@
         "traceability_text": "Traçabilité",
         "link_text": "Lien",
         "btn_back":"Retour à la page principale",
-        "btn_login": "connectez-vous avec Google"
+        "login_with": "Connexion avec"
     }
 }

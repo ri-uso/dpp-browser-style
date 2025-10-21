@@ -37,6 +37,8 @@
   
 }
 
+main{ flex-grow: 1; }
+
 /* ---------- Reset (light) ---------- */
 *,*::before,*::after{box-sizing:border-box}
 html{scroll-behavior:smooth}
@@ -60,11 +62,11 @@ p{margin:0 0 1rem;color:var(--text)}
 
 /* ---------- App shell & centering ---------- */
 #root{display:flex;flex-direction:column;min-height:100svh}
-#root > *:not(.full-bleed){
+/*#root > *:not(.full-bleed){
   width:min(100% - clamp(16px,4vw,40px),var(--maxw));
   margin-inline:auto;
   box-sizing:border-box;
-}
+}*/
 
 /* Bootstrap gutter fix (evita push laterali) */
 .container,.container-fluid{padding-left:0;padding-right:0}
