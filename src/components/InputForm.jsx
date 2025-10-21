@@ -12,6 +12,13 @@ function InputForm({ loadNewElement, language }) {
     company_code: 'GreenFashionLab',
     url: 'https://80.211.143.55',
   ;*/
+  /*
+    batch_code: 'C685',
+    item_code: 'MED000X-60620-XL',
+    productfamily_code: 'MED000X-60620',
+    company_code: 'StaffJersey',
+    url: 'https://80.211.143.55',
+  */
   const[formData, setFormData] = useState({
      batch_code: '',
      item_code: '',
