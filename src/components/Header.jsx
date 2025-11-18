@@ -48,7 +48,7 @@ function Header({ setLanguage, language }) {
       <div className="custom-header-image">
         <Link to="/">
           <img 
-            src="./images/HeaderDPP.png" 
+            src="./images/HeaderCentergross.png" 
             alt="Header DPP" 
             className="header-custom-img" 
             style={{ cursor: "pointer" }} 
