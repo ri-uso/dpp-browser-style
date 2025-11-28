@@ -10,9 +10,9 @@ export const logoConfig = {
     header: "/logos/HeaderCentergross.png",
     footer: "/logos/FooterCentergross.png"
   },
-    aziendaprova: {
-    header: "/logos/header_aziendaProva.png",
-    footer: "/logos/footer_aziendaProva.png"
+    prontomodabologna: {
+    header: "/logos/header_prontomoda.png",
+    footer: "/logos/footer_prontomoda.png"
   },
 
   // Example for adding new company:
