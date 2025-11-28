@@ -7,6 +7,7 @@ import { FaUser } from 'react-icons/fa';
 import translations from "./Translations.json";
 import PropTypes from 'prop-types';
 import { Link } from "react-router-dom";
+import { getLogos } from "../config/logos.js";
 
 const languages = {
   IT: "IT",
@@ -15,9 +16,10 @@ const languages = {
   FR: "FR",
 };
 
-function Header({ setLanguage, language }) {
+function Header({ setLanguage, language, company }) {
   const [selectedCountry, setCountry] = useState('IT');
   const [user, setUser] = useState(null);
+  const logos = getLogos(company);
 
   useEffect(() => {
     setLanguage(languages[selectedCountry]);
@@ -47,11 +49,11 @@ function Header({ setLanguage, language }) {
  
       <div className="custom-header-image">
         <Link to="/">
-          <img 
-            src="./images/HeaderCentergross.png" 
-            alt="Header DPP" 
-            className="header-custom-img" 
-            style={{ cursor: "pointer" }} 
+          <img
+            src={logos.header}
+            alt="Header DPP"
+            className="header-custom-img"
+            style={{ cursor: "pointer" }}
           />
         </Link>
       </div>
@@ -95,7 +97,8 @@ function Header({ setLanguage, language }) {
 
 Header.propTypes = {
   setLanguage: PropTypes.func.isRequired,
-  language: PropTypes.string.isRequired
+  language: PropTypes.string.isRequired,
+  company: PropTypes.string.isRequired
 };
 
 export default Header;

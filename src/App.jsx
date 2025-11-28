@@ -56,7 +56,7 @@ function App({ language }) {
     let apiUrl;
 
     if (extra.includes('=') && !extra.startsWith('/')) {
-      // ─── new “query‑string” style: ?batch_code=…&…&dpp_software=…
+      // ─── new "query‑string" style: ?batch_code=…&…&dpp_software=…
       const qs = extra.startsWith('?') ? extra : `?${extra}`;
       const params = new URLSearchParams(qs);
 
@@ -66,6 +66,12 @@ function App({ language }) {
       const company = params.get('company_code');
       const lang    = params.get('lang');
       const swRaw   = params.get('dpp_software') || '';
+
+      // Only process deep link if all required parameters are present
+      if (!swRaw || !batch || !item || !family || !company || !lang) {
+        return; // Skip deep link processing if parameters are missing
+      }
+
       const swUrl   = new URL(decodeURIComponent(swRaw));
       const hostAndPath = `${swUrl.host}${swUrl.pathname}`.replace(/\/$/, '');
 

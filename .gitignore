@@ -38,6 +38,9 @@ yarn-error.log*
 # vs-code
 .vscode
 
+#pycharm
+.idea
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
