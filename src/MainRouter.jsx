@@ -9,24 +9,24 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 
 const MainRouterContent = () => {
   const [language, setLanguage] = useState('IT');
-  const [company, setCompany] = useState('dpp'); // default logo dpp
+  const [companyCode, setCompanyCode] = useState('dpp'); // default logo dpp
   const [searchParams] = useSearchParams();
 
   useEffect(() => {
-    const companyParam = searchParams.get('company');
-    if (companyParam) {
-      setCompany(companyParam.toLowerCase());
+    const companyCodeParam = searchParams.get('company_code');
+    if (companyCodeParam) {
+      setCompanyCode(companyCodeParam.toLowerCase());
     }
   }, [searchParams]);
 
   return (
     <>
-      <Header setLanguage={setLanguage} language={language} company={company} />
+      <Header setLanguage={setLanguage} language={language} companyCode={companyCode} />
       <Routes>
         <Route path="/" element={<App language={language} />} />
         <Route path="/login" element={<LoginPage language={language} />} />
       </Routes>
-      <Footer company={company} />
+      <Footer companyCode={companyCode} />
     </>
   );
 };

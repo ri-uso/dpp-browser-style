@@ -1,8 +1,8 @@
 import PropTypes from 'prop-types';
 import { getLogos } from "../config/logos.js";
 
-export default function Footer({ company }){
-  const logos = getLogos(company);
+export default function Footer({ companyCode }){
+  const logos = getLogos(companyCode);
 
   return (
     <footer className="container custom-footer">
@@ -17,5 +17,5 @@ export default function Footer({ company }){
 }
 
 Footer.propTypes = {
-  company: PropTypes.string.isRequired
+  companyCode: PropTypes.string.isRequired
 };

@@ -10,6 +10,10 @@ export const logoConfig = {
     header: "/logos/HeaderCentergross.png",
     footer: "/logos/FooterCentergross.png"
   },
+    aziendaprova: {
+    header: "/logos/header_aziendaProva.png",
+    footer: "/logos/footer_aziendaProva.png"
+  },
 
   // Example for adding new company:
   // azienda2: {
@@ -23,9 +27,9 @@ export const defaultCompany = 'dpp';
 
 /**
  * Get logo paths for a specific company
- * @param {string} company - Company identifier
+ * @param {string} companyCode - Company code identifier
  * @returns {object} Object with header and footer logo paths
  */
-export const getLogos = (company) => {
-  return logoConfig[company] || logoConfig[defaultCompany];
+export const getLogos = (companyCode) => {
+  return logoConfig[companyCode] || logoConfig[defaultCompany];
 };

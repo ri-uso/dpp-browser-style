@@ -16,10 +16,10 @@ const languages = {
   FR: "FR",
 };
 
-function Header({ setLanguage, language, company }) {
+function Header({ setLanguage, language, companyCode }) {
   const [selectedCountry, setCountry] = useState('IT');
   const [user, setUser] = useState(null);
-  const logos = getLogos(company);
+  const logos = getLogos(companyCode);
 
   useEffect(() => {
     setLanguage(languages[selectedCountry]);
@@ -98,7 +98,7 @@ function Header({ setLanguage, language, company }) {
 Header.propTypes = {
   setLanguage: PropTypes.func.isRequired,
   language: PropTypes.string.isRequired,
-  company: PropTypes.string.isRequired
+  companyCode: PropTypes.string.isRequired
 };
 
 export default Header;
