@@ -2,6 +2,7 @@
 // Add new companies here with their respective header and footer logos
 
 export const logoConfig = {
+    // Company code must be written here in lowercase
       dpp: {
     header: "/logos/HeaderDPP.png",
     footer: "/logos/Footer-DPP-browser.png"
@@ -16,7 +17,7 @@ export const logoConfig = {
   },
 
   // Example for adding new company:
-  // azienda2: {
+  // azienda2: {  //Company code must be written here in lowercase
   //   header: "/logos/header-azienda2.png",
   //   footer: "/logos/footer-azienda2.png"
   // }
