@@ -3,17 +3,17 @@
 
 export const logoConfig = {
     // Company code must be written here in lowercase
-      dpp: {
-    header: "/logos/HeaderDPP.png",
-    footer: "/logos/Footer-DPP-browser.png"
+      "dpp": {
+    header: "/logos/Header_RiUso.png",
+    footer: "/logos/Footer_RiUso.png"
   },
-  centergross: {
-    header: "/logos/HeaderCentergross.png",
-    footer: "/logos/FooterCentergross.png"
+  "utildeco-example": {
+    header: "/logos/Header_Utildeco_Vinnovate.png",
+    footer: "/logos/Footer_Utildeco_Vinnovate.png"
   },
-    prontomodabologna: {
-    header: "/logos/header_prontomoda.png",
-    footer: "/logos/footer_prontomoda.png"
+    "prontomodabologna": {
+    header: "/logos/Header_Centergross.png",
+    footer: "/logos/Footer_Centergross.png"
   },
 
   // Example for adding new company:
