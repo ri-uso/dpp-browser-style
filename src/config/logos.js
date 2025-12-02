@@ -7,11 +7,75 @@ export const logoConfig = {
     header: "/logos/Header_RiUso.png",
     footer: "/logos/Footer_RiUso.png"
   },
+    "chierici": {
+    header: "/logos/Header_RiUso.png",
+    footer: "/logos/Footer_RiUso.png"
+  },
+    "emmestore": {
+    header: "/logos/Header_RiUso.png",
+    footer: "/logos/Footer_RiUso.png"
+  },
+    "texart": {
+    header: "/logos/Header_RiUso.png",
+    footer: "/logos/Footer_RiUso.png"
+  },
+    "shiningstar": {
+    header: "/logos/Header_RiUso.png",
+    footer: "/logos/Footer_RiUso.png"
+  },
+    "greenfashionlab": {
+    header: "/logos/Header_RiUso.png",
+    footer: "/logos/Footer_RiUso.png"
+  },
+    "Serviziitalia": {
+    header: "/logos/Header_RiUso.png",
+    footer: "/logos/Footer_RiUso.png"
+  },
+    "interfil": {
+    header: "/logos/Header_RiUso.png",
+    footer: "/logos/Footer_RiUso.png"
+  },
+    "staffjersey": {
+    header: "/logos/Header_RiUso.png",
+    footer: "/logos/Footer_RiUso.png"
+  },
+    "aziendaprova": {
+    header: "/logos/Header_RiUso.png",
+    footer: "/logos/Footer_RiUso.png"
+  },
+    "bottonificiosrl": {
+    header: "/logos/Header_RiUso.png",
+    footer: "/logos/Footer_RiUso.png"
+  },
+    "filaturaspa": {
+    header: "/logos/Header_RiUso.png",
+    footer: "/logos/Footer_RiUso.png"
+  },
   "utildeco-example": {
     header: "/logos/Header_Utildeco_Vinnovate.png",
     footer: "/logos/Footer_Utildeco_Vinnovate.png"
   },
+    "souvenirclubbingsrl": {
+    header: "/logos/Header_Centergross.png",
+    footer: "/logos/Footer_Centergross.png"
+  },
     "prontomodabologna": {
+    header: "/logos/Header_Centergross.png",
+    footer: "/logos/Footer_Centergross.png"
+  },
+    "sophiacurvy": {
+    header: "/logos/Header_Centergross.png",
+    footer: "/logos/Footer_Centergross.png"
+  },
+    "moteldiffusionemodasrl": {
+    header: "/logos/Header_Centergross.png",
+    footer: "/logos/Footer_Centergross.png"
+  },
+    "robertagandolfisrl": {
+    header: "/logos/Header_Centergross.png",
+    footer: "/logos/Footer_Centergross.png"
+  },
+    "stiledonna": {
     header: "/logos/Header_Centergross.png",
     footer: "/logos/Footer_Centergross.png"
   },
