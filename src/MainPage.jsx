@@ -5,10 +5,11 @@ import OutputForm from "./components/OutputForm";
 import LinkedBatches from "./components/LinkedBatches";
 import ComparePopup from "./components/ComparePopup";
 import SelectListPopup from "./components/SelectListPopup";
+import ProductChatModal from "./components/ProductChatModal";
 import translations from "./components/Translations.json";
 import PropTypes from 'prop-types';
-import { useEffect } from "react";
-import { Columns2 } from "lucide-react"; // icona da lucide-react
+import { useEffect, useState } from "react";
+import { Columns2, MessageCircle } from "lucide-react"; // icona da lucide-react
 
 import AOS from 'aos';
 import { ArrowLeft } from "lucide-react";
@@ -31,6 +32,8 @@ function MainPage({
   showOutput,
   setShowOutput
 }) {
+  const [showChatModal, setShowChatModal] = useState(false);
+
   useEffect(() => {
     AOS.init({
       duration: 700,
@@ -57,6 +60,7 @@ function MainPage({
 
               <div className="forms-list-wrapper" data-aos="fade-right">
                 <h2 className="nome-prodotto mb-4">{data.summary.item_name}</h2>
+
                 <div className="forms-list">
                   {data && data.forms.map((form, index) => (
                     <div className="output-row" key={index}>
@@ -116,6 +120,30 @@ function MainPage({
           language={language}
         />
       }
+
+      {/* Chat with Product - Floating button */}
+      {showOutput && data && (
+        <>
+          <button
+            className="chat-trigger-button"
+            onClick={() => setShowChatModal(true)}
+            title={translations[language]?.chat_with_product || 'Chat with product'}
+          >
+            <MessageCircle size={24} />
+            <span className="chat-trigger-text">
+              {translations[language]?.chat_with_product || 'Chat with product'}
+            </span>
+          </button>
+
+          <ProductChatModal
+            productData={data}
+            language={language}
+            translations={translations}
+            isOpen={showChatModal}
+            onClose={() => setShowChatModal(false)}
+          />
+        </>
+      )}
     </>
   );
 }
