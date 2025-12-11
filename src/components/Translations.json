@@ -33,7 +33,15 @@
         "chat_send": "Invia",
         "chat_error": "Errore nell'invio del messaggio. Riprova.",
         "chat_close": "Chiudi",
-        "chat_clear": "Pulisci chat"
+        "chat_clear": "Pulisci chat",
+        "chat_mode_text": "Testo",
+        "chat_mode_voice": "Voce",
+        "voice_tap_to_speak": "Premi per avviare la conversazione",
+        "voice_recording": "Rilascia per inviare...",
+        "voice_ready": "Pronto a parlare",
+        "voice_connecting": "Connessione in corso...",
+        "voice_disconnected": "Non connesso",
+        "voice_error": "Errore di connessione"
     },
     "EN": {
         "dpp_title_text": "Digital Product Passport",
@@ -69,7 +77,15 @@
         "chat_send": "Send",
         "chat_error": "Error sending message. Please try again.",
         "chat_close": "Close",
-        "chat_clear": "Clear chat"
+        "chat_clear": "Clear chat",
+        "chat_mode_text": "Text",
+        "chat_mode_voice": "Voice",
+        "voice_tap_to_speak": "Press to start conversation",
+        "voice_recording": "Release to send...",
+        "voice_ready": "Ready to speak",
+        "voice_connecting": "Connecting...",
+        "voice_disconnected": "Not connected",
+        "voice_error": "Connection error"
     },
     "ES": {
         "dpp_title_text": "Pasaporte Digital del Producto",
@@ -105,7 +121,15 @@
         "chat_send": "Enviar",
         "chat_error": "Error al enviar el mensaje. Inténtalo de nuevo.",
         "chat_close": "Cerrar",
-        "chat_clear": "Limpiar chat"
+        "chat_clear": "Limpiar chat",
+        "chat_mode_text": "Texto",
+        "chat_mode_voice": "Voz",
+        "voice_tap_to_speak": "Presiona para iniciar la conversación",
+        "voice_recording": "Suelta para enviar...",
+        "voice_ready": "Listo para hablar",
+        "voice_connecting": "Conectando...",
+        "voice_disconnected": "No conectado",
+        "voice_error": "Error de conexión"
     },
     "FR": {
         "dpp_title_text": "Passeport Produit Numérique",
@@ -141,6 +165,14 @@
         "chat_send": "Envoyer",
         "chat_error": "Erreur lors de l'envoi du message. Réessaye.",
         "chat_close": "Fermer",
-        "chat_clear": "Effacer la discussion"
+        "chat_clear": "Effacer la discussion",
+        "chat_mode_text": "Texte",
+        "chat_mode_voice": "Voix",
+        "voice_tap_to_speak": "Appuie pour commencer la conversation",
+        "voice_recording": "Relâche pour envoyer...",
+        "voice_ready": "Prêt à parler",
+        "voice_connecting": "Connexion...",
+        "voice_disconnected": "Non connecté",
+        "voice_error": "Erreur de connexion"
     }
 }

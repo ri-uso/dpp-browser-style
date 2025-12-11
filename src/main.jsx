@@ -6,6 +6,7 @@ import "./styles/scanner.css";
 import "./styles/outputForm.css";
 import "./styles/compareModal.css";
 import "./styles/chatInterface.css";
+import "./styles/voiceInterface.css";
 import "./styles/productChatModal.css";
 import "./styles/fonts.css";
 

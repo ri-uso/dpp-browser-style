@@ -1,23 +1,29 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import ChatInterface from './ChatInterface';
+import VoiceInterface from './VoiceInterface';
 import { createConversation } from '../services/ChatService';
+import { createVoiceSession } from '../services/VoiceChatService';
 import { createProductPersonaPrompt, generateWelcomeMessage, validateProductData } from '../services/ProductPersonaService';
+import { MessageSquare, Mic } from 'lucide-react';
 import '../styles/productChatModal.css';
 
 /**
  * ProductChatModal - Modal wrapper for product chat
  *
- * Opens a chat interface where users can talk to the product
+ * Opens a chat interface where users can talk to the product (text or voice)
  */
 function ProductChatModal({ productData, language, translations, isOpen, onClose }) {
+  const [chatMode, setChatMode] = useState('text'); // 'text' | 'voice'
   const [conversation, setConversation] = useState(null);
+  const [voiceSession, setVoiceSession] = useState(null);
   const [messages, setMessages] = useState([]);
   const [error, setError] = useState(null);
+  const voiceSessionRef = useRef(null);
 
-  // Initialize conversation when modal opens
+  // Initialize text conversation when modal opens
   useEffect(() => {
-    if (isOpen && productData) {
+    if (isOpen && productData && chatMode === 'text') {
       if (!validateProductData(productData)) {
         setError('Invalid product data');
         return;
@@ -72,9 +78,63 @@ function ProductChatModal({ productData, language, translations, isOpen, onClose
 
       initializeChat();
     }
-  }, [isOpen, productData, language]);
+  }, [isOpen, productData, language, chatMode]);
 
-  // Handle sending messages
+  // Initialize voice session when switching to voice mode
+  useEffect(() => {
+    if (isOpen && chatMode === 'voice' && !voiceSession) {
+      const initializeVoice = async () => {
+        try {
+          const systemPrompt = createProductPersonaPrompt(productData, language);
+
+          // Create voice session without callbacks initially
+          // VoiceInterface will set them up via the setter methods
+          const newVoiceSession = createVoiceSession(systemPrompt);
+
+          voiceSessionRef.current = newVoiceSession;
+          setVoiceSession(newVoiceSession);
+
+          // Connect to OpenAI Realtime API
+          // Using direct connection for development (requires API key in .env)
+          const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
+          if (!apiKey) {
+            throw new Error('VITE_OPENAI_API_KEY not found in environment variables');
+          }
+          await newVoiceSession.connectDirect(apiKey);
+        } catch (err) {
+          console.error('Error initializing voice:', err);
+          setError('Failed to initialize voice chat');
+        }
+      };
+
+      initializeVoice();
+    }
+
+    // Cleanup voice session when switching away or closing
+    return () => {
+      if (voiceSessionRef.current && chatMode !== 'voice') {
+        voiceSessionRef.current.disconnect();
+        voiceSessionRef.current = null;
+        setVoiceSession(null);
+      }
+    };
+  }, [isOpen, chatMode, productData, language, voiceSession]);
+
+  // Handle mode switch
+  const handleModeSwitch = (mode) => {
+    if (mode === chatMode) return;
+
+    // Cleanup previous mode
+    if (mode === 'voice' && voiceSessionRef.current) {
+      voiceSessionRef.current.disconnect();
+      voiceSessionRef.current = null;
+      setVoiceSession(null);
+    }
+
+    setChatMode(mode);
+  };
+
+  // Handle sending messages (text mode)
   const handleSendMessage = async (userMessage, onChunk) => {
     if (!conversation) return;
 
@@ -97,7 +157,7 @@ function ProductChatModal({ productData, language, translations, isOpen, onClose
 
   // Handle clearing chat
   const handleClearChat = async () => {
-    if (conversation) {
+    if (chatMode === 'text' && conversation) {
       conversation.reset();
 
       // Show loading message
@@ -133,6 +193,10 @@ function ProductChatModal({ productData, language, translations, isOpen, onClose
       } catch (err) {
         console.error('Error regenerating welcome story:', err);
       }
+    } else if (chatMode === 'voice' && voiceSession) {
+      // Reconnect voice session
+      await voiceSession.disconnect();
+      await voiceSession.connect();
     }
   };
 
@@ -140,6 +204,14 @@ function ProductChatModal({ productData, language, translations, isOpen, onClose
   const handleClose = () => {
     setMessages([]);
     setConversation(null);
+
+    if (voiceSessionRef.current) {
+      voiceSessionRef.current.disconnect();
+      voiceSessionRef.current = null;
+    }
+    setVoiceSession(null);
+    setChatMode('text');
+
     onClose();
   };
 
@@ -181,19 +253,52 @@ function ProductChatModal({ productData, language, translations, isOpen, onClose
             <div className="chat-error-message">
               {error}
             </div>
-          ) : conversation ? (
-            <ChatInterface
-              conversation={messages}
-              onSendMessage={handleSendMessage}
-              language={language}
-              translations={translations}
-            />
+          ) : chatMode === 'text' ? (
+            conversation ? (
+              <ChatInterface
+                conversation={messages}
+                onSendMessage={handleSendMessage}
+                language={language}
+                translations={translations}
+              />
+            ) : (
+              <div className="chat-loading">
+                <div className="spinner"></div>
+                <p>{translations[language]?.loading_text || 'Loading...'}</p>
+              </div>
+            )
           ) : (
-            <div className="chat-loading">
-              <div className="spinner"></div>
-              <p>{translations[language]?.loading_text || 'Loading...'}</p>
-            </div>
+            voiceSession ? (
+              <VoiceInterface
+                voiceSession={voiceSession}
+                language={language}
+                translations={translations}
+              />
+            ) : (
+              <div className="chat-loading">
+                <div className="spinner"></div>
+                <p>{translations[language]?.voice_connecting || 'Connecting...'}</p>
+              </div>
+            )
           )}
+        </div>
+
+        {/* Mode Switcher - Bottom */}
+        <div className="chat-mode-switcher">
+          <button
+            className={`chat-mode-tab ${chatMode === 'text' ? 'active' : ''}`}
+            onClick={() => handleModeSwitch('text')}
+          >
+            <MessageSquare size={18} />
+            <span>{translations[language]?.chat_mode_text || 'Text'}</span>
+          </button>
+          <button
+            className={`chat-mode-tab ${chatMode === 'voice' ? 'active' : ''}`}
+            onClick={() => handleModeSwitch('voice')}
+          >
+            <Mic size={18} />
+            <span>{translations[language]?.chat_mode_voice || 'Voice'}</span>
+          </button>
         </div>
       </div>
     </div>
