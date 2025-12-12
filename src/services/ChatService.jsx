@@ -7,8 +7,8 @@
  * - Handling system prompts for product personas
  */
 
-const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY;
-const OPENAI_CHAT_ENDPOINT = 'https://api.openai.com/v1/chat/completions';
+// Backend API endpoint (proxied in development, direct in production)
+const CHAT_API_ENDPOINT = '/api/chat';
 
 /**
  * Sends a message to OpenAI and streams the response
@@ -18,30 +18,22 @@ const OPENAI_CHAT_ENDPOINT = 'https://api.openai.com/v1/chat/completions';
  * @returns {Promise<string>} - Complete response text
  */
 export async function sendChatMessage(messages, onChunk = null, options = {}) {
-  if (!OPENAI_API_KEY) {
-    throw new Error('OpenAI API key not configured. Please set VITE_OPENAI_API_KEY in .env file.');
-  }
-
   const {
     model = 'gpt-5-nano',
     max_completion_tokens = 500,
-    reasoning = 'minimal'  // Aggiungi questo
   } = options;
 
   try {
-    const response = await fetch(OPENAI_CHAT_ENDPOINT, {
+    const response = await fetch(CHAT_API_ENDPOINT, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${OPENAI_API_KEY}`
+        'Content-Type': 'application/json'
+        // No Authorization header - handled by backend
       },
       body: JSON.stringify({
         model,
         messages,
         max_completion_tokens,
-        reasoning_effort: reasoning ,  // Aggiungi questo
-        stream: !!onChunk
-        // Rimosso temperature - non supportata da GPT-5
       })
     });
 
@@ -50,14 +42,9 @@ export async function sendChatMessage(messages, onChunk = null, options = {}) {
       throw new Error(`OpenAI API error: ${error.error?.message || response.statusText}`);
     }
 
-    // Handle streaming response
-    if (onChunk && response.body) {
-      return await handleStreamingResponse(response, onChunk);
-    }
-
-    // Handle non-streaming response
-    const data = await response.json();
-    return data.choices[0].message.content.trim();
+    // The API always returns streaming responses
+    // Handle streaming with or without onChunk callback
+    return await handleStreamingResponse(response, onChunk || (() => {}));
   } catch (error) {
     console.error('Error in sendChatMessage:', error);
     throw error;
@@ -191,29 +178,17 @@ export function createConversation(systemPrompt) {
 }
 
 /**
- * Validates API key configuration
- * @returns {boolean} - True if API key is configured
- */
-export function isConfigured() {
-  return !!OPENAI_API_KEY && OPENAI_API_KEY.length > 0;
-}
-
-/**
- * Tests the OpenAI connection
+ * Tests the backend API connection
  * @returns {Promise<boolean>} - True if connection successful
  */
 export async function testConnection() {
-  if (!isConfigured()) {
-    return false;
-  }
-
   try {
     await sendChatMessage([
       { role: 'user', content: 'test' }
     ]);
     return true;
   } catch (error) {
-    console.error('OpenAI connection test failed:', error);
+    console.error('Backend API connection test failed:', error);
     return false;
   }
 }

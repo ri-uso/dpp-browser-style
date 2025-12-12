@@ -7,9 +7,9 @@
  * - In-memory caching to avoid duplicate API calls
  */
 
-const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY;
-const OPENAI_CHAT_ENDPOINT = 'https://api.openai.com/v1/chat/completions';
-const OPENAI_TTS_ENDPOINT = 'https://api.openai.com/v1/audio/speech';
+// Backend API endpoints (proxied in development, direct in production)
+const CHAT_API_ENDPOINT = '/api/chat';
+const TTS_API_ENDPOINT = '/api/tts';
 
 // In-memory cache for stories and audio
 const storyCache = new Map();
@@ -54,10 +54,6 @@ Rendi il racconto emotivo, coinvolgente e personale. Non usare formattazioni mar
  * @returns {Promise<string>} - Generated story text
  */
 export async function generateProductStory(productData, language) {
-  if (!OPENAI_API_KEY) {
-    throw new Error('OpenAI API key not configured. Please set VITE_OPENAI_API_KEY in .env file.');
-  }
-
   const cacheKey = getCacheKey(productData, language);
 
   // Check cache first
@@ -66,17 +62,17 @@ export async function generateProductStory(productData, language) {
     return storyCache.get(cacheKey);
   }
 
-  console.log('Generating new story via OpenAI...');
+  console.log('Generating new story via backend API...');
 
   try {
-    const response = await fetch(OPENAI_CHAT_ENDPOINT, {
+    const response = await fetch(CHAT_API_ENDPOINT, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${OPENAI_API_KEY}`
+        'Content-Type': 'application/json'
+        // No Authorization header - handled by backend
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
+        model: 'gpt-5-nano',
         messages: [
           {
             role: 'system',
@@ -87,18 +83,46 @@ export async function generateProductStory(productData, language) {
             content: createStoryPrompt(productData, language)
           }
         ],
-        temperature: 0.8,
-        max_tokens: 500
+        max_completion_tokens: 500
       })
     });
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(`OpenAI API error: ${error.error?.message || response.statusText}`);
+      throw new Error(`Backend API error: ${error.error?.message || response.statusText}`);
     }
 
-    const data = await response.json();
-    const story = data.choices[0].message.content.trim();
+    // Handle streaming response from backend
+    let story = '';
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      const chunk = decoder.decode(value, { stream: true });
+      const lines = chunk.split('\n').filter(line => line.trim() !== '');
+
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          const data = line.slice(6);
+          if (data === '[DONE]') continue;
+
+          try {
+            const parsed = JSON.parse(data);
+            const content = parsed.choices[0]?.delta?.content;
+            if (content) {
+              story += content;
+            }
+          } catch (e) {
+            // Ignore parse errors
+          }
+        }
+      }
+    }
+
+    story = story.trim();
 
     // Cache the result
     storyCache.set(cacheKey, story);
@@ -117,10 +141,6 @@ export async function generateProductStory(productData, language) {
  * @returns {Promise<string>} - URL to audio blob
  */
 export async function generateSpeech(text, language) {
-  if (!OPENAI_API_KEY) {
-    throw new Error('OpenAI API key not configured');
-  }
-
   const cacheKey = `audio_${text.substring(0, 50)}_${language}`;
 
   // Check cache first
@@ -129,7 +149,7 @@ export async function generateSpeech(text, language) {
     return audioCache.get(cacheKey);
   }
 
-  console.log('Generating speech via OpenAI TTS...');
+  console.log('Generating speech via backend TTS API...');
 
   // Voice selection based on language
   const voiceMap = {
@@ -142,23 +162,23 @@ export async function generateSpeech(text, language) {
   const voice = voiceMap[language] || 'alloy';
 
   try {
-    const response = await fetch(OPENAI_TTS_ENDPOINT, {
+    const response = await fetch(TTS_API_ENDPOINT, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${OPENAI_API_KEY}`
+        'Content-Type': 'application/json'
+        // No Authorization header - handled by backend
       },
       body: JSON.stringify({
+        text,
+        voice,
         model: 'tts-1',
-        input: text,
-        voice: voice,
         speed: 1.0
       })
     });
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(`OpenAI TTS API error: ${error.error?.message || response.statusText}`);
+      const error = await response.json().catch(() => ({}));
+      throw new Error(`Backend TTS API error: ${error.error?.message || response.statusText}`);
     }
 
     // Convert response to blob and create URL

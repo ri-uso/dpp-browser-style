@@ -94,13 +94,9 @@ function ProductChatModal({ productData, language, translations, isOpen, onClose
           voiceSessionRef.current = newVoiceSession;
           setVoiceSession(newVoiceSession);
 
-          // Connect to OpenAI Realtime API
-          // Using direct connection for development (requires API key in .env)
-          const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-          if (!apiKey) {
-            throw new Error('VITE_OPENAI_API_KEY not found in environment variables');
-          }
-          await newVoiceSession.connectDirect(apiKey);
+          // Connect to OpenAI Realtime API via backend
+          // The backend will provide an ephemeral token securely
+          await newVoiceSession.connect();
         } catch (err) {
           console.error('Error initializing voice:', err);
           setError('Failed to initialize voice chat');
