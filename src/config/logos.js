@@ -20,12 +20,12 @@ export const logoConfig = {
     footer: "/logos/Footer_RiUso.png"
   },
     "shiningstar": {
-    header: "/logos/Header_RiUso.png",
-    footer: "/logos/Footer_RiUso.png"
+    header: "/logos/Header_ShiningStar.png",
+    footer: "/logos/Footer_CentroQualitaTessile_CarpiFashionSystem.png"
   },
     "greenfashionlab": {
-    header: "/logos/Header_RiUso.png",
-    footer: "/logos/Footer_RiUso.png"
+    header: "/logos/Header_GreenFashionLab.png",
+    footer: "/logos/Footer_CentroQualitaTessile_CarpiFashionSystem.png"
   },
     "Serviziitalia": {
     header: "/logos/Header_RiUso.png",
