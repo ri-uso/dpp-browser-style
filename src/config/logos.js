@@ -79,6 +79,10 @@ export const logoConfig = {
     header: "/logos/Header_Centergross.png",
     footer: "/logos/Footer_Centergross.png"
   },
+  "staffjerseyjf": {
+    header: "/logos/Header_Staff_Jersey_Just_Fashion.png",
+    footer: "/logos/Footer_Staff_Jersey_Just_Fashion.png"
+  },
 
   // Example for adding new company:
   // azienda2: {  //Company code must be written here in lowercase
