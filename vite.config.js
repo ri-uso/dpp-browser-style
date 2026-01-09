@@ -7,7 +7,7 @@ export default defineConfig({
   server: {
     host: false,
     allowedHosts: [
-      'b2c7f0b62c5e.ngrok-free.app'
+      '70a8e749ee67.ngrok-free.app'
     ],
     // Proxy API calls to Vercel dev server when running locally
     // In production, /api routes are handled by Vercel serverless functions
