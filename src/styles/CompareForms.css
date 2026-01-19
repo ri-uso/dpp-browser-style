@@ -136,22 +136,28 @@
   padding-block: 10px;
 }
 
-/* 🎨 Desktop */
+/* 🎨 Desktop - colori specifici per ogni prodotto */
 @media (min-width: 641px) {
-  .cmp-prods .prod-col:nth-child(odd) {
+  .cmp-prods .prod-col {
+    border-radius: 12px;
+    padding-inline: 12px;
+  }
+  .cmp-prods .prod-col:nth-child(1) {
     border: 2px solid var(--colA);
     background: color-mix(in srgb, var(--colA) var(--accent-bg), #fff);
     box-shadow: 0 0 0 1px rgb(136 146 196 / var(--accent-inset)) inset;
-    border-radius: 12px;
-    padding-inline: 12px;
     text-align: left;
   }
-  .cmp-prods .prod-col:nth-child(even) {
+  .cmp-prods .prod-col:nth-child(2) {
     border: 2px solid var(--colB);
     background: color-mix(in srgb, var(--colB) var(--accent-bg), #fff);
     box-shadow: 0 0 0 1px rgb(64 181 164 / var(--accent-inset)) inset;
-    border-radius: 12px;
-    padding-inline: 12px;
+    text-align: right;
+  }
+  .cmp-prods .prod-col:nth-child(3) {
+    border: 2px solid var(--colC);
+    background: color-mix(in srgb, var(--colC) var(--accent-bg), #fff);
+    box-shadow: 0 0 0 1px rgb(105 168 186 / var(--accent-inset)) inset;
     text-align: right;
   }
 }
@@ -197,49 +203,51 @@
   }
 
   .cmp-wrap {
-    padding-top: calc(var(--hero-height, 0px) + 70px);
+    /* Padding gestito dinamicamente da JS in base all'altezza reale dell'header */
+    padding-top: 0;
   }
 
-  /* ✅ Rail dei prodotti (pills header) */
+  /* ✅ Rail dei prodotti (header a scalino) */
   .cmp-head-rail {
-    display: grid;
-    grid-auto-flow: column;
-    grid-auto-columns: max-content;
-    gap: 10px;
+    display: block;
     padding: 10px 0 12px;
-    overflow-x: auto;
-    overscroll-behavior-x: contain;
-    scroll-snap-type: x mandatory;
-    -webkit-overflow-scrolling: touch;
-    mask-image: linear-gradient(
-      to right,
-      transparent 0,
-      #000 24px,
-      #000 calc(100% - 24px),
-      transparent 100%
-    );
   }
 
   .cmp-head-pill {
-    display: inline-block;
-    scroll-snap-align: start;
-    padding: 6px 10px;
-    border-radius: 10px;
+    display: block;
+    padding: 8px 12px;
+    border-radius: 12px;
     font-weight: 800;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: calc(100% - var(--stair-x-mobile));
   }
 
   .cmp-head-pill:nth-child(1) {
     border: 2px solid var(--colA);
     background: color-mix(in srgb, var(--colA) 10%, #fff);
+    margin-left: 0;
+    text-align: left;
   }
   .cmp-head-pill:nth-child(2) {
     border: 2px solid var(--colB);
     background: color-mix(in srgb, var(--colB) 10%, #fff);
+    margin-left: calc(var(--stair-x-mobile) / 2);
+    margin-top: var(--stair-y-mobile);
+    text-align: center;
+  }
+  /* Se ci sono solo 2 prodotti, il secondo è allineato a destra con offset pieno */
+  .cmp-head-pill:nth-child(2):last-child {
+    margin-left: var(--stair-x-mobile);
+    text-align: right;
   }
   .cmp-head-pill:nth-child(3) {
     border: 2px solid var(--colC);
     background: color-mix(in srgb, var(--colC) 10%, #fff);
+    margin-left: var(--stair-x-mobile);
+    margin-top: var(--stair-y-mobile);
+    text-align: right;
   }
 
   .cmp-row {
@@ -277,7 +285,7 @@
     border: 2px solid var(--colB);
     background: color-mix(in srgb, var(--colB) var(--accent-bg), #fff);
     text-align: center;
-    margin-left: var(--stair-x-mobile);
+    margin-left: calc(var(--stair-x-mobile) / 2);
     margin-top: var(--stair-y-mobile);
   }
 
@@ -296,7 +304,9 @@
     height: 30px;
   }
 
+  /* Se ci sono solo 2 prodotti, il secondo ha offset pieno e allineamento a destra */
   .cmp-prods .prod-col:nth-child(2):last-child {
+    margin-left: var(--stair-x-mobile);
     text-align: right;
   }
 }
