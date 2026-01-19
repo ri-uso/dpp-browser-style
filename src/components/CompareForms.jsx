@@ -86,18 +86,22 @@ export default function CompareForms({ dataList, language, setShowCompare = () =
           getComputedStyle(document.documentElement).getPropertyValue("--hero-height")
         ) || 0;
 
+      // ✅ Calcola l'altezza reale dell'header (dinamica in base al numero di prodotti)
+      const headerHeight = header.offsetHeight || 0;
+
       const scrollY = window.scrollY;
       const offset = Math.max(heroHeight - scrollY, 0);
 
       // Sposta l'header sotto la hero finché si scorre
       header.style.transform = `translateY(${offset}px)`;
 
-      // ✅ Azzera del tutto lo spazio quando arriva in cima
+      // ✅ Usa l'altezza reale dell'header per il padding
+      const basePadding = heroHeight + headerHeight + 16; // 16px margine di sicurezza
       if (offset <= 0) {
-        wrap.style.paddingTop = `${heroHeight}px`;
+        wrap.style.paddingTop = `${basePadding}px`;
       } else {
         // durante lo scroll riduce gradualmente il padding
-        wrap.style.paddingTop = `${heroHeight - offset * 0.8}px`;
+        wrap.style.paddingTop = `${basePadding - offset * 0.8}px`;
       }
     };
 
