@@ -66,18 +66,13 @@ function InputForm({ loadNewElement, language }) {
         ? <div className="input-form-section">
   <div className="qr-column">
     <div className="qr-button-wrapper">
-      <button className="mt-2 mb-2 btn-qr" onClick={handleShowButtonClick}>
-        <img src="/images/qr-code.png" className="qr" alt="QR code" />
+      <button className="mt-2 mb-2 btn-qr-unified" onClick={handleShowButtonClick}>
+        <img src="/images/qr-code.png" className="qr" alt="" />
+        <span className="btn-qr-text">QR Code Scanner</span>
+        <span className="visually-hidden">
+          Scan the QR code with your camera to learn more about your product
+        </span>
       </button>
-     <p className="qr-code">
-  {btnLabel}
-  <br />
-  <span className="qr-subtitle">Scan me</span>
-  <span className="visually-hidden">
-    Scan the QR code with your camera to learn more about your product
-  </span>
-</p>
-
     </div>
   </div>
 
