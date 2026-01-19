@@ -50,47 +50,50 @@
   margin: 0;
 }
 
-/* Bottone QR: bianco, evidente, cliccabile */
-.input-form-section .qr-column .btn-qr{
-  display:grid; place-items:center;
-  width: clamp(170px, 34vw, 240px);
-  height: clamp(170px, 34vw, 240px);
-  background:#fff;                /* ← bianco */
+/* Bottone QR unificato: immagine + testo in un unico elemento cliccabile */
+.input-form-section .qr-column .btn-qr-unified{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap: 0.75rem;
+  width: clamp(180px, 36vw, 260px);
+  padding: clamp(1rem, 3vw, 1.5rem);
+  background:#fff;
   border: 2px solid #000;
-  border-radius:14px;
+  border-radius:16px;
   box-shadow:0 10px 26px rgba(0,0,0,.14);
   cursor:pointer;
   transition: transform .18s ease, box-shadow .18s ease;
 }
-.input-form-section .qr-column .btn-qr:hover{
+.input-form-section .qr-column .btn-qr-unified:hover{
   transform: translateY(-3px);
   box-shadow: 0 16px 36px rgba(0,0,0,.18);
 }
-
-/* Immagine QR dentro al bottone */
-.input-form-section .qr-column .btn-qr .qr{
-  width:84%; height:auto; display:block;
+.input-form-section .qr-column .btn-qr-unified:focus{
+  outline:none;
+  box-shadow:
+    0 0 0 3px rgba(255,255,255,.9),
+    0 0 0 6px rgba(64,181,164,.35);
 }
 
-/* Titolo + pill */
-.input-form-section .qr-column .qr-code{
-  margin:0;
+/* Immagine QR dentro al bottone unificato */
+.input-form-section .qr-column .btn-qr-unified .qr{
+  width: clamp(120px, 24vw, 160px);
+  height: auto;
+  display:block;
+}
+
+/* Testo dentro al bottone unificato */
+.input-form-section .qr-column .btn-qr-unified .btn-qr-text{
+  display:inline-block;
+  padding: 0.5rem 1rem;
+  background: var(--grad);
   color:#000;
   font-weight:700;
-  line-height:1.2;
-  font-size: clamp(1rem, 1.9vw, 1.1rem);
-}
-.input-form-section .qr-column .qr-subtitle{
-  display:inline-block;
-  margin-top:.35rem;
-  padding:.45rem .75rem;
-  border-radius:12px;
-  background: trasparent !important;
-  color:#000;
-  font-weight:600;
-  letter-spacing:.2px;
+  font-size: clamp(0.9rem, 2vw, 1rem);
+  letter-spacing: 0.3px;
+  border-radius:10px;
   border: 2px solid #000;
-  box-shadow: 0 1px 2px rgba(0,0,0,.06);
 }
 
 /* Scanner: in flow, confinato alla colonna; si mostra sotto la CTA */
@@ -202,5 +205,5 @@
 /* Motion safety */
 @media (prefers-reduced-motion: reduce){
   .input-form-section .form-column > .btn-primary,
-  .input-form-section .qr-column .btn-qr{ transition:none; }
+  .input-form-section .qr-column .btn-qr-unified{ transition:none; }
 }
