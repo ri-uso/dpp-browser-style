@@ -36,29 +36,44 @@ function OutputForm({ form, data_list = [], language = "IT" }) {
         <div className="output-content">
           {orderedData.map((item, index) => {
             const linkText = item.value_text || translations[langKey]?.link_text || "Open link";
+            const valueType = item.value_type?.toLowerCase();
+
+            // Determina il contenuto in base al tipo
+            let valueContent;
+            if (valueType === "url" || item.value_url) {
+              // Tipo URL: link o immagine
+              if (item.value_url_type === "image") {
+                valueContent = (
+                  <img
+                    src={item.value_url}
+                    alt={item.label ?? "image"}
+                    className="img-fluid"
+                  />
+                );
+              } else {
+                valueContent = (
+                  <a href={item.value_url} target="_blank" rel="noopener noreferrer" className="external-link">
+                    {linkText} <span className="link-icon" aria-hidden="true">↗</span>
+                  </a>
+                );
+              }
+            } else if (valueType === "value") {
+              // Tipo Value: solo numero + unità di misura
+              valueContent = (
+                <span>
+                  {item.value_number ?? ""}{item.value_number_unit_of_measure ? ` ${item.value_number_unit_of_measure}` : ""}
+                </span>
+              );
+            } else {
+              // Tipo String (default): solo testo
+              valueContent = <span>{item.value_text ?? ""}</span>;
+            }
+
             return (
               <div className="output-item" key={item.ID ?? index}>
                 <div className="label">{item.label ?? ""}</div>
                 <div className={valueClassNames[index]}>
-                  {item.value_url ? (
-                    item.value_url_type === "image" ? (
-                      <img
-                        src={item.value_url}
-                        alt={item.label ?? "image"}
-                        className="img-fluid"
-                      />
-                    ) : (
-                      <a href={item.value_url} target="_blank" rel="noopener noreferrer">
-                        {linkText}
-                      </a>
-                    )
-                  ) : (
-                    <span>
-                      {item.value_text ?? ""}
-                      {item.value_number != null ? ` ${item.value_number}` : ""}
-                      {item.value_number_unit_of_measure ? ` ${item.value_number_unit_of_measure}` : ""}
-                    </span>
-                  )}
+                  {valueContent}
                 </div>
               </div>
             );
