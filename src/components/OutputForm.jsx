@@ -48,8 +48,8 @@ function OutputForm({ form, data_list = [], language = "IT" }) {
                         className="img-fluid"
                       />
                     ) : (
-                      <a href={item.value_url} target="_blank" rel="noopener noreferrer">
-                        {linkText}
+                      <a href={item.value_url} target="_blank" rel="noopener noreferrer" className="external-link">
+                        {linkText} <span className="link-icon" aria-hidden="true">↗</span>
                       </a>
                     )
                   ) : (
