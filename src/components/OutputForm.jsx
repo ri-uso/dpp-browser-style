@@ -35,7 +35,7 @@ function OutputForm({ form, data_list = [], language = "IT" }) {
 
         <div className="output-content">
           {orderedData.map((item, index) => {
-            const linkText = item.value_text || translations[langKey]?.link_text || "Open link";
+            const linkText = translations[langKey]?.link_text || "Open link";
             const valueType = item.value_type?.toLowerCase();
 
             // Determina il contenuto in base al tipo
