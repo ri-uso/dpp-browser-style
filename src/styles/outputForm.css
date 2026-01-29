@@ -126,7 +126,7 @@
   gap: 4px;
 }
 .output-form .output-item .value a.external-link .link-icon{
-  font-size: 0.85em;
+  font-size: 1em;
   transition: transform .18s ease;
 }
 .output-form .output-item .value a.external-link:hover,
