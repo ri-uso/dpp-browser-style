@@ -11,7 +11,7 @@
   --colB: #2af58f;
   --colC: #31bafa;
 
-  --accent-bg: 10%;
+  --accent-bg: 25%;
   --accent-inset: 28%;
   --stair-x-mobile: clamp(10px, 6vw, 28px);
   --stair-y-mobile: 14px;
