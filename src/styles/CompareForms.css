@@ -3,15 +3,15 @@
   --muted: #667085;
   --divider: #eef2f6;
 
-  --brand1: #4661e9;
-  --brand2: #2af58f;
-  --brand3: #31bafa;
+  --brand1: #8892c4;
+  --brand2: #69a8ba;
+  --brand3: #40b5a4;
 
-  --colA: #4661e9;
-  --colB: #2af58f;
-  --colC: #31bafa;
+  --colA: #8892c4;
+  --colB: #40b5a4;
+  --colC: #69a8ba;
 
-  --accent-bg: 20%;
+  --accent-bg: 35%;
   --accent-inset: 28%;
   --stair-x-mobile: clamp(10px, 6vw, 28px);
   --stair-y-mobile: 14px;
@@ -21,6 +21,45 @@
   padding: clamp(12px, 3vw, 24px);
   background: transparent;
   overflow: visible;
+}
+
+/* Barra titolo con navigazione */
+.cmp-title-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding: 0.5rem 0;
+}
+
+/* Titolo principale */
+.cmp-title {
+  text-align: center;
+  font-size: clamp(1.3rem, 3.5vw, 1.8rem);
+  font-weight: 800;
+  margin: 0;
+  padding: 0.5rem 1rem;
+  background: linear-gradient(135deg, #8892c4 0%, #69a8ba 50%, #40b5a4 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  flex: 1;
+  min-width: 0;
+}
+
+.cmp-title--clickable {
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.cmp-title--clickable:hover {
+  opacity: 0.8;
+}
+
+/* Pulsanti mobile - nascosti su desktop */
+.cmp-nav-mobile {
+  display: none;
 }
 
 /* HEADER DESKTOP: sticky */
@@ -184,26 +223,49 @@
 
 /* --------- MOBILE --------- */
 @media (max-width: 640px) {
+  /* Barra titolo mobile: solo titolo centrato */
+  .cmp-title-bar {
+    justify-content: center;
+  }
+
+  .cmp-title-bar .nav-btn {
+    display: none;
+  }
+
+  .cmp-title {
+    font-size: clamp(1.2rem, 5vw, 1.5rem);
+    padding: 0.5rem;
+    flex: none;
+  }
+
+  /* Pulsanti mobile sotto il titolo */
+  .cmp-nav-mobile {
+    display: flex;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .cmp-nav-mobile .nav-btn {
+    padding: 0.6rem 1rem;
+    font-size: 0.85rem;
+  }
+
   .cmp-head-desktop {
     display: none;
   }
 
-  /* ✅ Header mobile: sotto la hero, scorre e resta visibile */
+  /* ✅ Header mobile: sticky come desktop, si attacca sotto l'header principale */
   .cmp-header {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
+    position: sticky;
+    top: var(--hero-height, 140px);
     background: var(--bg);
     z-index: 100;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
     padding-right: 48px;
-    transform: translateY(var(--hero-height, 0px));
-    transition: transform 0.25s ease-out;
   }
 
   .cmp-wrap {
-    /* Padding gestito dinamicamente da JS in base all'altezza reale dell'header */
     padding-top: 0;
   }
 

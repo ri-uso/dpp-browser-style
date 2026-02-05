@@ -1,5 +1,6 @@
 import PropTypes from "prop-types";
 import { useEffect } from "react";
+import { ArrowLeft, QrCode } from "lucide-react";
 import "../styles/CompareForms.css";
 
 /* --------- helpers --------- */
@@ -54,7 +55,17 @@ Cell.propTypes = { value: PropTypes.any };
 
 /* --------- main (multi-prodotto) --------- */
 export default function CompareForms({ dataList, language, setShowCompare = () => {} }) {
-  // ✅ Calcolo automatico dell’altezza della hero
+  // Scroll alla sezione QR scanner
+  const scrollToScanner = () => {
+    const scanner = document.querySelector(".input-form-section, #reader, .qr-column");
+    if (scanner) {
+      scanner.scrollIntoView({ behavior: "smooth", block: "start" });
+    } else {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
+  // ✅ Calcolo automatico dell'altezza della hero per posizionare l'header mobile
   useEffect(() => {
     function updateHeroHeight() {
       const hero = document.querySelector(
@@ -65,61 +76,13 @@ export default function CompareForms({ dataList, language, setShowCompare = () =
         const height = rect.height;
         document.documentElement.style.setProperty("--hero-height", `${height}px`);
       } else {
-        document.documentElement.style.setProperty("--hero-height", "240px");
+        document.documentElement.style.setProperty("--hero-height", "140px");
       }
     }
 
     updateHeroHeight();
     window.addEventListener("resize", updateHeroHeight);
     return () => window.removeEventListener("resize", updateHeroHeight);
-  }, []);
-
-  // ✅ Movimento dinamico dell'header su mobile (attacco perfetto in alto)
-  useEffect(() => {
-    const header = document.querySelector(".cmp-header");
-    const wrap = document.querySelector(".cmp-wrap");
-    if (!header || !wrap) return;
-
-    const updateHeaderPosition = () => {
-      const heroHeight =
-        parseInt(
-          getComputedStyle(document.documentElement).getPropertyValue("--hero-height")
-        ) || 0;
-
-      // ✅ Calcola l'altezza reale dell'header (dinamica in base al numero di prodotti)
-      const headerHeight = header.offsetHeight || 0;
-
-      const scrollY = window.scrollY;
-      const offset = Math.max(heroHeight - scrollY, 0);
-
-      // Sposta l'header sotto la hero finché si scorre
-      header.style.transform = `translateY(${offset}px)`;
-
-      // ✅ Usa l'altezza reale dell'header per il padding
-      const basePadding = heroHeight + headerHeight + 16; // 16px margine di sicurezza
-      if (offset <= 0) {
-        wrap.style.paddingTop = `${basePadding}px`;
-      } else {
-        // durante lo scroll riduce gradualmente il padding
-        wrap.style.paddingTop = `${basePadding - offset * 0.8}px`;
-      }
-    };
-
-    const handleScroll = () => {
-      if (window.innerWidth <= 640) updateHeaderPosition();
-      else {
-        header.style.transform = "";
-        wrap.style.paddingTop = "";
-      }
-    };
-
-    updateHeaderPosition();
-    window.addEventListener("scroll", handleScroll);
-    window.addEventListener("resize", handleScroll);
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-      window.removeEventListener("resize", handleScroll);
-    };
   }, []);
 
   const products = (Array.isArray(dataList) ? dataList : []).filter(Boolean);
@@ -138,6 +101,56 @@ export default function CompareForms({ dataList, language, setShowCompare = () =
 
   return (
     <div className="cmp-wrap" style={{ "--cols": products.length }}>
+      {/* Barra titolo con navigazione */}
+      <div className="cmp-title-bar">
+        <button
+          type="button"
+          className="nav-btn nav-btn--back"
+          onClick={() => setShowCompare(false)}
+          aria-label="Torna alla home"
+        >
+          <ArrowLeft size={18} />
+          <span className="cmp-nav-btn-text">Indietro</span>
+        </button>
+
+        <h1 className="cmp-title cmp-title--clickable" onClick={() => navigate("/")}>
+          Sostenibilità a confronto
+        </h1>
+
+        <button
+          type="button"
+          className="nav-btn nav-btn--primary"
+          onClick={scrollToScanner}
+          aria-label="Aggiungi prodotto al confronto"
+        >
+          <QrCode size={18} />
+          <span className="cmp-nav-btn-text">Aggiungi prodotto</span>
+        </button>
+      </div>
+
+      {/* Pulsanti navigazione mobile (sotto il titolo) */}
+      <div className="cmp-nav-mobile">
+        <button
+          type="button"
+          className="nav-btn nav-btn--back"
+          onClick={() => setShowCompare(false)}
+          aria-label="Torna alla home"
+        >
+          <ArrowLeft size={18} />
+          <span>Indietro</span>
+        </button>
+
+        <button
+          type="button"
+          className="nav-btn nav-btn--primary"
+          onClick={scrollToScanner}
+          aria-label="Aggiungi prodotto al confronto"
+        >
+          <QrCode size={18} />
+          <span>Aggiungi prodotto</span>
+        </button>
+      </div>
+
       {/* Header sticky su desktop, mobile sotto hero e sempre visibile */}
       <header className="cmp-header">
         <button

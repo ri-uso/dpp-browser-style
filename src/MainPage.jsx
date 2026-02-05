@@ -8,10 +8,8 @@ import SelectListPopup from "./components/SelectListPopup";
 import translations from "./components/Translations.json";
 import PropTypes from 'prop-types';
 import { useEffect } from "react";
-import { Columns2 } from "lucide-react"; // icona da lucide-react
-
+import { Columns2, ArrowLeft, QrCode } from "lucide-react";
 import AOS from 'aos';
-import { ArrowLeft } from "lucide-react";
 
 function MainPage({
   data,
@@ -46,14 +44,31 @@ function MainPage({
 
           {data && (
             <>
+              {/* Barra navigazione prodotto */}
+              <div className="product-nav-bar">
+                <button
+                  className="nav-btn nav-btn--back"
+                  onClick={() => setShowOutput(false)}
+                >
+                  <ArrowLeft size={18} />
+                  <span>Indietro</span>
+                </button>
 
-              <button
-                className="btn-back mb-3"
-                onClick={() => setShowOutput(false)}
-              >
-                <ArrowLeft size={24} />
-              </button>
-
+                <button
+                  className="nav-btn nav-btn--primary"
+                  onClick={() => {
+                    const scanner = document.querySelector(".input-form-section, #reader, .qr-column");
+                    if (scanner) {
+                      scanner.scrollIntoView({ behavior: "smooth", block: "start" });
+                    } else {
+                      window.scrollTo({ top: 0, behavior: "smooth" });
+                    }
+                  }}
+                >
+                  <QrCode size={18} />
+                  <span>Aggiungi prodotto</span>
+                </button>
+              </div>
 
               <div className="forms-list-wrapper" data-aos="fade-right">
                 <h2 className="nome-prodotto mb-4">{data.summary.item_name}</h2>

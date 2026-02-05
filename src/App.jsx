@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import CompareForms from "./components/CompareForms.jsx";
 import { compareDppDatas } from './utilities.jsx';
 import { getIdToken } from "./components/AuthService.jsx";
@@ -7,6 +8,7 @@ import translations from "./components/Translations.json";
 import PropTypes from 'prop-types';
 
 function App({ language }) {
+  const location = useLocation();
   const [data, setData] = useState();
   const [error, setError] = useState(null);
   const [back_button_visible, setBackButtonVisible] = useState(false);
@@ -20,6 +22,14 @@ function App({ language }) {
   const [showOutput, setShowOutput] = useState(false);
 
   const [loading, setLoading] = useState(false);
+
+  // Reset alla home quando si clicca sul logo nell'header
+  useEffect(() => {
+    if (location.pathname === '/' && location.key !== 'default') {
+      setShowOutput(false);
+      setShowCompare(false);
+    }
+  }, [location]);
 
   const handleAskToCompareCheckbox = (event) => {
     setAskToCompare(event.target.checked);

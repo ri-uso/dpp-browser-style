@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import Scanner from './Scanner';
 import translations from "./Translations.json";
 import PropTypes from 'prop-types';
+import { ArrowLeft } from "lucide-react";
 import {getApiUrl} from '../utilities.jsx'
 
 function InputForm({ loadNewElement, language }) {
@@ -106,7 +107,20 @@ function InputForm({ loadNewElement, language }) {
   </div>
 </div>
 
-        : <Scanner  handleShowButtonClick={handleShowButtonClick} btnLabel={btnLabel} loadNewElement={loadNewElement}/>
+        : (
+          <div className="scanner-view">
+            <div className="scanner-nav-bar">
+              <button
+                className="nav-btn nav-btn--back"
+                onClick={handleShowButtonClick}
+              >
+                <ArrowLeft size={18} />
+                <span>Indietro</span>
+              </button>
+            </div>
+            <Scanner handleShowButtonClick={handleShowButtonClick} btnLabel={btnLabel} loadNewElement={loadNewElement}/>
+          </div>
+        )
       }
     </section>
   )
