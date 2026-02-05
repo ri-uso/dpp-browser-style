@@ -104,7 +104,7 @@ export default function CompareForms({ dataList, language, setShowCompare = () =
           <span className="cmp-nav-btn-text">Indietro</span>
         </button>
 
-        <h1 className="cmp-title cmp-title--clickable" onClick={() => navigate("/")}>
+        <h1 className="cmp-title">
           Sostenibilità a confronto
         </h1>
 
