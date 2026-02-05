@@ -27,7 +27,9 @@ function MainPage({
   handleCloseSelectPopup,
   handleConfirmCompare,
   showOutput,
-  setShowOutput
+  setShowOutput,
+  openScanner,
+  setOpenScanner
 }) {
   useEffect(() => {
     AOS.init({
@@ -57,16 +59,12 @@ function MainPage({
                 <button
                   className="nav-btn nav-btn--primary"
                   onClick={() => {
-                    const scanner = document.querySelector(".input-form-section, #reader, .qr-column");
-                    if (scanner) {
-                      scanner.scrollIntoView({ behavior: "smooth", block: "start" });
-                    } else {
-                      window.scrollTo({ top: 0, behavior: "smooth" });
-                    }
+                    setShowOutput(false);
+                    setOpenScanner(true);
                   }}
                 >
                   <QrCode size={18} />
-                  <span>Aggiungi prodotto</span>
+                  <span>Scansiona un altro prodotto</span>
                 </button>
               </div>
 
@@ -88,7 +86,7 @@ function MainPage({
           )}
         </>
       ) : (
-        <InputForm loadNewElement={loadNewElement} language={language} />
+        <InputForm loadNewElement={loadNewElement} language={language} openScanner={openScanner} setOpenScanner={setOpenScanner} />
       )}
 
       {showOutput && data && (
@@ -156,6 +154,8 @@ MainPage.propTypes = {
   handleConfirmCompare: PropTypes.func.isRequired,
   showOutput: PropTypes.bool.isRequired,
   setShowOutput: PropTypes.func.isRequired,
+  openScanner: PropTypes.bool,
+  setOpenScanner: PropTypes.func,
 };
 
 export default MainPage;

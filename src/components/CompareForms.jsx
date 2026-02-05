@@ -54,16 +54,7 @@ function Cell({ value }) {
 Cell.propTypes = { value: PropTypes.any };
 
 /* --------- main (multi-prodotto) --------- */
-export default function CompareForms({ dataList, language, setShowCompare = () => {} }) {
-  // Scroll alla sezione QR scanner
-  const scrollToScanner = () => {
-    const scanner = document.querySelector(".input-form-section, #reader, .qr-column");
-    if (scanner) {
-      scanner.scrollIntoView({ behavior: "smooth", block: "start" });
-    } else {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-  };
+export default function CompareForms({ dataList, language, setShowCompare = () => {}, onAddProduct = () => {} }) {
 
   // ✅ Calcolo automatico dell'altezza della hero per posizionare l'header mobile
   useEffect(() => {
@@ -120,11 +111,11 @@ export default function CompareForms({ dataList, language, setShowCompare = () =
         <button
           type="button"
           className="nav-btn nav-btn--primary"
-          onClick={scrollToScanner}
+          onClick={onAddProduct}
           aria-label="Aggiungi prodotto al confronto"
         >
           <QrCode size={18} />
-          <span className="cmp-nav-btn-text">Aggiungi prodotto</span>
+          <span className="cmp-nav-btn-text">Aggiungi prodotto al confronto</span>
         </button>
       </div>
 
@@ -143,11 +134,11 @@ export default function CompareForms({ dataList, language, setShowCompare = () =
         <button
           type="button"
           className="nav-btn nav-btn--primary"
-          onClick={scrollToScanner}
+          onClick={onAddProduct}
           aria-label="Aggiungi prodotto al confronto"
         >
           <QrCode size={18} />
-          <span>Aggiungi prodotto</span>
+          <span>Aggiungi prodotto al confronto</span>
         </button>
       </div>
 
@@ -266,6 +257,7 @@ CompareForms.propTypes = {
   dataList: PropTypes.array.isRequired,
   language: PropTypes.string.isRequired,
   setShowCompare: PropTypes.func,
+  onAddProduct: PropTypes.func,
 };
 
 

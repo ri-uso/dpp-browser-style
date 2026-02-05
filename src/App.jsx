@@ -22,6 +22,7 @@ function App({ language }) {
   const [showOutput, setShowOutput] = useState(false);
 
   const [loading, setLoading] = useState(false);
+  const [openScanner, setOpenScanner] = useState(false);
 
   // Reset alla home quando si clicca sul logo nell'header
   useEffect(() => {
@@ -252,6 +253,11 @@ function App({ language }) {
           dataList={compare_list}
           setShowCompare={setShowCompare}
           language={language}
+          onAddProduct={() => {
+            setShowCompare(false);
+            setShowOutput(false);
+            setOpenScanner(true);
+          }}
         />
       ) : (
         <MainPage
@@ -276,7 +282,9 @@ function App({ language }) {
           language={language}
           showOutput={showOutput}
           setShowOutput={setShowOutput}
-          loading={loading}   
+          loading={loading}
+          openScanner={openScanner}
+          setOpenScanner={setOpenScanner}   
         />
       )}
     </main>

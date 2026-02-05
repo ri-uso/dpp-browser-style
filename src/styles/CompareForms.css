@@ -25,6 +25,7 @@
 
 /* Barra titolo con navigazione */
 .cmp-title-bar {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -35,8 +36,11 @@
 
 /* Titolo principale */
 .cmp-title {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
   text-align: center;
-  font-size: clamp(1.3rem, 3.5vw, 1.8rem);
+  font-size: clamp(1.6rem, 4.5vw, 2.2rem);
   font-weight: 800;
   margin: 0;
   padding: 0.5rem 1rem;
@@ -44,8 +48,7 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  flex: 1;
-  min-width: 0;
+  white-space: nowrap;
 }
 
 .cmp-title--clickable {
@@ -233,9 +236,10 @@
   }
 
   .cmp-title {
-    font-size: clamp(1.2rem, 5vw, 1.5rem);
+    position: static;
+    transform: none;
+    font-size: clamp(1.4rem, 6vw, 1.8rem);
     padding: 0.5rem;
-    flex: none;
   }
 
   /* Pulsanti mobile sotto il titolo */
