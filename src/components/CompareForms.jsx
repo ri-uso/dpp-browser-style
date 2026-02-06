@@ -61,11 +61,16 @@ export default function CompareForms({ dataList, language, setShowCompare = () =
   const [railStuck, setRailStuck] = useState(false);
   const [headerHeight, setHeaderHeight] = useState(0);
 
-  // Calcola l'altezza dell'header principale (.main-header) per posizionare il rail sotto
+  // Calcola l'altezza dell'header principale solo se è fixed (desktop)
   useEffect(() => {
     function measure() {
       const mainHeader = document.querySelector(".main-header");
-      setHeaderHeight(mainHeader ? mainHeader.getBoundingClientRect().height : 0);
+      if (mainHeader) {
+        const pos = getComputedStyle(mainHeader).position;
+        setHeaderHeight(pos === "fixed" ? mainHeader.getBoundingClientRect().height : 0);
+      } else {
+        setHeaderHeight(0);
+      }
     }
     measure();
     window.addEventListener("resize", measure);
@@ -105,7 +110,30 @@ export default function CompareForms({ dataList, language, setShowCompare = () =
 
   return (
     <div className="cmp-wrap" style={{ "--cols": products.length }}>
-      {/* Barra titolo con navigazione */}
+      {/* Pulsanti navigazione mobile (prima del titolo su mobile) */}
+      <div className="cmp-nav-mobile">
+        <button
+          type="button"
+          className="nav-btn nav-btn--back"
+          onClick={() => setShowCompare(false)}
+          aria-label="Torna alla home"
+        >
+          <ArrowLeft size={18} />
+          <span>Indietro</span>
+        </button>
+
+        <button
+          type="button"
+          className="nav-btn nav-btn--primary"
+          onClick={onAddProduct}
+          aria-label="Aggiungi prodotto al confronto"
+        >
+          <QrCode size={18} />
+          <span>Aggiungi prodotto al confronto</span>
+        </button>
+      </div>
+
+      {/* Barra titolo con navigazione (solo desktop) */}
       <div className="cmp-title-bar">
         <button
           type="button"
@@ -132,29 +160,6 @@ export default function CompareForms({ dataList, language, setShowCompare = () =
         </button>
       </div>
 
-      {/* Pulsanti navigazione mobile (sotto il titolo) */}
-      <div className="cmp-nav-mobile">
-        <button
-          type="button"
-          className="nav-btn nav-btn--back"
-          onClick={() => setShowCompare(false)}
-          aria-label="Torna alla home"
-        >
-          <ArrowLeft size={18} />
-          <span>Indietro</span>
-        </button>
-
-        <button
-          type="button"
-          className="nav-btn nav-btn--primary"
-          onClick={onAddProduct}
-          aria-label="Aggiungi prodotto al confronto"
-        >
-          <QrCode size={18} />
-          <span>Aggiungi prodotto al confronto</span>
-        </button>
-      </div>
-
       {/* Header sticky su desktop */}
       <header className="cmp-header">
         {/* Desktop header */}
@@ -169,25 +174,27 @@ export default function CompareForms({ dataList, language, setShowCompare = () =
             </div>
           ))}
         </div>
-
       </header>
 
-      {/* Sentinel: quando esce dal viewport, il rail diventa fixed */}
+      {/* Sentinel: quando esce dal viewport, titolo+rail diventano fixed */}
       <div ref={sentinelRef} className="cmp-rail-sentinel" />
 
-      {/* Mobile header — fixed sotto l'header principale quando si scrolla oltre il sentinel */}
+      {/* Mobile: titolo + nomi prodotti — fixed sotto l'header principale durante lo scroll */}
       <div
         ref={railRef}
         className={`cmp-head-rail${railStuck ? " cmp-head-rail--stuck" : ""}`}
         style={railStuck ? { top: `${headerHeight}px` } : undefined}
-        role="tablist"
-        aria-label="Prodotti in confronto"
       >
-        {titles.map((t, i) => (
-          <div className="cmp-head-pill" role="tab" key={`hp-${i}`} title={t}>
-            {t}
-          </div>
-        ))}
+        <h1 className="cmp-title cmp-title--mobile">
+          Sostenibilità a confronto
+        </h1>
+        <div role="tablist" aria-label="Prodotti in confronto">
+          {titles.map((t, i) => (
+            <div className="cmp-head-pill" role="tab" key={`hp-${i}`} title={t}>
+              {t}
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Tabella di confronto */}

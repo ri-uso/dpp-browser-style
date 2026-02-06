@@ -72,3 +72,14 @@ body {
 .logout-link:hover {
   color: red;
 }
+
+/* Mobile: header e lingua nel flusso normale, non fixed */
+@media (max-width: 640px) {
+  .main-header {
+    position: relative;
+  }
+
+  .lingue-login {
+    position: absolute;
+  }
+}

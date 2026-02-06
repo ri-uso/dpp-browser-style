@@ -150,6 +150,11 @@ p{margin:0 0 1rem;color:var(--text)}
   .product-nav-bar {
     justify-content: center;
   }
+
+  /* Header non è più fixed su mobile, non serve compensare */
+  main {
+    padding-top: 0;
+  }
 }
 
 /* retro-compat per .compare-btn */
