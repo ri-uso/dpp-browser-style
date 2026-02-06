@@ -259,13 +259,12 @@
     display: none;
   }
 
-  /* ✅ Header mobile: sticky come desktop, si attacca sotto l'header principale */
+  /* Header mobile: non sticky di per sé, il rail interno diventa sticky */
   .cmp-header {
-    position: sticky;
-    top: var(--hero-height, 140px);
+    position: relative;
     background: var(--bg);
     z-index: 100;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+    box-shadow: none;
     padding-right: 48px;
   }
 
@@ -273,10 +272,29 @@
     padding-top: 0;
   }
 
-  /* ✅ Rail dei prodotti (header a scalino) */
+  /* Sentinel invisibile, segnaposto per IntersectionObserver */
+  .cmp-rail-sentinel {
+    height: 0;
+    pointer-events: none;
+  }
+
+  /* Rail dei prodotti — nella sua posizione naturale di default */
   .cmp-head-rail {
     display: block;
     padding: 10px 0 12px;
+    background: var(--bg);
+  }
+
+  /* Quando lo scroll supera il sentinel, il rail diventa fixed sotto l'header principale */
+  .cmp-head-rail--stuck {
+    position: fixed;
+    /* top viene impostato inline in base all'altezza reale dell'header */
+    left: 0;
+    right: 0;
+    z-index: 101;
+    padding: 10px clamp(12px, 3vw, 24px) 12px;
+    background: var(--bg);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
   }
 
   .cmp-head-pill {
@@ -292,13 +310,13 @@
 
   .cmp-head-pill:nth-child(1) {
     border: 2px solid var(--colA);
-    background: color-mix(in srgb, var(--colA) 10%, #fff);
+    background: color-mix(in srgb, var(--colA) var(--accent-bg), #fff);
     margin-left: 0;
     text-align: left;
   }
   .cmp-head-pill:nth-child(2) {
     border: 2px solid var(--colB);
-    background: color-mix(in srgb, var(--colB) 10%, #fff);
+    background: color-mix(in srgb, var(--colB) var(--accent-bg), #fff);
     margin-left: calc(var(--stair-x-mobile) / 2);
     margin-top: var(--stair-y-mobile);
     text-align: center;
@@ -310,7 +328,7 @@
   }
   .cmp-head-pill:nth-child(3) {
     border: 2px solid var(--colC);
-    background: color-mix(in srgb, var(--colC) 10%, #fff);
+    background: color-mix(in srgb, var(--colC) var(--accent-bg), #fff);
     margin-left: var(--stair-x-mobile);
     margin-top: var(--stair-y-mobile);
     text-align: right;

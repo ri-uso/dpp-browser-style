@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, QrCode } from "lucide-react";
 import "../styles/CompareForms.css";
 
@@ -56,25 +56,38 @@ Cell.propTypes = { value: PropTypes.any };
 /* --------- main (multi-prodotto) --------- */
 export default function CompareForms({ dataList, language, setShowCompare = () => {}, onAddProduct = () => {} }) {
 
-  // ✅ Calcolo automatico dell'altezza della hero per posizionare l'header mobile
-  useEffect(() => {
-    function updateHeroHeight() {
-      const hero = document.querySelector(
-        ".hero, .main-hero, header.hero, #hero, .custom-header-image"
-      );
-      if (hero) {
-        const rect = hero.getBoundingClientRect();
-        const height = rect.height;
-        document.documentElement.style.setProperty("--hero-height", `${height}px`);
-      } else {
-        document.documentElement.style.setProperty("--hero-height", "140px");
-      }
-    }
+  const railRef = useRef(null);
+  const sentinelRef = useRef(null);
+  const [railStuck, setRailStuck] = useState(false);
+  const [headerHeight, setHeaderHeight] = useState(0);
 
-    updateHeroHeight();
-    window.addEventListener("resize", updateHeroHeight);
-    return () => window.removeEventListener("resize", updateHeroHeight);
+  // Calcola l'altezza dell'header principale (.main-header) per posizionare il rail sotto
+  useEffect(() => {
+    function measure() {
+      const mainHeader = document.querySelector(".main-header");
+      setHeaderHeight(mainHeader ? mainHeader.getBoundingClientRect().height : 0);
+    }
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
   }, []);
+
+  // Mobile sticky rail: usa IntersectionObserver su un sentinel element
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+
+    // rootMargin negativo in alto = il sentinel risulta "uscito" quando finisce sotto l'header
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setRailStuck(!entry.isIntersecting);
+      },
+      { threshold: 0, rootMargin: `-${headerHeight}px 0px 0px 0px` }
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [headerHeight]);
 
   const products = (Array.isArray(dataList) ? dataList : []).filter(Boolean);
   if (products.length < 2) {
@@ -142,29 +155,8 @@ export default function CompareForms({ dataList, language, setShowCompare = () =
         </button>
       </div>
 
-      {/* Header sticky su desktop, mobile sotto hero e sempre visibile */}
+      {/* Header sticky su desktop */}
       <header className="cmp-header">
-        <button
-          type="button"
-          className="cmp-close"
-          aria-label="Chiudi confronto"
-          onClick={() => setShowCompare(false)}
-        >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <path d="M18 6 6 18M6 6l12 12" />
-          </svg>
-        </button>
-
         {/* Desktop header */}
         <div
           className="cmp-row cmp-row--head cmp-head-desktop"
@@ -178,15 +170,25 @@ export default function CompareForms({ dataList, language, setShowCompare = () =
           ))}
         </div>
 
-        {/* Mobile header */}
-        <div className="cmp-head-rail" role="tablist" aria-label="Prodotti in confronto">
-          {titles.map((t, i) => (
-            <div className="cmp-head-pill" role="tab" key={`hp-${i}`} title={t}>
-              {t}
-            </div>
-          ))}
-        </div>
       </header>
+
+      {/* Sentinel: quando esce dal viewport, il rail diventa fixed */}
+      <div ref={sentinelRef} className="cmp-rail-sentinel" />
+
+      {/* Mobile header — fixed sotto l'header principale quando si scrolla oltre il sentinel */}
+      <div
+        ref={railRef}
+        className={`cmp-head-rail${railStuck ? " cmp-head-rail--stuck" : ""}`}
+        style={railStuck ? { top: `${headerHeight}px` } : undefined}
+        role="tablist"
+        aria-label="Prodotti in confronto"
+      >
+        {titles.map((t, i) => (
+          <div className="cmp-head-pill" role="tab" key={`hp-${i}`} title={t}>
+            {t}
+          </div>
+        ))}
+      </div>
 
       {/* Tabella di confronto */}
       <div
