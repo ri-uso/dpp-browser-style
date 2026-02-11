@@ -1,5 +1,6 @@
 
 // src/components/MainPage.jsx
+import { useState } from "react";
 import InputForm from "./components/InputForm";
 import OutputForm from "./components/OutputForm";
 import LinkedBatches from "./components/LinkedBatches";
@@ -9,7 +10,7 @@ import ProductChatModal from "./components/ProductChatModal";
 import translations from "./components/Translations.json";
 import PropTypes from 'prop-types';
 import { useEffect } from "react";
-import { Columns2, ArrowLeft, QrCode } from "lucide-react";
+import { Columns2, ArrowLeft, QrCode, MessageCircle } from "lucide-react";
 import AOS from 'aos';
 
 function MainPage({
