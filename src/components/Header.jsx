@@ -45,8 +45,8 @@ function Header({ setLanguage, language, companyCode }) {
   const customLabelsShort = { IT: "IT", GB: "EN", ES: "ES", FR: "FR" };
 
   return (
-    <header>
- 
+    <header className="main-header">
+
       <div className="custom-header-image">
         <Link to="/">
           <img

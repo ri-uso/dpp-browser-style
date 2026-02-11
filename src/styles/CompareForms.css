@@ -11,7 +11,7 @@
   --colB: #40b5a4;
   --colC: #69a8ba;
 
-  --accent-bg: 10%;
+  --accent-bg: 35%;
   --accent-inset: 28%;
   --stair-x-mobile: clamp(10px, 6vw, 28px);
   --stair-y-mobile: 14px;
@@ -21,6 +21,53 @@
   padding: clamp(12px, 3vw, 24px);
   background: transparent;
   overflow: visible;
+}
+
+/* Barra titolo con navigazione */
+.cmp-title-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding: 0.5rem 0;
+}
+
+/* Titolo principale */
+.cmp-title {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  font-size: clamp(1.6rem, 4.5vw, 2.2rem);
+  font-weight: 800;
+  margin: 0;
+  padding: 0.5rem 1rem;
+  background: linear-gradient(135deg, #8892c4 0%, #69a8ba 50%, #40b5a4 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  white-space: nowrap;
+}
+
+.cmp-title--clickable {
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.cmp-title--clickable:hover {
+  opacity: 0.8;
+}
+
+/* Titolo mobile dentro il rail — nascosto su desktop */
+.cmp-title--mobile {
+  display: none;
+}
+
+/* Pulsanti mobile - nascosti su desktop */
+.cmp-nav-mobile {
+  display: none;
 }
 
 /* HEADER DESKTOP: sticky */
@@ -184,33 +231,75 @@
 
 /* --------- MOBILE --------- */
 @media (max-width: 640px) {
+  /* Barra titolo desktop: nascosta su mobile (il titolo è dentro il rail) */
+  .cmp-title-bar {
+    display: none;
+  }
+
+  /* Titolo mobile dentro il rail */
+  .cmp-title--mobile {
+    display: block;
+    position: static;
+    transform: none;
+    font-size: clamp(1.8rem, 5vw, 1.8rem);
+    padding: 0;
+    text-align: center;
+    margin-bottom: 6px;
+  }
+
+  /* Pulsanti mobile sotto il titolo */
+  .cmp-nav-mobile {
+    display: flex;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .cmp-nav-mobile .nav-btn {
+    padding: 0.6rem 1rem;
+    font-size: 0.85rem;
+  }
+
   .cmp-head-desktop {
     display: none;
   }
 
-  /* ✅ Header mobile: sotto la hero, scorre e resta visibile */
+  /* Header mobile: non sticky di per sé, il rail interno diventa sticky */
   .cmp-header {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
+    position: relative;
     background: var(--bg);
     z-index: 100;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+    box-shadow: none;
     padding-right: 48px;
-    transform: translateY(var(--hero-height, 0px));
-    transition: transform 0.25s ease-out;
   }
 
   .cmp-wrap {
-    /* Padding gestito dinamicamente da JS in base all'altezza reale dell'header */
     padding-top: 0;
   }
 
-  /* ✅ Rail dei prodotti (header a scalino) */
+  /* Sentinel invisibile, segnaposto per IntersectionObserver */
+  .cmp-rail-sentinel {
+    height: 0;
+    pointer-events: none;
+  }
+
+  /* Rail dei prodotti — nella sua posizione naturale di default */
   .cmp-head-rail {
     display: block;
     padding: 10px 0 12px;
+    background: var(--bg);
+  }
+
+  /* Quando lo scroll supera il sentinel, il rail diventa fixed sotto l'header principale */
+  .cmp-head-rail--stuck {
+    position: fixed;
+    /* top viene impostato inline in base all'altezza reale dell'header */
+    left: 0;
+    right: 0;
+    z-index: 101;
+    padding: 10px clamp(12px, 3vw, 24px) 12px;
+    background: var(--bg);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
   }
 
   .cmp-head-pill {
@@ -226,13 +315,13 @@
 
   .cmp-head-pill:nth-child(1) {
     border: 2px solid var(--colA);
-    background: color-mix(in srgb, var(--colA) 10%, #fff);
+    background: color-mix(in srgb, var(--colA) var(--accent-bg), #fff);
     margin-left: 0;
     text-align: left;
   }
   .cmp-head-pill:nth-child(2) {
     border: 2px solid var(--colB);
-    background: color-mix(in srgb, var(--colB) 10%, #fff);
+    background: color-mix(in srgb, var(--colB) var(--accent-bg), #fff);
     margin-left: calc(var(--stair-x-mobile) / 2);
     margin-top: var(--stair-y-mobile);
     text-align: center;
@@ -244,7 +333,7 @@
   }
   .cmp-head-pill:nth-child(3) {
     border: 2px solid var(--colC);
-    background: color-mix(in srgb, var(--colC) 10%, #fff);
+    background: color-mix(in srgb, var(--colC) var(--accent-bg), #fff);
     margin-left: var(--stair-x-mobile);
     margin-top: var(--stair-y-mobile);
     text-align: right;

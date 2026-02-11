@@ -1,5 +1,6 @@
 import PropTypes from "prop-types";
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
+import { ArrowLeft, QrCode } from "lucide-react";
 import "../styles/CompareForms.css";
 
 /* --------- helpers --------- */
@@ -53,74 +54,45 @@ function Cell({ value }) {
 Cell.propTypes = { value: PropTypes.any };
 
 /* --------- main (multi-prodotto) --------- */
-export default function CompareForms({ dataList, language, setShowCompare = () => {} }) {
-  // ✅ Calcolo automatico dell’altezza della hero
+export default function CompareForms({ dataList, language, setShowCompare = () => {}, onAddProduct = () => {} }) {
+
+  const railRef = useRef(null);
+  const sentinelRef = useRef(null);
+  const [railStuck, setRailStuck] = useState(false);
+  const [headerHeight, setHeaderHeight] = useState(0);
+
+  // Calcola l'altezza dell'header principale solo se è fixed (desktop)
   useEffect(() => {
-    function updateHeroHeight() {
-      const hero = document.querySelector(
-        ".hero, .main-hero, header.hero, #hero, .custom-header-image"
-      );
-      if (hero) {
-        const rect = hero.getBoundingClientRect();
-        const height = rect.height;
-        document.documentElement.style.setProperty("--hero-height", `${height}px`);
+    function measure() {
+      const mainHeader = document.querySelector(".main-header");
+      if (mainHeader) {
+        const pos = getComputedStyle(mainHeader).position;
+        setHeaderHeight(pos === "fixed" ? mainHeader.getBoundingClientRect().height : 0);
       } else {
-        document.documentElement.style.setProperty("--hero-height", "240px");
+        setHeaderHeight(0);
       }
     }
-
-    updateHeroHeight();
-    window.addEventListener("resize", updateHeroHeight);
-    return () => window.removeEventListener("resize", updateHeroHeight);
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
   }, []);
 
-  // ✅ Movimento dinamico dell'header su mobile (attacco perfetto in alto)
+  // Mobile sticky rail: usa IntersectionObserver su un sentinel element
   useEffect(() => {
-    const header = document.querySelector(".cmp-header");
-    const wrap = document.querySelector(".cmp-wrap");
-    if (!header || !wrap) return;
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
 
-    const updateHeaderPosition = () => {
-      const heroHeight =
-        parseInt(
-          getComputedStyle(document.documentElement).getPropertyValue("--hero-height")
-        ) || 0;
+    // rootMargin negativo in alto = il sentinel risulta "uscito" quando finisce sotto l'header
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setRailStuck(!entry.isIntersecting);
+      },
+      { threshold: 0, rootMargin: `-${headerHeight}px 0px 0px 0px` }
+    );
 
-      // ✅ Calcola l'altezza reale dell'header (dinamica in base al numero di prodotti)
-      const headerHeight = header.offsetHeight || 0;
-
-      const scrollY = window.scrollY;
-      const offset = Math.max(heroHeight - scrollY, 0);
-
-      // Sposta l'header sotto la hero finché si scorre
-      header.style.transform = `translateY(${offset}px)`;
-
-      // ✅ Usa l'altezza reale dell'header per il padding
-      const basePadding = heroHeight + headerHeight + 16; // 16px margine di sicurezza
-      if (offset <= 0) {
-        wrap.style.paddingTop = `${basePadding}px`;
-      } else {
-        // durante lo scroll riduce gradualmente il padding
-        wrap.style.paddingTop = `${basePadding - offset * 0.8}px`;
-      }
-    };
-
-    const handleScroll = () => {
-      if (window.innerWidth <= 640) updateHeaderPosition();
-      else {
-        header.style.transform = "";
-        wrap.style.paddingTop = "";
-      }
-    };
-
-    updateHeaderPosition();
-    window.addEventListener("scroll", handleScroll);
-    window.addEventListener("resize", handleScroll);
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-      window.removeEventListener("resize", handleScroll);
-    };
-  }, []);
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [headerHeight]);
 
   const products = (Array.isArray(dataList) ? dataList : []).filter(Boolean);
   if (products.length < 2) {
@@ -138,29 +110,58 @@ export default function CompareForms({ dataList, language, setShowCompare = () =
 
   return (
     <div className="cmp-wrap" style={{ "--cols": products.length }}>
-      {/* Header sticky su desktop, mobile sotto hero e sempre visibile */}
-      <header className="cmp-header">
+      {/* Pulsanti navigazione mobile (prima del titolo su mobile) */}
+      <div className="cmp-nav-mobile">
         <button
           type="button"
-          className="cmp-close"
-          aria-label="Chiudi confronto"
+          className="nav-btn nav-btn--back"
           onClick={() => setShowCompare(false)}
+          aria-label="Torna alla home"
         >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <path d="M18 6 6 18M6 6l12 12" />
-          </svg>
+          <ArrowLeft size={18} />
+          <span>Indietro</span>
         </button>
 
+        <button
+          type="button"
+          className="nav-btn nav-btn--primary"
+          onClick={onAddProduct}
+          aria-label="Aggiungi prodotto al confronto"
+        >
+          <QrCode size={18} />
+          <span>Aggiungi prodotto al confronto</span>
+        </button>
+      </div>
+
+      {/* Barra titolo con navigazione (solo desktop) */}
+      <div className="cmp-title-bar">
+        <button
+          type="button"
+          className="nav-btn nav-btn--back"
+          onClick={() => setShowCompare(false)}
+          aria-label="Torna alla home"
+        >
+          <ArrowLeft size={18} />
+          <span className="cmp-nav-btn-text">Indietro</span>
+        </button>
+
+        <h1 className="cmp-title">
+          Sostenibilità a confronto
+        </h1>
+
+        <button
+          type="button"
+          className="nav-btn nav-btn--primary"
+          onClick={onAddProduct}
+          aria-label="Aggiungi prodotto al confronto"
+        >
+          <QrCode size={18} />
+          <span className="cmp-nav-btn-text">Aggiungi prodotto al confronto</span>
+        </button>
+      </div>
+
+      {/* Header sticky su desktop */}
+      <header className="cmp-header">
         {/* Desktop header */}
         <div
           className="cmp-row cmp-row--head cmp-head-desktop"
@@ -173,16 +174,28 @@ export default function CompareForms({ dataList, language, setShowCompare = () =
             </div>
           ))}
         </div>
+      </header>
 
-        {/* Mobile header */}
-        <div className="cmp-head-rail" role="tablist" aria-label="Prodotti in confronto">
+      {/* Sentinel: quando esce dal viewport, titolo+rail diventano fixed */}
+      <div ref={sentinelRef} className="cmp-rail-sentinel" />
+
+      {/* Mobile: titolo + nomi prodotti — fixed sotto l'header principale durante lo scroll */}
+      <div
+        ref={railRef}
+        className={`cmp-head-rail${railStuck ? " cmp-head-rail--stuck" : ""}`}
+        style={railStuck ? { top: `${headerHeight}px` } : undefined}
+      >
+        <h1 className="cmp-title cmp-title--mobile">
+          Sostenibilità a confronto
+        </h1>
+        <div role="tablist" aria-label="Prodotti in confronto">
           {titles.map((t, i) => (
             <div className="cmp-head-pill" role="tab" key={`hp-${i}`} title={t}>
               {t}
             </div>
           ))}
         </div>
-      </header>
+      </div>
 
       {/* Tabella di confronto */}
       <div
@@ -253,6 +266,7 @@ CompareForms.propTypes = {
   dataList: PropTypes.array.isRequired,
   language: PropTypes.string.isRequired,
   setShowCompare: PropTypes.func,
+  onAddProduct: PropTypes.func,
 };
 
 

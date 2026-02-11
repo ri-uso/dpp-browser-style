@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react';
 import Scanner from './Scanner';
 import translations from "./Translations.json";
 import PropTypes from 'prop-types';
+import { ArrowLeft } from "lucide-react";
 import {getApiUrl} from '../utilities.jsx'
 
-function InputForm({ loadNewElement, language }) {
+function InputForm({ loadNewElement, language, openScanner = false, setOpenScanner = () => {} }) {
   /*
     batch_code: 'MG01S-A',
     item_code: 'MG01S',
@@ -37,6 +38,14 @@ function InputForm({ loadNewElement, language }) {
       setBtnLabel(translations[language].manual_input_text);
     }
   }, [language, formVisible]);
+
+  // Apri automaticamente lo scanner quando openScanner è true
+  useEffect(() => {
+    if (openScanner) {
+      setFormVisible(false);
+      setOpenScanner(false);
+    }
+  }, [openScanner, setOpenScanner]);
 
   const handleShowButtonClick = () => {
     setFormVisible(!formVisible);
@@ -106,7 +115,20 @@ function InputForm({ loadNewElement, language }) {
   </div>
 </div>
 
-        : <Scanner  handleShowButtonClick={handleShowButtonClick} btnLabel={btnLabel} loadNewElement={loadNewElement}/>
+        : (
+          <div className="scanner-view">
+            <div className="scanner-nav-bar">
+              <button
+                className="nav-btn nav-btn--back"
+                onClick={handleShowButtonClick}
+              >
+                <ArrowLeft size={18} />
+                <span>Indietro</span>
+              </button>
+            </div>
+            <Scanner handleShowButtonClick={handleShowButtonClick} btnLabel={btnLabel} loadNewElement={loadNewElement}/>
+          </div>
+        )
       }
     </section>
   )
@@ -114,6 +136,8 @@ function InputForm({ loadNewElement, language }) {
 InputForm.propTypes = {
   loadNewElement: PropTypes.func.isRequired,
   language: PropTypes.string.isRequired,
+  openScanner: PropTypes.bool,
+  setOpenScanner: PropTypes.func,
 };
 
 export default InputForm;

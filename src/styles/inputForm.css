@@ -24,16 +24,31 @@
   .input-form-section{
     grid-template-columns: 280px minmax(0, 1fr); /* QR fisso + form fluido */
     gap: clamp(24px, 4vw, 40px);
+    align-items: stretch; /* Allinea le colonne alla stessa altezza */
   }
 }
 
-/* --- Colonna QR: niente “card”, elementi nel flow --- */
+/* --- Colonna QR: niente "card", elementi nel flow --- */
 .input-form-section .qr-column{
   display:flex;
   flex-direction:column;
   align-items:center;
   text-align:center;
   margin: 0 auto;
+}
+
+/* Desktop: estendi la colonna QR per tutta l'altezza */
+@media (min-width: 900px){
+  .input-form-section .qr-column{
+    height: 100%;
+  }
+  .input-form-section .qr-column .qr-button-wrapper{
+    height: 100%;
+  }
+  .input-form-section .qr-column .btn-qr-unified{
+    height: 100%;
+    justify-content: center;
+  }
 }
 
 /* Spazio extra sotto su mobile (tra Scan me e il form) */

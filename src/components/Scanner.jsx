@@ -1,10 +1,14 @@
 import { Html5QrcodeScanner } from "html5-qrcode";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import PropTypes from 'prop-types';
 
 function Scanner({ loadNewElement }) {
+  const scannerRef = useRef(null);
+  const isMountedRef = useRef(true);
 
   useEffect(() => {
+    isMountedRef.current = true;
+
     const scanner = new Html5QrcodeScanner(
       'reader',
       {
@@ -12,10 +16,12 @@ function Scanner({ loadNewElement }) {
         fps: 10,
         rememberLastUsedCamera: true,
       },
-      false)
+      false);
+
+    scannerRef.current = scanner;
 
     function success(result) {
-      if (!result) return;
+      if (!result || !isMountedRef.current) return;
 
       // if there's no "?" but we see query‑style "=", insert it
       let fixed = result;
@@ -38,7 +44,7 @@ function Scanner({ loadNewElement }) {
       const swUrl       = new URL(decoded);
       // swUrl.host = "80.211.143.55"
       // swUrl.pathname = "/browser-protocol/get_batch_details/"
-      const hostAndPath = `${swUrl.host}${swUrl.pathname}`.replace(/\/$/, ""); 
+      const hostAndPath = `${swUrl.host}${swUrl.pathname}`.replace(/\/$/, "");
       // → "80.211.143.55/browser-protocol/get_batch_details"
 
       // 3) Build your final URL under the -omega host
@@ -47,23 +53,27 @@ function Scanner({ loadNewElement }) {
 
       // 4) Fire off your loader and tear down
       loadNewElement({ api_url: finalUrl });
-      scanner.clear().catch(e => console.error("clear failed", e));
+      if (isMountedRef.current) {
+        scanner.clear().catch(e => console.error("clear failed", e));
+      }
     }
 
-  
+
     function error(error){
       console.warn(error);
     }
-  
+
     scanner.render(success, error);
 
     return () => {
-      console.log("Cleaning up scanner...");
-       scanner.clear().catch(error => {
-         console.error("Failed to clear html5-qrcode scanner on unmount.", error);
-       });
+      isMountedRef.current = false;
+      if (scannerRef.current) {
+        scannerRef.current.clear().catch(() => {
+          // Ignore errors during cleanup - DOM elements may already be removed
+        });
+      }
     };
-  
+
   }, [loadNewElement]);
 
   return (

@@ -8,11 +8,9 @@ import SelectListPopup from "./components/SelectListPopup";
 import ProductChatModal from "./components/ProductChatModal";
 import translations from "./components/Translations.json";
 import PropTypes from 'prop-types';
-import { useEffect, useState } from "react";
-import { Columns2, MessageCircle } from "lucide-react"; // icona da lucide-react
-
+import { useEffect } from "react";
+import { Columns2, ArrowLeft, QrCode } from "lucide-react";
 import AOS from 'aos';
-import { ArrowLeft } from "lucide-react";
 
 function MainPage({
   data,
@@ -30,7 +28,9 @@ function MainPage({
   handleCloseSelectPopup,
   handleConfirmCompare,
   showOutput,
-  setShowOutput
+  setShowOutput,
+  openScanner,
+  setOpenScanner
 }) {
   const [showChatModal, setShowChatModal] = useState(false);
 
@@ -49,14 +49,27 @@ function MainPage({
 
           {data && (
             <>
+              {/* Barra navigazione prodotto */}
+              <div className="product-nav-bar">
+                <button
+                  className="nav-btn nav-btn--back"
+                  onClick={() => setShowOutput(false)}
+                >
+                  <ArrowLeft size={18} />
+                  <span>Indietro</span>
+                </button>
 
-              <button
-                className="btn-back mb-3"
-                onClick={() => setShowOutput(false)}
-              >
-                <ArrowLeft size={24} />
-              </button>
-
+                <button
+                  className="nav-btn nav-btn--primary"
+                  onClick={() => {
+                    setShowOutput(false);
+                    setOpenScanner(true);
+                  }}
+                >
+                  <QrCode size={18} />
+                  <span>Scansiona un altro prodotto</span>
+                </button>
+              </div>
 
               <div className="forms-list-wrapper" data-aos="fade-right">
                 <h2 className="nome-prodotto mb-4">{data.summary.item_name}</h2>
@@ -77,7 +90,7 @@ function MainPage({
           )}
         </>
       ) : (
-        <InputForm loadNewElement={loadNewElement} language={language} />
+        <InputForm loadNewElement={loadNewElement} language={language} openScanner={openScanner} setOpenScanner={setOpenScanner} />
       )}
 
       {showOutput && data && (
@@ -169,6 +182,8 @@ MainPage.propTypes = {
   handleConfirmCompare: PropTypes.func.isRequired,
   showOutput: PropTypes.bool.isRequired,
   setShowOutput: PropTypes.func.isRequired,
+  openScanner: PropTypes.bool,
+  setOpenScanner: PropTypes.func,
 };
 
 export default MainPage;

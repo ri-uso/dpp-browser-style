@@ -36,8 +36,8 @@ export const logoConfig = {
     footer: "/logos/Footer_RiUso.png"
   },
     "staffjersey": {
-    header: "/logos/Header_RiUso.png",
-    footer: "/logos/Footer_RiUso.png"
+    header: "/logos/Header_CarpiFasionSystem.jpg",
+    footer: "/logos/Footer_CentroQualitaTessile_CarpiFashionSystem.png"
   },
     "aziendaprova": {
     header: "/logos/Header_RiUso.png",
