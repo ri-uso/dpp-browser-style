@@ -1,7 +1,25 @@
-# dpp_web_app
+# DPP Browser
 
+A React web app for reading and comparing **Digital Product Passports (DPP)** — structured data sheets that describe the environmental and technical properties of a product throughout its lifecycle.
 
-**Description:** This is a React Web app that lets you read Digital Product Passports.
+## Features
+
+- **Barcode / QR scanner** — scan a product code directly from the camera
+- **Product details** — view the full DPP data sheet for a product
+- **Product comparison** — compare two or more products side by side
+- **Multi-language support** — language selector built in
+- **Authentication** — login via Firebase Auth
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| UI | React 18 + Bootstrap 5 |
+| Routing | React Router DOM 7 |
+| Build | Vite 6 |
+| Backend | Firebase (Firestore + Auth) |
+| Scanner | html5-qrcode / ZXing |
+| Deploy | Vercel |
 
 **Getting Started:**
 
