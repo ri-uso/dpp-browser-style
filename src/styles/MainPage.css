@@ -24,7 +24,7 @@ margin-bottom: 2rem;
 margin: 2rem;
 }
 .compare-btn {
-     background: linear-gradient(193deg, #40bfb4, #a50ccba6);;
+    background: var(--grad, linear-gradient(193deg, #40bfb4, #a50ccba6));
     color: white;
     border: none;
     padding: 12px 24px;
@@ -38,14 +38,13 @@ margin: 2rem;
     justify-content: center;
     margin: 1rem;
     gap: 8px;
-
 }
 
 .compare-btn:hover {
   background: transparent;
   transform: translateY(-2px);
-  box-shadow: 0 6px 14px #40bfb4;
-  color: #40bfb4;
+  box-shadow: 0 6px 14px var(--logo-500, #40bfb4);
+  color: var(--logo-500, #40bfb4);
 }
 
 .compare-btn:active {

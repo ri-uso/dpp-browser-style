@@ -7,7 +7,7 @@
   --of-radius: 12px;
   --of-shadow: var(--shadow-sm, 0 1px 2px rgba(0,0,0,.06));
   --of-hover: #fafafa;
-  --of-accent-grad: linear-gradient(90deg, #8892c4 0%, #69a8ba 50%, #40b5a4 100%);
+  --of-accent-grad: var(--grad, linear-gradient(90deg, #8892c4 0%, #69a8ba 50%, #40b5a4 100%));
 }
 
 @keyframes of-fade {

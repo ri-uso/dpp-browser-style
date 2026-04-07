@@ -102,7 +102,7 @@
 .input-form-section .qr-column .btn-qr-unified .btn-qr-text{
   display:inline-block;
   padding: 0.5rem 1rem;
-  background: var(--grad);
+  background: var(--btn-bg, var(--grad));
   color:#000;
   font-weight:700;
   font-size: clamp(0.9rem, 2vw, 1rem);
@@ -176,15 +176,15 @@
 .input-form-section .form-control:hover,
 .input-form-section .form-control:focus{
   outline:none;
-  border-color:#40bfb4;
-  box-shadow:0 0 0 4px color-mix(in srgb, #40bfb4 22%, transparent);
+  border-color:var(--logo-500, #40bfb4);
+  box-shadow:0 0 0 4px color-mix(in srgb, var(--logo-500, #40bfb4) 22%, transparent);
 }
 
 /* Bottone INVIA: gradiente compatto e centrato */
 .input-form-section .form-column > .btn-primary{
   margin:.75rem auto 0;
   align-self:center;
-  background: var(--grad);
+  background: var(--btn-bg, var(--grad));
   color:#000;
   border: 2px solid #000;
   border-radius:12px;

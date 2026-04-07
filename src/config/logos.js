@@ -83,6 +83,27 @@ export const logoConfig = {
     header: "/logos/Header_Staff_Jersey_Just_Fashion.png",
     footer: "/logos/Footer_Staff_Jersey_Just_Fashion.png"
   },
+  "biotex": {
+    header: "/logos/Header_logo_Biotex.png",
+    footer: "/logos/Footer_Biotex_cqt.jpg",
+    colors: {
+      brand:       '#c8102e',
+      brand600:    '#a50c25',
+      logo500:     '#c8102e',
+      logo400:     '#e0294a',
+      logo300:     '#f06070',
+      logo100:     '#fce8ec',
+      grad:        'linear-gradient(90deg, #1a1a2e 0%, #8b0000 50%, #c8102e 100%)',
+      gradNav:     'linear-gradient(135deg, #1a1a2e 0%, #8b0000 50%, #c8102e 100%)',
+      shadowBrand: '0 4px 14px rgba(200, 16, 46, 0.4)',
+      cmpBrand1:   '#c8102e',
+      cmpBrand2:   '#8b0000',
+      cmpBrand3:   '#e0294a',
+      btnBg:       '#c8102e',
+    }
+  },
+
+  
 
   // Example for adding new company:
   // azienda2: {  //Company code must be written here in lowercase
@@ -101,4 +122,40 @@ export const defaultCompany = 'dpp';
  */
 export const getLogos = (companyCode) => {
   return logoConfig[companyCode] || logoConfig[defaultCompany];
+};
+
+/**
+ * Apply company brand colors as CSS custom properties on <html>.
+ * If the company has no `colors` defined, resets to the default CSS values.
+ * @param {string} companyCode - Company code identifier
+ */
+export const applyCompanyColors = (companyCode) => {
+  const config = logoConfig[companyCode] || logoConfig[defaultCompany];
+  const root = document.documentElement;
+
+  const VARS = [
+    '--brand', '--brand-600', '--logo-500', '--logo-400', '--logo-300', '--logo-100',
+    '--grad', '--grad-nav-primary', '--shadow-brand',
+    '--cmp-brand1', '--cmp-brand2', '--cmp-brand3',
+    '--btn-bg',
+  ];
+
+  if (config.colors) {
+    const c = config.colors;
+    root.style.setProperty('--brand',            c.brand);
+    root.style.setProperty('--brand-600',        c.brand600);
+    root.style.setProperty('--logo-500',         c.logo500);
+    root.style.setProperty('--logo-400',         c.logo400);
+    root.style.setProperty('--logo-300',         c.logo300);
+    root.style.setProperty('--logo-100',         c.logo100);
+    root.style.setProperty('--grad',             c.grad);
+    root.style.setProperty('--grad-nav-primary', c.gradNav);
+    root.style.setProperty('--shadow-brand',     c.shadowBrand);
+    root.style.setProperty('--cmp-brand1',       c.cmpBrand1);
+    root.style.setProperty('--cmp-brand2',       c.cmpBrand2);
+    root.style.setProperty('--cmp-brand3',       c.cmpBrand3);
+    root.style.setProperty('--btn-bg',           c.btnBg);
+  } else {
+    VARS.forEach(v => root.style.removeProperty(v));
+  }
 };

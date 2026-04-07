@@ -3,13 +3,13 @@
   --muted: #667085;
   --divider: #eef2f6;
 
-  --brand1: #8892c4;
-  --brand2: #69a8ba;
-  --brand3: #40b5a4;
+  --brand1: var(--cmp-brand1, #8892c4);
+  --brand2: var(--cmp-brand2, #69a8ba);
+  --brand3: var(--cmp-brand3, #40b5a4);
 
-  --colA: #8892c4;
-  --colB: #40b5a4;
-  --colC: #69a8ba;
+  --colA: var(--cmp-brand1, #8892c4);
+  --colB: var(--cmp-brand3, #40b5a4);
+  --colC: var(--cmp-brand2, #69a8ba);
 
   --accent-bg: 35%;
   --accent-inset: 28%;
@@ -44,7 +44,7 @@
   font-weight: 800;
   margin: 0;
   padding: 0.5rem 1rem;
-  background: linear-gradient(135deg, #8892c4 0%, #69a8ba 50%, #40b5a4 100%);
+  background: var(--grad-nav-primary, linear-gradient(135deg, #8892c4 0%, #69a8ba 50%, #40b5a4 100%));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;

@@ -127,13 +127,13 @@ p{margin:0 0 1rem;color:var(--text)}
 }
 
 .nav-btn--primary {
-  background: linear-gradient(135deg, #8892c4 0%, #69a8ba 50%, #40b5a4 100%);
+  background: var(--grad-nav-primary, linear-gradient(135deg, #8892c4 0%, #69a8ba 50%, #40b5a4 100%));
   color: #fff;
   border: none;
 }
 
 .nav-btn--primary:hover {
-  box-shadow: 0 4px 14px rgba(64, 181, 164, 0.4);
+  box-shadow: var(--shadow-brand, 0 4px 14px rgba(64, 181, 164, 0.4));
 }
 
 /* Barra navigazione prodotto */
@@ -196,7 +196,7 @@ p{margin:0 0 1rem;color:var(--text)}
   pointer-events: none;
 
   /* linear gradient */
-  background: linear-gradient(90deg, #8892c4 0%, #69a8ba 50%, #40b5a4 100%);
+  background: var(--grad, linear-gradient(90deg, #8892c4 0%, #69a8ba 50%, #40b5a4 100%));
 
 }
 
@@ -246,7 +246,7 @@ input.form-control:focus,select.form-select:focus,textarea.form-control:focus{
 .custom-footer{
   width:100%;text-align:center;padding:1rem 0;background:#fff;margin-top:2rem;
 }
-.footer-image{max-width:100%;height:auto;object-fit:contain;padding:1rem}
+.footer-image{display:block;margin:0 auto;max-width:100%;height:auto;object-fit:contain;padding:1rem}
 
 /* ---------- Utilities ---------- */
 .hidden{display:none!important}

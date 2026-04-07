@@ -5,6 +5,7 @@ import App from "./App";
 import LoginPage from './LoginPage';
 import Footer from "./components/Footer.jsx"
 import Header from "./components/Header";
+import { applyCompanyColors } from './config/logos.js';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 const MainRouterContent = () => {
@@ -14,9 +15,9 @@ const MainRouterContent = () => {
 
   useEffect(() => {
     const companyCodeParam = searchParams.get('company_code');
-    if (companyCodeParam) {
-      setCompanyCode(companyCodeParam.toLowerCase());
-    }
+    const code = companyCodeParam ? companyCodeParam.toLowerCase() : 'dpp';
+    setCompanyCode(code);
+    applyCompanyColors(code);
   }, [searchParams]);
 
   return (
