@@ -85,8 +85,8 @@ export const logoConfig = {
     footer: "/logos/Footer_Staff_Jersey_Just_Fashion.png"
   },
   "REAM": {
-    header: "logos/Header_REAM.png",
-    footer: "logos/Footer_REAM.png"
+    header: "/logos/Header_REAM.png",
+    footer: "/logos/Footer_REAM.png"
   },
   "biotex": {
     header: "/logos/Header_logo_Biotex.png",
