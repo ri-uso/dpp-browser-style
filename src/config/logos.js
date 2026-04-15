@@ -84,7 +84,7 @@ export const logoConfig = {
     header: "/logos/Header_Staff_Jersey_Just_Fashion.png",
     footer: "/logos/Footer_Staff_Jersey_Just_Fashion.png"
   },
-  "REAM": {
+  "ream": {
     header: "/logos/Header_REAM.png",
     footer: "/logos/Footer_REAM.png"
   },
