@@ -53,7 +53,8 @@ export const logoConfig = {
   },
   "utildeco-example": {
     header: "/logos/Header_Utildeco_Vinnovate.png",
-    footer: "/logos/Footer_Utildeco_Vinnovate.png"
+    footer: "/logos/Footer_Utildeco_Vinnovate.png",
+    accessibilityWidget: true
   },
     "souvenirclubbingsrl": {
     header: "/logos/Header_Centergross.png",
@@ -82,6 +83,10 @@ export const logoConfig = {
   "staffjerseyjf": {
     header: "/logos/Header_Staff_Jersey_Just_Fashion.png",
     footer: "/logos/Footer_Staff_Jersey_Just_Fashion.png"
+  },
+  "REAM": {
+    header: "logos/Header_REAM.png",
+    footer: "logos/Footer_REAM.png"
   },
   "biotex": {
     header: "/logos/Header_logo_Biotex.png",
@@ -158,4 +163,14 @@ export const applyCompanyColors = (companyCode) => {
   } else {
     VARS.forEach(v => root.style.removeProperty(v));
   }
+};
+
+/**
+ * Returns true if the company has opted in to the accessibility widget.
+ * @param {string} companyCode - Company code identifier
+ * @returns {boolean}
+ */
+export const hasAccessibilityWidget = (companyCode) => {
+  const config = logoConfig[companyCode] ?? logoConfig[defaultCompany];
+  return config?.accessibilityWidget === true;
 };

@@ -88,24 +88,24 @@ function InputForm({ loadNewElement, language, openScanner = false, setOpenScann
   <div className="form-column">
     <form>
       <div className="form-group">
-        <label>{translations[language].batch_code_text}</label>
-        <input type="text" className="form-control" name="batch_code" autoComplete="on" onChange={handleFormChange} />
+        <label htmlFor="batch_code">{translations[language].batch_code_text}</label>
+        <input id="batch_code" type="text" className="form-control" name="batch_code" autoComplete="on" onChange={handleFormChange} />
       </div>
       <div className="form-group">
-        <label>{translations[language].item_code_text}</label>
-        <input type="text" className="form-control" name="item_code" autoComplete="on" onChange={handleFormChange} />
+        <label htmlFor="item_code">{translations[language].item_code_text}</label>
+        <input id="item_code" type="text" className="form-control" name="item_code" autoComplete="on" onChange={handleFormChange} />
       </div>
       <div className="form-group">
-        <label>{translations[language].productfamily_code_text}</label>
-        <input type="text" className="form-control" name="productfamily_code" autoComplete="on" onChange={handleFormChange} />
+        <label htmlFor="productfamily_code">{translations[language].productfamily_code_text}</label>
+        <input id="productfamily_code" type="text" className="form-control" name="productfamily_code" autoComplete="on" onChange={handleFormChange} />
       </div>
       <div className="form-group">
-        <label>{translations[language].company_code_text}</label>
-        <input type="text" className="form-control" name="company_code" autoComplete="on" onChange={handleFormChange} />
+        <label htmlFor="company_code">{translations[language].company_code_text}</label>
+        <input id="company_code" type="text" className="form-control" name="company_code" autoComplete="on" onChange={handleFormChange} />
       </div>
       <div className="form-group">
-        <label>URL</label>
-        <input type="text" className="form-control" name="url" autoComplete="on" onChange={handleFormChange} />
+        <label htmlFor="url">URL</label>
+        <input id="url" type="text" className="form-control" name="url" autoComplete="on" onChange={handleFormChange} />
       </div>
     </form>
 

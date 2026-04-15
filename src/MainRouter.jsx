@@ -5,7 +5,7 @@ import App from "./App";
 import LoginPage from './LoginPage';
 import Footer from "./components/Footer.jsx"
 import Header from "./components/Header";
-import { applyCompanyColors } from './config/logos.js';
+import { applyCompanyColors, hasAccessibilityWidget } from './config/logos.js';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 const MainRouterContent = () => {
@@ -18,6 +18,22 @@ const MainRouterContent = () => {
     const code = companyCodeParam ? companyCodeParam.toLowerCase() : 'dpp';
     setCompanyCode(code);
     applyCompanyColors(code);
+
+    const SCRIPT_ID = 'sienna-accessibility-widget';
+    const existing = document.getElementById(SCRIPT_ID);
+
+    if (hasAccessibilityWidget(code)) {
+      if (!existing) {
+        const script = document.createElement('script');
+        script.id = SCRIPT_ID;
+        script.src = 'https://cdn.jsdelivr.net/npm/sienna-accessibility@latest/dist/sienna-accessibility.umd.js';
+        script.setAttribute('data-asw-position', 'bottom-right');
+        script.defer = true;
+        document.body.appendChild(script);
+      }
+    } else {
+      existing?.remove();
+    }
   }, [searchParams]);
 
   return (
