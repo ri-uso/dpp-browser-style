@@ -1,10 +1,12 @@
 import { Html5QrcodeScanner } from "html5-qrcode";
 import { useEffect, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
 import PropTypes from 'prop-types';
 
 function Scanner({ loadNewElement }) {
   const scannerRef = useRef(null);
   const isMountedRef = useRef(true);
+  const [, setSearchParams] = useSearchParams();
 
   useEffect(() => {
     isMountedRef.current = true;
@@ -51,7 +53,12 @@ function Scanner({ loadNewElement }) {
       // const appBase = "https://dpp-browser-omega.vercel.app";
       const finalUrl = `https://${hostAndPath}/${batch}/${item}/${family}/${company}/${lang}`;
 
-      // 4) Fire off your loader and tear down
+      // 4) Update company_code in URL so MainRouter re-applies brand colors
+      if (company) {
+        setSearchParams({ company_code: company });
+      }
+
+      // 5) Fire off your loader and tear down
       loadNewElement({ api_url: finalUrl });
       if (isMountedRef.current) {
         scanner.clear().catch(e => console.error("clear failed", e));
