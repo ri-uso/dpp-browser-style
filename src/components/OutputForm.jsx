@@ -1,6 +1,70 @@
 import PropTypes from 'prop-types';
+import { ExternalLink } from 'lucide-react';
+import { FaFilePdf, FaFileAlt } from 'react-icons/fa';
 import translations from "./Translations.json";
 import "../styles/outputForm.css";
+
+function getYouTubeId(url) {
+  const match = url?.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/);
+  return match ? match[1] : null;
+}
+
+function renderUrlContent(item) {
+  const urlType = item.value_url_type?.toUpperCase();
+  const url = item.value_url;
+
+  if (urlType === "IMAGE") {
+    return (
+      <img src={url} alt={item.label ?? "image"} className="img-fluid" />
+    );
+  }
+
+  if (urlType === "VIDEO") {
+    const ytId = getYouTubeId(url);
+    if (ytId) {
+      return (
+        <div className="video-preview">
+          <iframe
+            src={`https://www.youtube.com/embed/${ytId}`}
+            title={item.label ?? "video"}
+            allowFullScreen
+            className="video-iframe"
+          />
+        </div>
+      );
+    }
+    return (
+      <video controls className="video-preview-direct">
+        <source src={url} />
+      </video>
+    );
+  }
+
+  if (urlType === "P" || urlType === "PDF") {
+    return (
+      <a href={url} target="_blank" rel="noopener noreferrer" className="file-link file-link--pdf" aria-label="Apri PDF" title="Apri PDF">
+        <FaFilePdf className="file-link__icon" />
+        <ExternalLink className="file-link__arrow" aria-hidden="true" />
+      </a>
+    );
+  }
+
+  if (urlType === "DOC" || urlType === "DOCUMENT") {
+    return (
+      <a href={url} target="_blank" rel="noopener noreferrer" className="file-link file-link--doc" aria-label="Apri documento" title="Apri documento">
+        <FaFileAlt className="file-link__icon" />
+        <ExternalLink className="file-link__arrow" aria-hidden="true" />
+      </a>
+    );
+  }
+
+  return (
+    <a href={url} target="_blank" rel="noopener noreferrer" className="external-link">
+      <span>Link</span>
+      <ExternalLink size={13} className="link-icon" aria-hidden="true" />
+    </a>
+  );
+}
 
 function OutputForm({ form, data_list = [], language = "IT" }) {
   // fields sicuri
@@ -18,10 +82,12 @@ function OutputForm({ form, data_list = [], language = "IT" }) {
       : undefined))
     .filter(Boolean);
 
-  // classi per il valore (se la lingua non coincide, aggiungo una classe di fallback)
+  // classi per il valore
   const valueClassNames = orderedData.map(e => {
     const match = (e?.requested_language || "").toLowerCase() === String(language).toLowerCase();
-    return `value py-2${match ? "" : " value--fallback"}`;
+    const urlType = e?.value_url_type?.toUpperCase();
+    const isFileLink = urlType === "P" || urlType === "PDF" || urlType === "DOC" || urlType === "DOCUMENT";
+    return `value py-2${match ? "" : " value--fallback"}${isFileLink ? " value--file" : ""}`;
   });
 
   const formNameClass = "mb-3 mt-4 text-start";
@@ -35,28 +101,12 @@ function OutputForm({ form, data_list = [], language = "IT" }) {
 
         <div className="output-content">
           {orderedData.map((item, index) => {
-            const linkText = translations[langKey]?.link_text || "Open link";
             const valueType = item.value_type?.toLowerCase();
 
             // Determina il contenuto in base al tipo
             let valueContent;
             if (valueType === "url" || item.value_url) {
-              // Tipo URL: link o immagine
-              if (item.value_url_type === "image") {
-                valueContent = (
-                  <img
-                    src={item.value_url}
-                    alt={item.label ?? "image"}
-                    className="img-fluid"
-                  />
-                );
-              } else {
-                valueContent = (
-                  <a href={item.value_url} target="_blank" rel="noopener noreferrer" className="external-link">
-                    {linkText} <span className="link-icon" aria-hidden="true">↗</span>
-                  </a>
-                );
-              }
+              valueContent = renderUrlContent(item);
             } else if (valueType === "value") {
               // Tipo Value: solo numero + unità di misura
               valueContent = (

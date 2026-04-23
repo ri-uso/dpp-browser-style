@@ -71,7 +71,7 @@ function MainPage({
               <div className="forms-list-wrapper" data-aos="fade-right">
                 <h2 className="nome-prodotto mb-4">{data.summary.item_name}</h2>
                 <div className="forms-list">
-                  {data && data.forms.map((form, index) => (
+                  {data && data.forms.filter(f => Array.isArray(f.fields)).map((form, index) => (
                     <div className="output-row" key={index}>
                       <OutputForm
                         form={form}

@@ -150,6 +150,79 @@
   max-width: 100%; height: auto; display: block; border-radius: 8px;
 }
 
+/* video preview */
+.output-form .video-preview{
+  position: relative;
+  width: 100%;
+  padding-top: 56.25%; /* 16:9 */
+  border-radius: 8px;
+  overflow: hidden;
+}
+.output-form .video-iframe{
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+.output-form .video-preview-direct{
+  width: 100%;
+  max-width: 100%;
+  border-radius: 8px;
+  display: block;
+}
+
+/* file links (PDF, DOC) — bottone icona */
+.output-form .value--file{
+  display: flex;
+  align-items: center;
+}
+.output-form .file-link{
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-decoration: none;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1.5px solid currentColor;
+  background: transparent;
+  cursor: pointer;
+  transition: background .18s ease, transform .15s ease, box-shadow .18s ease;
+}
+.output-form .file-link__icon{
+  font-size: 1.9rem;
+  line-height: 1;
+}
+.output-form .file-link__arrow{
+  width: 11px;
+  height: 11px;
+  opacity: 0.55;
+}
+.output-form .file-link:hover,
+.output-form .file-link:focus-visible{
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,.12);
+}
+.output-form .file-link:focus-visible{
+  outline: none;
+  box-shadow:
+    0 0 0 3px rgba(255,255,255,.9),
+    0 0 0 6px rgba(37, 99, 235, 0.35);
+}
+.output-form .file-link--pdf{
+  color: #e53e3e;
+}
+.output-form .file-link--pdf:hover{
+  background: rgba(229, 62, 62, 0.06);
+}
+.output-form .file-link--doc{
+  color: #3b82f6;
+}
+.output-form .file-link--doc:hover{
+  background: rgba(59, 130, 246, 0.06);
+}
+
 /* list */
 .output-form .output-list{
   margin: .25rem 0 0; padding-left: 1.1rem;
@@ -158,9 +231,10 @@
   list-style: disc; font-size: .95rem; color: var(--of-text);
 }
 
-@media (max-width: 600px){
+@media (max-width: 899px){
   .output-form .output-item .label{ font-size: .76rem; }
   .output-form .output-item .value{ font-size: .94rem; }
+  .output-form .value--file{ justify-content: center; }
 }
 
 .output-form .output-item,
