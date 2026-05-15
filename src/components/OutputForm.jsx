@@ -9,13 +9,21 @@ function getYouTubeId(url) {
   return match ? match[1] : null;
 }
 
+function getDirectImageUrl(url) {
+  const driveMatch = url?.match(/drive\.google\.com\/file\/d\/([^/]+)/);
+  if (driveMatch) {
+    return `https://drive.google.com/uc?export=view&id=${driveMatch[1]}`;
+  }
+  return url;
+}
+
 function renderUrlContent(item) {
   const urlType = item.value_url_type?.toUpperCase();
   const url = item.value_url;
 
   if (urlType === "IMAGE") {
     return (
-      <img src={url} alt={item.label ?? "image"} className="img-fluid" />
+      <img src={getDirectImageUrl(url)} alt={item.label ?? "image"} className="img-fluid" />
     );
   }
 
