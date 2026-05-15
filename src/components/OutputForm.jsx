@@ -10,9 +10,9 @@ function getYouTubeId(url) {
 }
 
 function getDirectImageUrl(url) {
-  const driveMatch = url?.match(/drive\.google\.com\/file\/d\/([^/]+)/);
+  const driveMatch = url?.match(/drive\.google\.com\/file\/d\/([^/?]+)/);
   if (driveMatch) {
-    return `https://drive.google.com/uc?export=view&id=${driveMatch[1]}`;
+    return `https://lh3.googleusercontent.com/d/${driveMatch[1]}`;
   }
   return url;
 }
