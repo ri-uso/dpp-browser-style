@@ -88,6 +88,10 @@ export const logoConfig = {
     header: "/logos/Header_REAM.png",
     footer: "/logos/Footer_REAM.png"
   },
+  "crea-si": {
+    header: "/logos/Header Crea-si.jpg",
+    footer: "/logos/Footer Crea-si.jpg"
+  },
   "biotex": {
     header: "/logos/Header_logo_Biotex.png",
     footer: "/logos/Footer_Biotex_cqt.jpg",
