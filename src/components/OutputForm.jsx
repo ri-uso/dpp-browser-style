@@ -2,19 +2,12 @@ import PropTypes from 'prop-types';
 import { ExternalLink } from 'lucide-react';
 import { FaFilePdf, FaFileAlt } from 'react-icons/fa';
 import translations from "./Translations.json";
+import { getDirectImageUrl } from '../utilities.jsx';
 import "../styles/outputForm.css";
 
 function getYouTubeId(url) {
   const match = url?.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/);
   return match ? match[1] : null;
-}
-
-function getDirectImageUrl(url) {
-  const driveMatch = url?.match(/drive\.google\.com\/file\/d\/([^/?]+)/);
-  if (driveMatch) {
-    return `https://lh3.googleusercontent.com/d/${driveMatch[1]}`;
-  }
-  return url;
 }
 
 function renderUrlContent(item) {

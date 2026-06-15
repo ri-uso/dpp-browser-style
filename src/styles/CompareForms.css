@@ -23,6 +23,194 @@
   overflow: visible;
 }
 
+/* ── Sezione linked batches ── */
+.cmp-linked-col {
+  padding-block: 8px;
+}
+
+.cmp-linked-simple {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.cmp-linked-simple__item {
+  border-bottom: 1px solid var(--divider, #eef2f6);
+  padding: 0.3rem 0;
+}
+
+.cmp-linked-simple__item:last-child {
+  border-bottom: none;
+}
+
+.cmp-linked-simple__btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--brand3, #40b5a4);
+  text-align: inherit;
+  width: 100%;
+  transition: opacity 0.15s ease;
+}
+
+.cmp-linked-simple__btn:hover {
+  opacity: 0.7;
+  text-decoration: underline;
+}
+
+/* ── Sezione azienda ── */
+.cmp-company-icon {
+  color: var(--muted, #667085);
+  margin-top: 0.5rem;
+}
+
+.cmp-company-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding-block: 8px;
+}
+
+.cmp-company-name {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.cmp-company-field {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.78rem;
+  color: var(--muted, #667085);
+  text-decoration: none;
+}
+
+.cmp-company-link:hover {
+  color: var(--brand3, #40b5a4);
+  text-decoration: underline;
+}
+
+/* ── Cella summary (batch / articolo / famiglia) ── */
+.cmp-summary-cell {
+  /* nessun flex: i figli ereditano text-align del parent (left/center/right) */
+}
+
+.cmp-summary-name {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #0f172a;
+  margin-bottom: 0.25rem;
+}
+
+.cmp-summary-desc {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--muted, #667085);
+  line-height: 1.4;
+  margin-top: 0.2rem;
+}
+
+.cmp-summary-meta {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--muted, #667085);
+  font-style: italic;
+  margin-top: 0.1rem;
+}
+
+.cmp-summary-code {
+  display: block;
+  font-size: 0.78rem;
+  font-family: monospace;
+  color: var(--muted, #667085);
+  margin-top: 0.15rem;
+}
+
+/* ── Sezione LOGO ── */
+.cmp-section--logo .cmp-logo-col {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0.75rem 0;
+}
+
+.cmp-logo-img {
+  max-height: 60px;
+  max-width: 160px;
+  object-fit: contain;
+}
+
+/* ── Sezione #HEADER ── */
+.cmp-section--header {
+  position: sticky;
+  z-index: 8;
+  background: var(--bg, #fff);
+  border-bottom: 2px solid var(--divider, #eef2f6);
+}
+
+.cmp-row--header .cmp-cell {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text, #111827);
+}
+
+/* ── Chip generici (usati in summary cell e linked cards) ── */
+.cmp-prod-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.cmp-prod-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.66rem;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.cmp-prod-chip--batch {
+  background: #fef3c7;
+  color: #92400e;
+  border-color: #fde68a;
+}
+
+.cmp-prod-chip--item {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border-color: #bfdbfe;
+}
+
+.cmp-prod-chip--family {
+  background: var(--logo-100, #f0fdfb);
+  color: var(--logo-600, #0f766e);
+  border-color: var(--logo-300, #99f6e4);
+}
+
+.cmp-prod-company {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.66rem;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+  background: #f3f4f6;
+  color: var(--muted, #667085);
+  white-space: nowrap;
+}
+
 /* Barra titolo con navigazione */
 .cmp-title-bar {
   position: relative;
@@ -113,12 +301,9 @@
   background: var(--bg);
 }
 .cmp-head-col {
-  font-weight: 800;
   text-align: center;
   padding-block: 10px;
-  white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 /* Sezione + titolo */

@@ -1,4 +1,12 @@
 
+export function getDirectImageUrl(url) {
+  const driveMatch = url?.match(/drive\.google\.com\/file\/d\/([^/?]+)/);
+  if (driveMatch) {
+    return `https://lh3.googleusercontent.com/d/${driveMatch[1]}`;
+  }
+  return url;
+}
+
 export function getApiUrl (url, batch_code, item_code, productfamily_code, company_code, language) {
   let api_url = `${url}/browser-protocol/get_batch_details/${batch_code}/${item_code}/${productfamily_code}/${company_code}/${language}/?format=json`;
   if (!api_url.startsWith("https://")) {

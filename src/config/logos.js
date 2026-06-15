@@ -39,10 +39,6 @@ export const logoConfig = {
     header: "/logos/Header_RiUso.png",
     footer: "/logos/Footer_RiUso.png"
   },
-    "aziendaprova": {
-    header: "/logos/Header_RiUso.png",
-    footer: "/logos/Footer_RiUso.png"
-  },
     "bottonificiosrl": {
     header: "/logos/Header_RiUso.png",
     footer: "/logos/Footer_RiUso.png"
@@ -130,7 +126,7 @@ export const defaultCompany = 'dpp';
  * @returns {object} Object with header and footer logo paths
  */
 export const getLogos = (companyCode) => {
-  return logoConfig[companyCode] || logoConfig[defaultCompany];
+  return logoConfig[companyCode] ?? null;
 };
 
 /**

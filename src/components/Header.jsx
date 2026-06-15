@@ -47,16 +47,18 @@ function Header({ setLanguage, language, companyCode }) {
   return (
     <header className="main-header">
 
-      <div className="custom-header-image">
-        <Link to="/">
-          <img
-            src={logos.header}
-            alt="Header DPP"
-            className="header-custom-img"
-            style={{ cursor: "pointer" }}
-          />
-        </Link>
-      </div>
+      {logos?.header && (
+        <div className="custom-header-image">
+          <Link to="/">
+            <img
+              src={logos.header}
+              alt="Header DPP"
+              className="header-custom-img"
+              style={{ cursor: "pointer" }}
+            />
+          </Link>
+        </div>
+      )}
    
       
         <div className='lingue-login'>

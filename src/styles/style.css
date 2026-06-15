@@ -149,6 +149,7 @@ p{margin:0 0 1rem;color:var(--text)}
 @media (max-width: 640px) {
   .product-nav-bar {
     justify-content: center;
+    margin-top: 1.5rem;
   }
 
   /* Header non è più fixed su mobile, non serve compensare */

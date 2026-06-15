@@ -1,3 +1,68 @@
+/* ── Loading overlay ── */
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: overlay-in 0.2s ease;
+}
+
+@keyframes overlay-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.loading-spinner {
+  position: relative;
+  width: 52px;
+  height: 52px;
+}
+
+.loading-spinner__ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 3px solid transparent;
+  border-top-color: var(--logo-500, #40bfb4);
+  animation: spin 0.9s cubic-bezier(0.6, 0.2, 0.4, 0.8) infinite;
+}
+
+.loading-spinner__ring--delay {
+  inset: 8px;
+  border-top-color: #a50ccb;
+  animation-duration: 0.7s;
+  animation-direction: reverse;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-overlay__label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--muted, #6b7280);
+}
+
+/* Fade del contenuto durante il caricamento */
+.page-content {
+  transition: opacity 0.25s ease, filter 0.25s ease;
+}
+
+.page-content--loading {
+  opacity: 0.4;
+  filter: blur(2px);
+  pointer-events: none;
+}
+
 /* Vecchio stile btn-back rimosso - ora usa .nav-btn da style.css */
 
 .forms-list {
@@ -11,7 +76,41 @@
   justify-items: center;
   flex-direction: column;
   justify-content: center;
+}
 
+/* Form #HEADER: gestito via JS (IntersectionObserver) */
+.form-sticky-header {
+  background: var(--bg, #fff);
+  border-bottom: 1px solid var(--border, #e5e7eb);
+}
+
+.form-sticky-header--stuck {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.sticky-header-title {
+  margin: 0;
+  padding: 0.75rem 1.5rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text, #111827);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Form LOGO: logo centrato */
+.logo-form-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 1.5rem 1rem 0.75rem;
+}
+
+.logo-form-img {
+  max-height: 80px;
+  max-width: 220px;
+  object-fit: contain;
 }
 
 .nome-prodotto {

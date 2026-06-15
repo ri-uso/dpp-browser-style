@@ -58,14 +58,18 @@ function InputForm({ loadNewElement, language, openScanner = false, setOpenScann
   };
 
   const handleEnterButtonClick = () => {
-    let api_url = getApiUrl(formData.url,
-      formData.batch_code,
-      formData.item_code,
-      formData.productfamily_code,
-      formData.company_code,
-      language);
-    
-    loadNewElement({api_url:api_url});
+    const isDirectUrl =
+      formData.url.startsWith('http') &&
+      !formData.batch_code &&
+      !formData.item_code &&
+      !formData.productfamily_code &&
+      !formData.company_code;
+
+    const api_url = isDirectUrl
+      ? formData.url
+      : getApiUrl(formData.url, formData.batch_code, formData.item_code, formData.productfamily_code, formData.company_code, language);
+
+    loadNewElement({ api_url });
   };
 
   return (
@@ -123,7 +127,7 @@ function InputForm({ loadNewElement, language, openScanner = false, setOpenScann
                 onClick={handleShowButtonClick}
               >
                 <ArrowLeft size={18} />
-                <span>Indietro</span>
+                <span>{translations[language].back_text}</span>
               </button>
             </div>
             <Scanner handleShowButtonClick={handleShowButtonClick} btnLabel={btnLabel} loadNewElement={loadNewElement}/>

@@ -18,10 +18,13 @@ export default defineConfig({
     }
   ],
   server: {
+    watch: {
+      ignored: ['**/.venv/**', '**/node_modules/**'],
+    },
     host: false,
     allowedHosts: [
-      '*.ngrok-free.app',
-      '3992-95-230-250-178.ngrok-free.app'
+      '.ngrok-free.app',
+      '.trycloudflare.com'
     ],
     // Proxy API calls to Vercel dev server when running locally
     // In production, /api routes are handled by Vercel serverless functions

@@ -40,7 +40,7 @@ const MainRouterContent = () => {
     <>
       <Header setLanguage={setLanguage} language={language} companyCode={companyCode} />
       <Routes>
-        <Route path="/" element={<App language={language} />} />
+        <Route path="/" element={<App language={language} onCompanyCodeChange={(code) => { setCompanyCode(code); applyCompanyColors(code); }} />} />
         <Route path="/login" element={<LoginPage language={language} />} />
       </Routes>
       <Footer companyCode={companyCode} />

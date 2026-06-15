@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
+import './styles/App.css';
 import { useLocation } from 'react-router-dom';
 import CompareForms from "./components/CompareForms.jsx";
 import { compareDppDatas } from './utilities.jsx';
@@ -7,7 +9,7 @@ import MainPage from "./MainPage";
 import translations from "./components/Translations.json";
 import PropTypes from 'prop-types';
 
-function App({ language }) {
+function App({ language, onCompanyCodeChange }) {
   const location = useLocation();
   const [data, setData] = useState();
   const [error, setError] = useState(null);
@@ -23,6 +25,7 @@ function App({ language }) {
 
   const [loading, setLoading] = useState(false);
   const [openScanner, setOpenScanner] = useState(false);
+  const [toast, setToast] = useState(null);
 
   // Reset alla home quando si clicca sul logo nell'header
   useEffect(() => {
@@ -97,7 +100,6 @@ function App({ language }) {
       apiUrl = `https://${extra}`;
     }
 
-    // fire off your loader
     loadNewElement({ api_url: apiUrl });
 
     // wipe the extra off the URL bar
@@ -127,10 +129,9 @@ function App({ language }) {
   };
 
   const fetchData = async ({ api_url }) => {
-    // ⬇️ NEW: inizio loading
     setLoading(true);
     try {
-      if (!api_url.endsWith("/?format=json")) {
+      if (!api_url.endsWith("/?format=json") && !api_url.endsWith(".json")) {
         if (!api_url.endsWith("/")) {
           api_url = `${api_url}/`;
         }
@@ -153,52 +154,61 @@ function App({ language }) {
       console.log("Response text:", text);
 
       if (!response.ok) {
-        throw new Error(`Errore nella richiesta: ${response.status}`);
+        const err = new Error(response.statusText || 'Errore nella richiesta');
+        err.status = response.status;
+        throw err;
       }
 
       try {
         const jsonData = JSON.parse(text);
+        const parsed = new URL(api_url);
+        if (jsonData?.linked_batches && Array.isArray(jsonData.linked_batches)) {
+          jsonData.linked_batches = jsonData.linked_batches.map(batch => {
+            if (!batch.company_webservice || batch.company_webservice.trim() === "") {
+              return { ...batch, company_webservice: parsed.origin };
+            }
+            return batch;
+          });
+        }
         setData(jsonData);
-        //const parsed = new URL(api_url);
-        //const host = parsed.hostname;
-        //if (jsonData?.linked_batches && Array.isArray(jsonData.linked_batches)) {
-         // jsonData.linked_batches = jsonData.linked_batches.map(batch => {
-          //  if (!batch.company_webservice || batch.company_webservice.trim() === "") {
-           //   return { ...batch, company_webservice: host };
-           // }
-          //  return batch;
-         // });
-        //} 
-        return jsonData;
+        const code = jsonData?.summary?.company_code?.toLowerCase();
+        if (code && onCompanyCodeChange) onCompanyCodeChange(code);
+        return { data: jsonData, status: null };
       } catch (e) {
         setError("La risposta non è un JSON valido.");
         console.error("Parsing JSON fallito:", e);
-        return null;
+        return { data: null, status: null };
       }
     } catch (err) {
       setError(err.message);
-      return null;
+      return { data: null, status: err.status ?? null };
     } finally {
-      // ⬇️ NEW: fine loading sempre
       setLoading(false);
     }
   };
 
-  const loadNewElement = async ({ api_url, save_parent = false, onComplete }) => {
+  const showToast = (message, type = 'error') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 4000);
+  };
+
+  const loadNewElement = async ({ api_url, save_parent = false, skip_compare = false, onComplete }) => {
     const parent_data = data;
-    const new_element_data = await fetchData({ api_url });
+    const { data: new_element_data, status } = await fetchData({ api_url });
 
     if (new_element_data) {
-      if (save_parent) {
-        pushElement(parent_data);
-      }
-
-      addElementToHistory(new_element_data);
-
-      if (onComplete) {
-        onComplete();
-      }
+      if (save_parent) pushElement(parent_data);
+      if (!skip_compare) addElementToHistory(new_element_data);
+      if (onComplete) onComplete();
       setShowOutput(true);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (save_parent) {
+      // Errore linked batch: resta sulla pagina corrente e mostra un toast
+      setError(null);
+      const msg = status === 404
+        ? 'Lotto non trovato sul server del fornitore.'
+        : 'Impossibile caricare il lotto collegato.';
+      showToast(msg);
     }
   };
 
@@ -236,6 +246,21 @@ function App({ language }) {
 
   return (
     <main className="container">
+      {toast && createPortal(
+        <>
+          <div className="app-toast-backdrop" onClick={() => setToast(null)} />
+          <div className={`app-toast app-toast--${toast.type}`}>
+            <div className="app-toast__bar" />
+            <div className="app-toast__body">
+              <span className="app-toast__message">{toast.message}</span>
+              <div className="app-toast__footer">
+                <button className="app-toast__close" onClick={() => setToast(null)}>Chiudi</button>
+              </div>
+            </div>
+          </div>
+        </>,
+        document.body
+      )}
       {error ? (
         <div className="error-container">
           <p>{error}</p>
@@ -253,6 +278,7 @@ function App({ language }) {
           dataList={compare_list}
           setShowCompare={setShowCompare}
           language={language}
+          loadNewElement={loadNewElement}
           onAddProduct={() => {
             setShowCompare(false);
             setShowOutput(false);
@@ -292,7 +318,8 @@ function App({ language }) {
 }
 
 App.propTypes = {
-  language: PropTypes.string.isRequired
+  language: PropTypes.string.isRequired,
+  onCompanyCodeChange: PropTypes.func
 };
 
 export default App;

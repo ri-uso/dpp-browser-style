@@ -1,0 +1,173 @@
+{
+    "summary": {
+        "company_code": "AziendaProva",
+        "company_uuid": "74837917-b92e-4e26-bb86-a23c64cfa637",
+        "company_webservice": "",
+        "company_legalname": "Azienda Prova srl",
+        "company_vat": "",
+        "company_shortname": "Azienda Prova",
+        "company_address": "Via dell'Azienda prova 52",
+        "company_email": "AziendaProva@mailfinta.com",
+        "company_phonenumber": "059000000",
+        "company_website": "http://Aziendaprova.com",
+        "company_note": "Test note",
+        "productfamily_code": "TSPT",
+        "productfamily_name": "Tessuto Pantalone",
+        "productfamily_description": "Tessuto del pantalone, GSM è l'unità di misura per il peso dei tessuti --> grammi per metro quadrato",
+        "productfamily_uom": "GSM",
+        "item_code": "TP001",
+        "item_name": "Materiale Pantalone",
+        "item_description": "è il materiale del pantalone --> cotone",
+        "batch_code": "TP001",
+        "requested_language": "it"
+    },
+    "data": [],
+    "forms": [
+        {
+            "form_language": "it",
+            "form_name": "Test URL 1",
+            "fields": [
+                {
+                    "ID": "55"
+                }
+            ]
+        },
+        {
+            "form_language": "it",
+            "form_name": "Test URL 2",
+            "fields": [
+                {
+                    "ID": "2555"
+                }
+            ]
+        },
+        {
+            "form_language": "it",
+            "form_name": "Test URL 3",
+            "fields": [
+                {
+                    "ID": "789"
+                }
+            ]
+        },
+        {
+            "form_language": "it",
+            "form_name": "Test URL 4",
+            "fields": [
+                {
+                    "ID": "87"
+                }
+            ]
+        },
+        {
+            "form_language": "it",
+            "form_name": "Test URL 5",
+            "fields": [
+                {
+                    "ID": "52"
+                }
+            ]
+        },
+        {
+            "form_language": "it",
+            "form_name": "Test URL 6",
+            "fields": [
+                {
+                    "ID": "95"
+                }
+            ]
+        },
+        {
+            "language": "it",
+            "ID": "55",
+            "label": "Video test",
+            "description": null,
+            "value_type": "URL",
+            "property_language": "it",
+            "value_text": null,
+            "value_number": null,
+            "value_number_unit_of_measure": null,
+            "value_url": "https://www.youtube.com/watch?v=KlV_ZRC9vUE",
+            "value_url_type": "Video"
+        },
+        {
+            "language": "it",
+            "ID": "2555",
+            "label": "Example PDF",
+            "description": null,
+            "value_type": "URL",
+            "property_language": "it",
+            "value_text": null,
+            "value_number": null,
+            "value_number_unit_of_measure": null,
+            "value_url": "https://pdfobject.com/pdf/sample.pdf",
+            "value_url_type": "PDF"
+        },
+        {
+            "language": "it",
+            "ID": "789",
+            "label": "Test doc",
+            "description": null,
+            "value_type": "URL",
+            "property_language": "it",
+            "value_text": null,
+            "value_number": null,
+            "value_number_unit_of_measure": null,
+            "value_url": "https://podcasts.ceu.edu/sites/podcasts.ceu.edu/files/sample.doc",
+            "value_url_type": "DOC"
+        },
+        {
+            "language": "it",
+            "ID": "87",
+            "label": "Test image",
+            "description": null,
+            "value_type": "URL",
+            "property_language": "it",
+            "value_text": null,
+            "value_number": null,
+            "value_number_unit_of_measure": null,
+            "value_url": "https://www.carpifashionsystem.it/media/wp-content/uploads/2015/04/CFS_NERO_FondoTrasp.png",
+            "value_url_type": "Image"
+        },
+        {
+            "language": "it",
+            "ID": "52",
+            "label": "Link generico",
+            "description": null,
+            "value_type": "URL",
+            "property_language": "it",
+            "value_text": null,
+            "value_number": null,
+            "value_number_unit_of_measure": null,
+            "value_url": "https://www.carpifashionsystem.it/",
+            "value_url_type": "Website"
+        },
+        {
+            "language": "it",
+            "ID": "95",
+            "label": "Test other",
+            "description": null,
+            "value_type": "URL",
+            "property_language": "it",
+            "value_text": null,
+            "value_number": null,
+            "value_number_unit_of_measure": null,
+            "value_url": "https://www.carpifashionsystem.it/",
+            "value_url_type": "Other"
+        }
+    ],
+    "linked_batches": [
+        {
+            "company_code": "FORN001",
+            "company_shortname": "Creation Lab Srl",
+            "company_uuid": "94650493-663f-4c13-b535-d64a5ea2c65d",
+            "company_webservice": "",
+            "productfamily_code": "TSPT",
+            "item_code": "TP001",
+            "batch_code": "TP001",
+            "batch_qty": 500.0,
+            "batch_qty_unit_of_measure": "GSM",
+            "batch_qty_per_unit": 1.0
+        }
+    ]
+}

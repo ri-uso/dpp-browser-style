@@ -19,7 +19,17 @@
         "traceability_text": "Tracciabilità",
         "link_text": "Link",
         "btn_back":"Torna alla pagina principale",
-        "login_with": "Accedi con"
+        "login_with": "Accedi con",
+        "scan_another_text": "Scansiona un altro prodotto",
+        "footer_company_text": "Produttore",
+        "footer_batch_text": "Lotto",
+        "footer_item_text": "Articolo",
+        "footer_family_text": "Famiglia prodotto",
+        "item_name_text": "Nome articolo",
+        "item_description_text": "Descrizione articolo",
+        "productfamily_name_text": "Nome famiglia prodotto",
+        "productfamily_uom_text": "UdM famiglia",
+        "productfamily_description_text": "Descrizione famiglia"
     },
     "EN": {
         "dpp_title_text": "Digital Product Passport",
@@ -41,7 +51,17 @@
         "traceability_text": "Traceability",
         "link_text": "Link",
         "btn_back":"Return to the main page",
-        "login_with": "Login with"
+        "login_with": "Login with",
+        "scan_another_text": "Scan another product",
+        "footer_company_text": "Manufacturer",
+        "footer_batch_text": "Batch",
+        "footer_item_text": "Item",
+        "footer_family_text": "Product Family",
+        "item_name_text": "Item name",
+        "item_description_text": "Item description",
+        "productfamily_name_text": "Product family name",
+        "productfamily_uom_text": "Family UoM",
+        "productfamily_description_text": "Family description"
     },
     "ES": {
         "dpp_title_text": "Pasaporte Digital del Producto",
@@ -63,7 +83,17 @@
         "traceability_text": "Trazabilidad",
         "link_text": "Enlace",
         "btn_back":"Regresar a la página principal",
-        "login_with": "Iniciar sesión con"
+        "login_with": "Iniciar sesión con",
+        "scan_another_text": "Escanear otro producto",
+        "footer_company_text": "Fabricante",
+        "footer_batch_text": "Lote",
+        "footer_item_text": "Artículo",
+        "footer_family_text": "Familia de producto",
+        "item_name_text": "Nombre de artículo",
+        "item_description_text": "Descripción del artículo",
+        "productfamily_name_text": "Nombre de familia de producto",
+        "productfamily_uom_text": "UdM familia",
+        "productfamily_description_text": "Descripción de familia"
     },
     "FR": {
         "dpp_title_text": "Passeport Produit Numérique",
@@ -85,6 +115,16 @@
         "traceability_text": "Traçabilité",
         "link_text": "Lien",
         "btn_back":"Retour à la page principale",
-        "login_with": "Connexion avec"
+        "login_with": "Connexion avec",
+        "scan_another_text": "Scanner un autre produit",
+        "footer_company_text": "Fabricant",
+        "footer_batch_text": "Lot",
+        "footer_item_text": "Article",
+        "footer_family_text": "Famille de produits",
+        "item_name_text": "Nom d'article",
+        "item_description_text": "Description de l'article",
+        "productfamily_name_text": "Nom de famille de produits",
+        "productfamily_uom_text": "UdM famille",
+        "productfamily_description_text": "Description de famille"
     }
 }
