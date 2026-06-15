@@ -67,6 +67,18 @@ function renderUrlContent(item) {
   );
 }
 
+function isItemEmpty(item) {
+  const valueType = item.value_type?.toLowerCase();
+  if (valueType === "url" || item.value_url) {
+    return !item.value_url;
+  }
+  if (valueType === "value") {
+    // 0 è un valore valido (es. 0%): nascondi solo se manca il numero
+    return item.value_number == null || item.value_number === "";
+  }
+  return item.value_text == null || String(item.value_text).trim() === "";
+}
+
 function OutputForm({ form, data_list = [], language = "IT" }) {
   // fields sicuri
   const fields = Array.isArray(form?.fields) ? form.fields : [];
@@ -81,7 +93,8 @@ function OutputForm({ form, data_list = [], language = "IT" }) {
     .map(f => (Array.isArray(data_list)
       ? data_list.find(it => String(it.ID) === String(f.ID)) // <-- se nei dati è "id", cambia qui
       : undefined))
-    .filter(Boolean);
+    .filter(Boolean)
+    .filter(item => !isItemEmpty(item));
 
   // classi per il valore
   const valueClassNames = orderedData.map(e => {
@@ -92,6 +105,9 @@ function OutputForm({ form, data_list = [], language = "IT" }) {
   });
 
   const formNameClass = "mb-3 mt-4 text-start";
+
+  // Nessun campo valorizzato: non mostrare la sezione (evita il titolo a vuoto)
+  if (orderedData.length === 0) return null;
 
   return (
     <section className="output-form">

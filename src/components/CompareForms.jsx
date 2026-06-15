@@ -13,6 +13,22 @@ function pickDatum(product, id, lang) {
   return list.find((d) => (d.property_language || "").toLowerCase() === langLc) || list[0];
 }
 
+function isDatumEmpty(d) {
+  if (!d) return true;
+  if (d.value_url) return false;
+  if (d.value_text != null && String(d.value_text).trim() !== "") return false;
+  if (d.value_number != null) return false;
+  return true;
+}
+
+/* Proprietà "vuota in tutte le lingue" per un prodotto:
+   nessuna voce con quell'ID (in nessuna lingua) ha un valore.
+   true anche se la proprietà è prevista in config ma non è stato ricevuto alcun dato. */
+function isPropertyEmptyForProduct(product, id) {
+  const list = Array.isArray(product?.data) ? product.data.filter((d) => d.ID === id) : [];
+  return list.every(isDatumEmpty);
+}
+
 function normalize(valueObj) {
   if (!valueObj) return "";
   if (valueObj.value_url)
@@ -184,6 +200,9 @@ export default function CompareForms({ dataList, language, setShowCompare = () =
       >
         {fields.map((f, idx) => {
           const id = f.ID;
+          // N.B.: se il primo prodotto non ha valore per questa proprietà (in nessuna
+          // lingua), la riga non viene mostrata, anche se altri prodotti hanno il valore.
+          if (isPropertyEmptyForProduct(products[0], id)) return null;
           const normVals = products.map((p) => normalize(pickDatum(p, id, language)));
           const isDiff = new Set(normVals).size > 1;
           let label = id;
@@ -275,6 +294,9 @@ export default function CompareForms({ dataList, language, setShowCompare = () =
 
         {extraFields.map((f, idx) => {
           const id = f.ID;
+          // N.B.: se il primo prodotto non ha valore per questa proprietà (in nessuna
+          // lingua), la riga non viene mostrata, anche se altri prodotti hanno il valore.
+          if (isPropertyEmptyForProduct(products[0], id)) return null;
           const normVals = products.map((p) => normalize(pickDatum(p, id, language)));
           const isDiff = new Set(normVals).size > 1;
           let label = id;
@@ -338,6 +360,9 @@ export default function CompareForms({ dataList, language, setShowCompare = () =
 
         {extraFields.map((f, idx) => {
           const id = f.ID;
+          // N.B.: se il primo prodotto non ha valore per questa proprietà (in nessuna
+          // lingua), la riga non viene mostrata, anche se altri prodotti hanno il valore.
+          if (isPropertyEmptyForProduct(products[0], id)) return null;
           const normVals = products.map((p) => normalize(pickDatum(p, id, language)));
           const isDiff = new Set(normVals).size > 1;
           let label = id;
@@ -371,6 +396,9 @@ export default function CompareForms({ dataList, language, setShowCompare = () =
 
   const renderFormSection = (section, sIdx) => {
     const fields = Array.isArray(section.fields) ? section.fields : [];
+    // Se nessuna proprietà della sezione è valorizzata per il primo prodotto,
+    // non mostrare neppure il titolo della sezione.
+    if (fields.every((f) => isPropertyEmptyForProduct(products[0], f.ID))) return null;
     return (
       <section className="cmp-section" key={`sec-${sIdx}`}>
         <div className="cmp-sec-title">
@@ -378,6 +406,9 @@ export default function CompareForms({ dataList, language, setShowCompare = () =
         </div>
         {fields.map((f, idx) => {
           const id = f.ID;
+          // N.B.: se il primo prodotto non ha valore per questa proprietà (in nessuna
+          // lingua), la riga non viene mostrata, anche se altri prodotti hanno il valore.
+          if (isPropertyEmptyForProduct(products[0], id)) return null;
           const normVals = products.map((p) => normalize(pickDatum(p, id, language)));
           const isDiff = new Set(normVals).size > 1;
           let label = id;
