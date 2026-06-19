@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types';
 import { ExternalLink } from 'lucide-react';
 import { FaFilePdf, FaFileAlt } from 'react-icons/fa';
+import PropertyInfo from './PropertyInfo.jsx';
 import translations from "./Translations.json";
 import { getDirectImageUrl } from '../utilities.jsx';
 import "../styles/outputForm.css";
@@ -138,7 +139,10 @@ function OutputForm({ form, data_list = [], language = "IT" }) {
 
             return (
               <div className="output-item" key={item.ID ?? index}>
-                <div className="label">{item.label ?? ""}</div>
+                <div className="label">
+                  <span className="label__text">{item.label ?? ""}</span>
+                  <PropertyInfo description={item.description} label={item.label ?? ""} />
+                </div>
                 <div className={valueClassNames[index]}>
                   {valueContent}
                 </div>

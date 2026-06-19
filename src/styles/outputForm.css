@@ -103,6 +103,9 @@
   text-transform: uppercase;
   font-variant-caps: all-small-caps;
   margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .output-form .output-item .value{

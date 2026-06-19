@@ -15,10 +15,10 @@
         "productfamily_name": "Tessuto Pantalone",
         "productfamily_description": "Tessuto del pantalone. GSM è l'unità di misura per il peso dei tessuti (grammi per metro quadrato).",
         "productfamily_uom": "GSM",
-        "item_code": "TP001",
-        "item_name": "Materiale Pantalone",
-        "item_description": "Materiale base per la produzione di pantaloni in cotone organico.",
-        "batch_code": "BATCH-2024-TP001-042",
+        "item_code": "TP002",
+        "item_name": "Materiale Pantalone PIENO",
+        "item_description": "Variante con tutte le proprietà compilate, per il confronto.",
+        "batch_code": "BATCH-2024-TP002-099",
         "requested_language": "it"
     },
     "data": [
@@ -31,7 +31,7 @@
             "value_text": null,
             "value_number": null,
             "value_number_unit_of_measure": null,
-            "value_url": "/logos/logo_azienda_prova.png",
+            "value_url": "https://www.carpifashionsystem.it/media/wp-content/uploads/2015/04/CFS_NERO_FondoTrasp.png",
             "value_url_type": "Image"
         },
         {
@@ -40,7 +40,7 @@
             "description": null,
             "value_type": "String",
             "property_language": "it",
-            "value_text": "Materiale Pantalone",
+            "value_text": "Materiale Pantalone PIENO",
             "value_number": null,
             "value_number_unit_of_measure": null,
             "value_url": null,
@@ -53,7 +53,7 @@
             "value_type": "Value",
             "property_language": "it",
             "value_text": null,
-            "value_number": 95.0,
+            "value_number": 90.0,
             "value_number_unit_of_measure": "%",
             "value_url": null,
             "value_url_type": null
@@ -65,7 +65,7 @@
             "value_type": "Value",
             "property_language": "it",
             "value_text": null,
-            "value_number": 5.0,
+            "value_number": 10.0,
             "value_number_unit_of_measure": "%",
             "value_url": null,
             "value_url_type": null
@@ -77,7 +77,7 @@
             "value_type": "Value",
             "property_language": "it",
             "value_text": null,
-            "value_number": 210.0,
+            "value_number": 230.0,
             "value_number_unit_of_measure": "GSM",
             "value_url": null,
             "value_url_type": null
@@ -88,7 +88,7 @@
             "description": null,
             "value_type": "String",
             "property_language": "it",
-            "value_text": "India (cotone) — Europa (elastan)",
+            "value_text": "Turchia (cotone) — Italia (elastan)",
             "value_number": null,
             "value_number_unit_of_measure": null,
             "value_url": null,
@@ -101,7 +101,7 @@
             "value_type": "Value",
             "property_language": "it",
             "value_text": null,
-            "value_number": 12.5,
+            "value_number": 9.0,
             "value_number_unit_of_measure": "L/m",
             "value_url": null,
             "value_url_type": null
@@ -113,7 +113,7 @@
             "value_type": "Value",
             "property_language": "it",
             "value_text": null,
-            "value_number": 3.8,
+            "value_number": 4.2,
             "value_number_unit_of_measure": "kWh/kg",
             "value_url": null,
             "value_url_type": null
@@ -125,7 +125,7 @@
             "value_type": "Value",
             "property_language": "it",
             "value_text": null,
-            "value_number": 2.1,
+            "value_number": 1.8,
             "value_number_unit_of_measure": "kg CO₂/kg",
             "value_url": null,
             "value_url_type": null
@@ -208,7 +208,7 @@
             "description": null,
             "value_type": "String",
             "property_language": "it",
-            "value_text": "Lavaggio a 30°C — Non candeggiare — Non asciugare in asciugatrice",
+            "value_text": "Lavaggio a 40°C — Non candeggiare — Stirare a bassa temperatura",
             "value_number": null,
             "value_number_unit_of_measure": null,
             "value_url": null,
@@ -220,7 +220,7 @@
             "description": null,
             "value_type": "String",
             "property_language": "it",
-            "value_text": "Il materiale è compostabile industrialmente (EN 13432). Portare al punto di raccolta tessile più vicino.",
+            "value_text": "Riciclabile presso i centri di raccolta tessile convenzionati.",
             "value_number": null,
             "value_number_unit_of_measure": null,
             "value_url": null,
@@ -298,30 +298,5 @@
             "fields": []
         }
     ],
-    "linked_batches": [
-        {
-            "company_code": "CotoneIndia",
-            "company_shortname": "OrganicCotton India Ltd.",
-            "company_uuid": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-            "company_webservice": "",
-            "productfamily_code": "COT-ORG",
-            "item_code": "COTONEREG-01",
-            "batch_code": "COT-2024-IND-017",
-            "batch_qty": 450.0,
-            "batch_qty_unit_of_measure": "kg",
-            "batch_qty_per_unit": 0.90
-        },
-        {
-            "company_code": "ElastanEU",
-            "company_shortname": "EuroElasticFibers S.A.",
-            "company_uuid": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
-            "company_webservice": "",
-            "productfamily_code": "ELA-STD",
-            "item_code": "ELASTAN-04",
-            "batch_code": "ELA-2024-EU-033",
-            "batch_qty": 25.0,
-            "batch_qty_unit_of_measure": "kg",
-            "batch_qty_per_unit": 0.05
-        }
-    ]
+    "linked_batches": []
 }
