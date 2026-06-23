@@ -238,7 +238,11 @@ function App({ language, onCompanyCodeChange }) {
       }
     });
 
-    const uniqueList = Array.from(uniqueMap.values());
+    const uniqueList = Array.from(uniqueMap.values()).sort((a, b) => {
+      const idxA = data_history.findIndex(h => h.summary.item_code === a.summary.item_code);
+      const idxB = data_history.findIndex(h => h.summary.item_code === b.summary.item_code);
+      return idxA - idxB;
+    });
 
     setCompareList(uniqueList);
     setShowCompare(true);

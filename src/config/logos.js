@@ -102,8 +102,8 @@ export const logoConfig = {
       gradNav:     'linear-gradient(135deg, #1a1a2e 0%, #8b0000 50%, #c8102e 100%)',
       shadowBrand: '0 4px 14px rgba(200, 16, 46, 0.4)',
       cmpBrand1:   '#c8102e',
-      cmpBrand2:   '#8b0000',
-      cmpBrand3:   '#e0294a',
+      cmpBrand2:   '#1565c0',
+      cmpBrand3:   '#2e7d32',
       btnBg:       '#c8102e',
     }
   },

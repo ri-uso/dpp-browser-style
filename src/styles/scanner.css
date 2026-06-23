@@ -38,7 +38,7 @@
 #html5-qrcode-button-file-selection{
   appearance: none !important;
   background: var(--grad, linear-gradient(90deg, #8892c4 0%, #69a8ba 50%, #40b5a4 100%)) !important;
-  color: #000 !important;
+  color: #fff !important;
   border: 2px solid #000 !important;
   border-radius: 12px !important;
   padding: .6rem 1rem !important;
