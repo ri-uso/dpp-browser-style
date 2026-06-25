@@ -228,19 +228,32 @@ function App({ language, onCompanyCodeChange }) {
   const handleConfirmCompare = (itemsArray) => {
     setShowSelectPopup(false);
 
-    const allItems = [data, ...itemsArray];
+    // Identità completa del prodotto (stessi campi usati da compareDppDatas):
+    // due lotti diversi dello stesso articolo devono restare distinti.
+    const keyOf = (item) => {
+      const s = item?.summary ?? {};
+      return [
+        s.company_code,
+        s.productfamily_code,
+        s.item_code,
+        s.batch_code,
+        s.language,
+      ].join('|');
+    };
+
+    const allItems = [data, ...itemsArray].filter(Boolean);
     const uniqueMap = new Map();
 
     allItems.forEach(item => {
-      const code = item.summary.item_code;
-      if (!uniqueMap.has(code)) {
-        uniqueMap.set(code, item);
+      const key = keyOf(item);
+      if (!uniqueMap.has(key)) {
+        uniqueMap.set(key, item);
       }
     });
 
     const uniqueList = Array.from(uniqueMap.values()).sort((a, b) => {
-      const idxA = data_history.findIndex(h => h.summary.item_code === a.summary.item_code);
-      const idxB = data_history.findIndex(h => h.summary.item_code === b.summary.item_code);
+      const idxA = data_history.findIndex(h => keyOf(h) === keyOf(a));
+      const idxB = data_history.findIndex(h => keyOf(h) === keyOf(b));
       return idxA - idxB;
     });
 
