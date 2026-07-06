@@ -2,6 +2,8 @@ import PropTypes from "prop-types";
 import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, QrCode, Globe, Mail, Phone, MapPin } from "lucide-react";
 import { getApiUrl, getDirectImageUrl } from '../utilities.jsx';
+import { UrlValue } from './urlValue.jsx';
+import PropertyInfo from './PropertyInfo.jsx';
 import "../styles/CompareForms.css";
 
 /* --------- helpers --------- */
@@ -42,11 +44,10 @@ function shapeValue(d, forceLinkIds = new Set(["CERT_AMBIENTALE"])) {
   if (!d) return { kind: "empty" };
 
   if (d.value_url) {
-    const url = d.value_url;
-    const given = (d.value_text || "").trim();
-    const urlish = /^https?:\/\//i.test(given);
-    const label = forceLinkIds.has(d.ID) ? "Link" : given && !urlish ? given : "Link";
-    return { kind: "link", url, label };
+    // caso speciale preesistente: forza sempre un link testuale generico,
+    // indipendentemente dal tipo (es. certificazioni con ID dedicato)
+    if (forceLinkIds.has(d.ID)) return { kind: "link", url: d.value_url, label: "Link" };
+    return { kind: "url", item: d };
   }
 
   if (d.value_text) return { kind: "text", text: d.value_text };
@@ -59,6 +60,7 @@ function shapeValue(d, forceLinkIds = new Set(["CERT_AMBIENTALE"])) {
 
 function Cell({ value }) {
   if (!value || value.kind === "empty") return <span className="cmp-muted">—</span>;
+  if (value.kind === "url") return <UrlValue item={value.item} compact />;
   if (value.kind === "link") {
     return (
       <a className="cmp-link" href={value.url} target="_blank" rel="noopener noreferrer">
@@ -171,13 +173,15 @@ export default function CompareForms({ dataList, language, setShowCompare = () =
           <div className="cmp-cell feat-col" role="cell" />
           <div className="cmp-prods">
             {products.map((p, pi) => {
-              const logoField = fields
-                .map(f => p.data?.find(d => String(d.ID) === String(f.ID)))
-                .find(d => d?.value_url_type?.toUpperCase() === 'IMAGE');
+              const logoFields = fields
+                .map(f => pickDatum(p, f.ID, language))
+                .filter(d => d?.value_url_type?.toUpperCase() === 'IMAGE');
               return (
                 <div className="cmp-cell prod-col cmp-logo-col" role="cell" key={`logo-${pi}`}>
-                  {logoField
-                    ? <img src={getDirectImageUrl(logoField.value_url)} alt="Logo" className="cmp-logo-img" />
+                  {logoFields.length > 0
+                    ? logoFields.map((d, li) => (
+                        <img key={li} src={getDirectImageUrl(d.value_url)} alt="Logo" className="cmp-logo-img" />
+                      ))
                     : <span className="cmp-muted">—</span>
                   }
                 </div>
@@ -210,6 +214,7 @@ export default function CompareForms({ dataList, language, setShowCompare = () =
             const d = pickDatum(p, id, language);
             if (d?.label) { label = d.label; break; }
           }
+          const description = pickDatum(products[0], id, language)?.description;
           return (
             <div
               className={`cmp-row cmp-row--header${isDiff ? " is-diff" : ""}`}
@@ -219,6 +224,7 @@ export default function CompareForms({ dataList, language, setShowCompare = () =
             >
               <div className="cmp-cell feat-col" role="cell">
                 <span className="cmp-feat-label">{label}</span>
+                <PropertyInfo description={description} label={label} />
               </div>
               <div className="cmp-prods">
                 {products.map((p, pi) => (
@@ -304,6 +310,7 @@ export default function CompareForms({ dataList, language, setShowCompare = () =
             const d = pickDatum(p, id, language);
             if (d?.label) { label = d.label; break; }
           }
+          const description = pickDatum(products[0], id, language)?.description;
           return (
             <div
               className={`cmp-row${isDiff ? " is-diff" : ""}`}
@@ -313,6 +320,7 @@ export default function CompareForms({ dataList, language, setShowCompare = () =
             >
               <div className="cmp-cell feat-col" role="cell">
                 <span className="cmp-feat-label">{label}</span>
+                <PropertyInfo description={description} label={label} />
               </div>
               <div className="cmp-prods">
                 {products.map((p, pi) => (
@@ -370,6 +378,7 @@ export default function CompareForms({ dataList, language, setShowCompare = () =
             const d = pickDatum(p, id, language);
             if (d?.label) { label = d.label; break; }
           }
+          const description = pickDatum(products[0], id, language)?.description;
           return (
             <div
               className={`cmp-row${isDiff ? " is-diff" : ""}`}
@@ -379,6 +388,7 @@ export default function CompareForms({ dataList, language, setShowCompare = () =
             >
               <div className="cmp-cell feat-col" role="cell">
                 <span className="cmp-feat-label">{label}</span>
+                <PropertyInfo description={description} label={label} />
               </div>
               <div className="cmp-prods">
                 {products.map((p, pi) => (
@@ -395,15 +405,18 @@ export default function CompareForms({ dataList, language, setShowCompare = () =
   };
 
   const renderFormSection = (section, sIdx) => {
+    const name = section.form_name;
     const fields = Array.isArray(section.fields) ? section.fields : [];
     // Se nessuna proprietà della sezione è valorizzata per il primo prodotto,
     // non mostrare neppure il titolo della sezione.
     if (fields.every((f) => isPropertyEmptyForProduct(products[0], f.ID))) return null;
     return (
       <section className="cmp-section" key={`sec-${sIdx}`}>
-        <div className="cmp-sec-title">
-          <span className="cmp-sec-title-span">{section.form_name}</span>
-        </div>
+        {!(typeof name === 'string' && name.startsWith('#')) && (
+          <div className="cmp-sec-title">
+            <span className="cmp-sec-title-span">{name}</span>
+          </div>
+        )}
         {fields.map((f, idx) => {
           const id = f.ID;
           // N.B.: se il primo prodotto non ha valore per questa proprietà (in nessuna
@@ -416,6 +429,7 @@ export default function CompareForms({ dataList, language, setShowCompare = () =
             const d = pickDatum(p, id, language);
             if (d?.label) { label = d.label; break; }
           }
+          const description = pickDatum(products[0], id, language)?.description;
           return (
             <div
               className={`cmp-row${isDiff ? " is-diff" : ""}`}
@@ -425,6 +439,7 @@ export default function CompareForms({ dataList, language, setShowCompare = () =
             >
               <div className="cmp-cell feat-col" role="cell">
                 <span className="cmp-feat-label">{label}</span>
+                <PropertyInfo description={description} label={label} />
               </div>
               <div className="cmp-prods">
                 {products.map((p, pi) => (
@@ -439,6 +454,8 @@ export default function CompareForms({ dataList, language, setShowCompare = () =
       </section>
     );
   };
+
+  const seenSpecial = new Set();
 
   return (
     <div className="cmp-wrap" style={{ "--cols": products.length }}>
@@ -495,6 +512,13 @@ export default function CompareForms({ dataList, language, setShowCompare = () =
         {/* ── Sezioni: ordine e contenuto definiti dal JSON del primo prodotto ── */}
         {forms.map((section, sIdx) => {
           const name = section.form_name;
+          const isSpecial = name === 'LOGO' || name === '#LOGOCOMPANY' || name === '#HEADER'
+            || name === '#BATCH-ITEM-PRODUCTFAMILY' || name === '#COMPANY';
+          if (isSpecial) {
+            const dedupKey = (name === 'LOGO' || name === '#LOGOCOMPANY') ? '#LOGO' : name;
+            if (seenSpecial.has(dedupKey)) return null;
+            seenSpecial.add(dedupKey);
+          }
           if (name === 'LOGO' || name === '#LOGOCOMPANY') return renderLogoSection(section, sIdx);
           if (name === '#HEADER')                 return renderHeaderSection(section, sIdx);
           if (name === '#BATCH-ITEM-PRODUCTFAMILY') return renderBatchItemFamilySection(section, sIdx);

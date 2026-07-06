@@ -12,11 +12,11 @@ import translations from "./components/Translations.json";
 import PropTypes from 'prop-types';
 import { Columns2, ArrowLeft, QrCode } from "lucide-react";
 import AOS from 'aos';
-import { getDirectImageUrl } from './utilities.jsx';
+import { getDirectImageUrl, pickItem } from './utilities.jsx';
 import './styles/MainPage.css';
 
 /* Sticky header con IntersectionObserver — più affidabile del CSS sticky puro */
-function StickyHeader({ text, headerHeight }) {
+function StickyHeader({ texts, headerHeight }) {
   const sentinelRef = useRef(null);
   const headerRef   = useRef(null);
   const [isStuck, setIsStuck]           = useState(false);
@@ -37,7 +37,7 @@ function StickyHeader({ text, headerHeight }) {
     if (headerRef.current) {
       setPlaceholderH(headerRef.current.getBoundingClientRect().height);
     }
-  }, [text]);
+  }, [texts.join('|')]);
 
   return (
     <>
@@ -53,13 +53,13 @@ function StickyHeader({ text, headerHeight }) {
           : {}
         }
       >
-        <h2 className="sticky-header-title">{text}</h2>
+        {texts.map((t, i) => <h2 key={i} className="sticky-header-title">{t}</h2>)}
       </div>
     </>
   );
 }
 StickyHeader.propTypes = {
-  text: PropTypes.string.isRequired,
+  texts: PropTypes.arrayOf(PropTypes.string).isRequired,
   headerHeight: PropTypes.number.isRequired,
 };
 
@@ -109,39 +109,43 @@ function MainPage({
     return () => window.removeEventListener("resize", measure);
   }, []);
 
+  const seenSpecial = new Set();
+  const SPECIAL_FORM_NAMES = new Set(['LOGO', '#LOGOCOMPANY', '#HEADER', '#BATCH-ITEM-PRODUCTFAMILY', '#COMPANY']);
+
   const renderForm = (form, index) => {
     const name = form.form_name;
 
-    if (name === 'LOGO') {
-      const logoField = form.fields
-        .map(f => data.data.find(d => String(d.ID) === String(f.ID)))
-        .find(d => d?.value_url_type?.toUpperCase() === 'IMAGE');
-      return logoField ? (
-        <div className="logo-form-wrap" key={index} data-aos="fade-down">
-          <img src={getDirectImageUrl(logoField.value_url)} alt="Logo" className="logo-form-img" />
-        </div>
-      ) : null;
+    if (SPECIAL_FORM_NAMES.has(name)) {
+      const dedupKey = (name === 'LOGO' || name === '#LOGOCOMPANY') ? '#LOGO' : name;
+      if (seenSpecial.has(dedupKey)) return null;
+      seenSpecial.add(dedupKey);
     }
 
-    if (name === '#LOGOCOMPANY') {
-      const logoField = form.fields
-        .map(f => data.data.find(d => String(d.ID) === String(f.ID)))
-        .find(d => d?.value_url_type?.toUpperCase() === 'IMAGE');
-      return logoField ? (
+    if (name === 'LOGO' || name === '#LOGOCOMPANY') {
+      const logoFields = form.fields
+        .map(f => pickItem(data.data, f.ID, language))
+        .filter(d => d?.value_url_type?.toUpperCase() === 'IMAGE');
+      if (logoFields.length === 0) return null;
+      return (
         <div className="logo-form-wrap" key={index} data-aos="fade-down">
-          <img src={getDirectImageUrl(logoField.value_url)} alt="Logo" className="logo-form-img" />
+          {logoFields.map((d, i) => (
+            <img key={i} src={getDirectImageUrl(d.value_url)} alt="Logo" className="logo-form-img" />
+          ))}
         </div>
-      ) : null;
+      );
     }
 
     if (name === '#HEADER') {
-      const headerTextField = form.fields
-        .map(f => data.data.find(d => String(d.ID) === String(f.ID)))
-        .find(d => d?.value_text);
-      const displayText = headerTextField?.value_text || data.summary?.item_name;
-      if (!displayText) return null;
+      const headerTexts = form.fields
+        .map(f => pickItem(data.data, f.ID, language))
+        .filter(d => d?.value_text)
+        .map(d => d.value_text);
+      const displayTexts = headerTexts.length > 0
+        ? headerTexts
+        : (data.summary?.item_name ? [data.summary.item_name] : []);
+      if (displayTexts.length === 0) return null;
       return (
-        <StickyHeader key={index} text={displayText} headerHeight={headerHeight} />
+        <StickyHeader key={index} texts={displayTexts} headerHeight={headerHeight} />
       );
     }
 
@@ -171,9 +175,12 @@ function MainPage({
       );
     }
 
+    const passedForm = typeof name === 'string' && name.startsWith('#')
+      ? { ...form, form_name: '' }
+      : form;
     return (
       <div className="output-row" key={index}>
-        <OutputForm form={form} data_list={data.data} language={language} />
+        <OutputForm form={passedForm} data_list={data.data} language={language} />
       </div>
     );
   };

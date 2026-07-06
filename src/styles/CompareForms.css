@@ -145,6 +145,36 @@
   object-fit: contain;
 }
 
+/* ── Anteprima immagine in cella (value_url_type=IMAGE), variante compatta per tabella ── */
+.cmp-img-thumb {
+  max-height: 72px;
+  max-width: 100%; /* rispetta la larghezza flessibile di .prod-col (minmax 180-220px) */
+  width: auto;
+  object-fit: contain;
+  border-radius: 6px;
+  display: block;
+}
+
+/* ── File-link (icona doc) compatta per tabella, ridotta rispetto a .file-link
+   di outputForm.css (icona 1.9rem, pensata per layout a pagina intera) ── */
+.file-link--compact {
+  padding: 6px 8px;
+  border-radius: 8px;
+  gap: 2px;
+}
+.file-link--compact .file-link__icon {
+  font-size: 1.1rem;
+  width: 1.1rem;
+  height: 1.1rem;
+}
+.file-link--compact .file-link__label {
+  font-size: .6rem;
+}
+.file-link--compact .file-link__arrow {
+  width: 9px;
+  height: 9px;
+}
+
 /* ── Sezione #HEADER ── */
 .cmp-section--header {
   position: sticky;

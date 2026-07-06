@@ -1,0 +1,82 @@
+{
+  "summary": {
+    "company_code": "ACME",
+    "company_uuid": "uuid-acme",
+    "company_webservice": "acme.example.com",
+    "company_shortname": "ACME",
+    "company_legalname": "ACME S.p.A.",
+    "company_vat": "IT01234567890",
+    "company_address": "Via Roma 1, Milano",
+    "company_email": "info@acme.example.com",
+    "company_phonenumber": "+39 02 1234567",
+    "company_website": "www.acme.example.com",
+    "company_note": "",
+    "productfamily_code": "FAM-001",
+    "productfamily_name": "Famiglia Test",
+    "productfamily_description": "Descrizione famiglia di test",
+    "productfamily_uom": "pz",
+    "item_code": "ITEM-001",
+    "item_description": "Articolo di Test XL",
+    "batch_code": "BATCH-001",
+    "language": "it"
+  },
+  "data": [
+    { "ID": "LOGO1", "label": "Logo 1", "description": null, "value_type": "URL", "property_language": "it", "value_text": null, "value_number": null, "value_number_unit_of_measure": null, "value_url": "https://placehold.co/150x60/png?text=Logo1", "value_url_type": "IMAGE" },
+    { "ID": "LOGO2", "label": "Logo 2", "description": null, "value_type": "URL", "property_language": "it", "value_text": null, "value_number": null, "value_number_unit_of_measure": null, "value_url": "https://placehold.co/150x60/png?text=Logo2", "value_url_type": "IMAGE" },
+    { "ID": "LOGO_DUP", "label": "Logo duplicato (non deve comparire)", "description": null, "value_type": "URL", "property_language": "it", "value_text": null, "value_number": null, "value_number_unit_of_measure": null, "value_url": "https://placehold.co/150x60/png?text=NON+DEVE+APPARIRE", "value_url_type": "IMAGE" },
+
+    { "ID": "HEADER_NAME", "label": "Nome prodotto", "description": null, "value_type": "String", "property_language": "it", "value_text": "Camice Alta Performance XL", "value_number": null, "value_number_unit_of_measure": null, "value_url": null, "value_url_type": null },
+    { "ID": "HEADER_NAME", "label": "Nome prodotto", "description": null, "value_type": "String", "property_language": "en", "value_text": "High Performance Gown XL", "value_number": null, "value_number_unit_of_measure": null, "value_url": null, "value_url_type": null },
+    { "ID": "HEADER_NOTE", "label": "Edizione", "description": null, "value_type": "String", "property_language": "it", "value_text": "Edizione 2026", "value_number": null, "value_number_unit_of_measure": null, "value_url": null, "value_url_type": null },
+    { "ID": "HEADER_NOTE", "label": "Edizione", "description": null, "value_type": "String", "property_language": "en", "value_text": "2026 Edition", "value_number": null, "value_number_unit_of_measure": null, "value_url": null, "value_url_type": null },
+    { "ID": "HEADER_DUP_TEST", "label": "Non deve comparire", "description": null, "value_type": "String", "property_language": "it", "value_text": "SE VEDI QUESTO TESTO IL DEDUP #HEADER NON FUNZIONA", "value_number": null, "value_number_unit_of_measure": null, "value_url": null, "value_url_type": null },
+
+    { "ID": "GHOST_PROP", "label": "Proprietà del gruppo ghost", "description": null, "value_type": "String", "property_language": "it", "value_text": "Valore del gruppo #GHOST_TEST (il titolo del gruppo non deve comparire)", "value_number": null, "value_number_unit_of_measure": null, "value_url": null, "value_url_type": null },
+
+    { "ID": "CONS_ACQUA", "label": "Consumo Acqua", "description": "Quantità di acqua consumata per la produzione.", "value_type": "Value", "property_language": "it", "value_text": null, "value_number": 50, "value_number_unit_of_measure": "litri", "value_url": null, "value_url_type": null },
+
+    { "ID": "CERT_PDF", "label": "Certificato di conformità", "description": "Certificato di conformità rilasciato dall'ente terzo.", "value_type": "URL", "property_language": "it", "value_text": null, "value_number": null, "value_number_unit_of_measure": null, "value_url": "https://sitoazienda.com/certificazione.pdf", "value_url_type": "PDF" },
+    { "ID": "CERT_DOC", "label": "Scheda tecnica", "description": "", "value_type": "URL", "property_language": "it", "value_text": null, "value_number": null, "value_number_unit_of_measure": null, "value_url": "https://sitoazienda.com/scheda-tecnica.docx", "value_url_type": "DOC" },
+    { "ID": "SITO_WEB", "label": "Sito web", "description": null, "value_type": "URL", "property_language": "it", "value_text": null, "value_number": null, "value_number_unit_of_measure": null, "value_url": "https://www.acme.example.com", "value_url_type": "WEBSITE" },
+    { "ID": "VIDEO_YT", "label": "Video di presentazione", "description": "Video di presentazione del prodotto.", "value_type": "URL", "property_language": "it", "value_text": null, "value_number": null, "value_number_unit_of_measure": null, "value_url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ", "value_url_type": "VIDEO" },
+    { "ID": "VIDEO_VIMEO", "label": "Video making-of (Vimeo)", "description": null, "value_type": "URL", "property_language": "it", "value_text": null, "value_number": null, "value_number_unit_of_measure": null, "value_url": "https://vimeo.com/12345678", "value_url_type": "VIDEO" },
+    { "ID": "TESTO_PROP", "label": "Nota testuale", "description": null, "value_type": "String", "property_language": "it", "value_text": "Testo di esempio", "value_number": null, "value_number_unit_of_measure": null, "value_url": null, "value_url_type": null },
+    { "ID": "TESTO_PROP", "label": "Nota testuale", "description": null, "value_type": "String", "property_language": "en", "value_text": "Sample text", "value_number": null, "value_number_unit_of_measure": null, "value_url": null, "value_url_type": null },
+    { "ID": "VALORE_PROP", "label": "Peso", "description": "Peso del prodotto con unità di misura.", "value_type": "Value", "property_language": "it", "value_text": null, "value_number": 42, "value_number_unit_of_measure": "kg", "value_url": null, "value_url_type": null },
+
+    { "ID": "CERT_AMBIENTALE", "label": "Certificazione ambientale", "description": "Certificazione ambientale di prodotto.", "value_type": "URL", "property_language": "it", "value_text": null, "value_number": null, "value_number_unit_of_measure": null, "value_url": "https://sitoazienda.com/cert-ambientale.pdf", "value_url_type": "PDF" }
+  ],
+  "forms": [
+    { "form_name": "#LOGOCOMPANY", "fields": [{ "ID": "LOGO1" }, { "ID": "LOGO2" }] },
+    { "form_name": "LOGO", "fields": [{ "ID": "LOGO_DUP" }] },
+    { "form_name": "#HEADER", "fields": [{ "ID": "HEADER_NAME" }, { "ID": "HEADER_NOTE" }] },
+    { "form_name": "#HEADER", "fields": [{ "ID": "HEADER_DUP_TEST" }] },
+    { "form_name": "#GHOST_TEST", "fields": [{ "ID": "GHOST_PROP" }] },
+    { "form_name": "#BATCH-ITEM-PRODUCTFAMILY", "fields": [] },
+    { "form_name": "#COMPANY", "fields": [] },
+    { "form_name": "Sostenibilità", "fields": [{ "ID": "CONS_ACQUA" }] },
+    { "form_name": "Documenti e Media", "fields": [
+      { "ID": "CERT_PDF" },
+      { "ID": "CERT_DOC" },
+      { "ID": "SITO_WEB" },
+      { "ID": "VIDEO_YT" },
+      { "ID": "VIDEO_VIMEO" },
+      { "ID": "TESTO_PROP" },
+      { "ID": "VALORE_PROP" }
+    ] },
+    { "form_name": "Certificazioni", "fields": [{ "ID": "CERT_AMBIENTALE" }] }
+  ],
+  "linked_batches": [
+    {
+      "partner_code": "TEST",
+      "company_shortname": "TEST-PARTNER",
+      "company_uuid": "uuid-test-partner",
+      "company_webservice": "test-partner.example.com",
+      "productfamily_code": "FAM-000",
+      "item_code": "ITEM-000",
+      "batch_code": "BATCH-000",
+      "batch_qty": 100,
+      "batch_qty_unit_of_measure": "KG"
+    }
+  ]
+}

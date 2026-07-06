@@ -195,7 +195,15 @@
 }
 .output-form .file-link__icon{
   font-size: 1.9rem;
+  width: 1.9rem;
+  height: 1.9rem;
   line-height: 1;
+}
+.output-form .file-link__label{
+  font-size: .7rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
 }
 .output-form .file-link__arrow{
   width: 11px;
@@ -213,17 +221,30 @@
     0 0 0 3px rgba(255,255,255,.9),
     0 0 0 6px rgba(37, 99, 235, 0.35);
 }
+/* PDF: icona neutra (non più rossa "stile Adobe Acrobat") */
 .output-form .file-link--pdf{
-  color: #e53e3e;
+  color: #64748b;
 }
 .output-form .file-link--pdf:hover{
-  background: rgba(229, 62, 62, 0.06);
+  background: rgba(100, 116, 139, 0.08);
 }
 .output-form .file-link--doc{
   color: #3b82f6;
 }
 .output-form .file-link--doc:hover{
   background: rgba(59, 130, 246, 0.06);
+}
+.output-form .file-link--link{
+  color: #2563eb;
+}
+.output-form .file-link--link:hover{
+  background: rgba(37, 99, 235, 0.06);
+}
+.output-form .file-link--video{
+  color: #7c3aed;
+}
+.output-form .file-link--video:hover{
+  background: rgba(124, 58, 237, 0.06);
 }
 
 /* list */

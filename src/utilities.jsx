@@ -1,4 +1,17 @@
 
+export function getYouTubeId(url) {
+  const match = url?.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/);
+  return match ? match[1] : null;
+}
+
+export function pickItem(data_list, id, lang) {
+  const list = Array.isArray(data_list) ? data_list.filter(it => String(it.ID) === String(id)) : [];
+  if (!list.length) return null;
+  const langLc = String(lang || "").toLowerCase();
+  const exact = list.find(it => String(it.property_language || "").toLowerCase() === langLc);
+  return exact || list[0] || null;
+}
+
 export function getDirectImageUrl(url) {
   const driveMatch = url?.match(/drive\.google\.com\/file\/d\/([^/?]+)/);
   if (driveMatch) {
