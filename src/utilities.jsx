@@ -30,10 +30,19 @@ export function getApiUrl (url, batch_code, item_code, productfamily_code, compa
 };
 //Questa funzione confronta due oggetti data1 e data2
 export function compareDppDatas(data1, data2) {
+  // _identity (l'URL di richiesta, assegnato in fetchData di App.jsx) è
+  // l'identificativo affidabile: alcuni backend (es. Biotex) non popolano
+  // batch_code/item_code/productfamily_code/language in summary, e in quel
+  // caso il confronto sottostante darebbe undefined === undefined su quei
+  // campi, trattando prodotti diversi della stessa azienda come duplicati.
+  if (data1?._identity && data2?._identity) {
+    return data1._identity === data2._identity ? 0 : 1;
+  }
+
   var result = 1;
   if (data1.summary.company_code === data2.summary.company_code &&
     data1.summary.productfamily_code === data2.summary.productfamily_code &&
-    data1.summary.item_code === data2.summary.item_code && 
+    data1.summary.item_code === data2.summary.item_code &&
     data1.summary.batch_code === data2.summary.batch_code &&
     data1.summary.language === data2.summary.language) {
     result = 0

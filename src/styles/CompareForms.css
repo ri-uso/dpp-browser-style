@@ -152,27 +152,26 @@
   width: auto;
   object-fit: contain;
   border-radius: 6px;
-  display: block;
+  /* inline-block (non block): un box block ignora il text-align del genitore
+     e resterebbe sempre incollato a sinistra anche nella colonna "destra" */
+  display: inline-block;
 }
 
-/* ── File-link (icona doc) compatta per tabella, ridotta rispetto a .file-link
-   di outputForm.css (icona 1.9rem, pensata per layout a pagina intera) ── */
+/* ── File-link (icona doc) compatta per tabella: solo icona centrata in un
+   badge circolare, invece di icona+testo+freccia rimpiccioliti in miniatura
+   (illeggibili nelle colonne strette del confronto). Etichetta e nome file
+   restano disponibili come tooltip (title) e per screen reader. ── */
 .file-link--compact {
-  padding: 6px 8px;
-  border-radius: 8px;
-  gap: 2px;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: 50%;
+  justify-content: center;
 }
 .file-link--compact .file-link__icon {
-  font-size: 1.1rem;
-  width: 1.1rem;
-  height: 1.1rem;
-}
-.file-link--compact .file-link__label {
-  font-size: .6rem;
-}
-.file-link--compact .file-link__arrow {
-  width: 9px;
-  height: 9px;
+  font-size: 1.3rem;
+  width: 1.3rem;
+  height: 1.3rem;
 }
 
 /* ── Sezione #HEADER ── */
@@ -422,6 +421,24 @@
     box-shadow: 0 0 0 1px rgb(105 168 186 / var(--accent-inset)) inset;
     text-align: right;
   }
+
+  /* text-align non ha effetto sui figli di un flex container (.cmp-company-col
+     e .cmp-company-field sono display:flex): serve ripetere lo stesso
+     allineamento tramite align-items/justify-content. */
+  .cmp-prods .prod-col:nth-child(1).cmp-company-col {
+    align-items: flex-start;
+  }
+  .cmp-prods .prod-col:nth-child(1) .cmp-company-field {
+    justify-content: flex-start;
+  }
+  .cmp-prods .prod-col:nth-child(2).cmp-company-col,
+  .cmp-prods .prod-col:nth-child(3).cmp-company-col {
+    align-items: flex-end;
+  }
+  .cmp-prods .prod-col:nth-child(2) .cmp-company-field,
+  .cmp-prods .prod-col:nth-child(3) .cmp-company-field {
+    justify-content: flex-end;
+  }
 }
 
 /* Link */
@@ -613,6 +630,34 @@
     margin-left: var(--stair-x-mobile);
     text-align: right;
   }
+
+  /* text-align non ha effetto sui figli di un flex container (.cmp-company-col
+     e .cmp-company-field sono display:flex): serve ripetere lo stesso
+     allineamento tramite align-items/justify-content. */
+  .cmp-prods .prod-col:nth-child(1).cmp-company-col {
+    align-items: flex-start;
+  }
+  .cmp-prods .prod-col:nth-child(1) .cmp-company-field {
+    justify-content: flex-start;
+  }
+  .cmp-prods .prod-col:nth-child(2).cmp-company-col {
+    align-items: center;
+  }
+  .cmp-prods .prod-col:nth-child(2) .cmp-company-field {
+    justify-content: center;
+  }
+  .cmp-prods .prod-col:nth-child(3).cmp-company-col {
+    align-items: flex-end;
+  }
+  .cmp-prods .prod-col:nth-child(3) .cmp-company-field {
+    justify-content: flex-end;
+  }
+  .cmp-prods .prod-col:nth-child(2):last-child.cmp-company-col {
+    align-items: flex-end;
+  }
+  .cmp-prods .prod-col:nth-child(2):last-child .cmp-company-field {
+    justify-content: flex-end;
+  }
 }
 
 /* 🔧 Nasconde completamente la lista dei "pill" su desktop e tablet */
@@ -622,24 +667,52 @@
   }
 }
 
-/* ✅ FIX: allineamento desktop/tablet */
+/* ✅ FIX: allineamento desktop/tablet
+   N.B.: React serializza lo style inline come "--cols:2" (senza spazio dopo i
+   due punti), non "--cols: 2": il selettore deve usare la stessa forma o non
+   farà mai match. */
 @media (min-width: 641px) {
   /* 2 prodotti → sinistra/destra */
-  .cmp-row:not(.cmp-row--head)[style*="--cols: 2"] .cmp-prods .prod-col:nth-child(1) {
+  .cmp-row:not(.cmp-row--head)[style*="--cols:2"] .cmp-prods .prod-col:nth-child(1) {
     text-align: left !important;
   }
-  .cmp-row:not(.cmp-row--head)[style*="--cols: 2"] .cmp-prods .prod-col:nth-child(2) {
+  .cmp-row:not(.cmp-row--head)[style*="--cols:2"] .cmp-prods .prod-col:nth-child(2) {
     text-align: right !important;
   }
 
   /* 3 prodotti → sinistra/centro/destra */
-  .cmp-row:not(.cmp-row--head)[style*="--cols: 3"] .cmp-prods .prod-col:nth-child(1) {
+  .cmp-row:not(.cmp-row--head)[style*="--cols:3"] .cmp-prods .prod-col:nth-child(1) {
     text-align: left !important;
   }
-  .cmp-row:not(.cmp-row--head)[style*="--cols: 3"] .cmp-prods .prod-col:nth-child(2) {
+  .cmp-row:not(.cmp-row--head)[style*="--cols:3"] .cmp-prods .prod-col:nth-child(2) {
     text-align: center !important;
   }
-  .cmp-row:not(.cmp-row--head)[style*="--cols: 3"] .cmp-prods .prod-col:nth-child(3) {
+  .cmp-row:not(.cmp-row--head)[style*="--cols:3"] .cmp-prods .prod-col:nth-child(3) {
     text-align: right !important;
+  }
+
+  /* stesso allineamento per i figli flex (.cmp-company-col/.cmp-company-field
+     non rispondono a text-align) */
+  .cmp-row:not(.cmp-row--head)[style*="--cols:2"] .cmp-prods .prod-col:nth-child(1).cmp-company-col,
+  .cmp-row:not(.cmp-row--head)[style*="--cols:3"] .cmp-prods .prod-col:nth-child(1).cmp-company-col {
+    align-items: flex-start !important;
+  }
+  .cmp-row:not(.cmp-row--head)[style*="--cols:2"] .cmp-prods .prod-col:nth-child(1) .cmp-company-field,
+  .cmp-row:not(.cmp-row--head)[style*="--cols:3"] .cmp-prods .prod-col:nth-child(1) .cmp-company-field {
+    justify-content: flex-start !important;
+  }
+  .cmp-row:not(.cmp-row--head)[style*="--cols:2"] .cmp-prods .prod-col:nth-child(2).cmp-company-col,
+  .cmp-row:not(.cmp-row--head)[style*="--cols:3"] .cmp-prods .prod-col:nth-child(3).cmp-company-col {
+    align-items: flex-end !important;
+  }
+  .cmp-row:not(.cmp-row--head)[style*="--cols:2"] .cmp-prods .prod-col:nth-child(2) .cmp-company-field,
+  .cmp-row:not(.cmp-row--head)[style*="--cols:3"] .cmp-prods .prod-col:nth-child(3) .cmp-company-field {
+    justify-content: flex-end !important;
+  }
+  .cmp-row:not(.cmp-row--head)[style*="--cols:3"] .cmp-prods .prod-col:nth-child(2).cmp-company-col {
+    align-items: center !important;
+  }
+  .cmp-row:not(.cmp-row--head)[style*="--cols:3"] .cmp-prods .prod-col:nth-child(2) .cmp-company-field {
+    justify-content: center !important;
   }
 }

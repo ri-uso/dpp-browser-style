@@ -3,7 +3,11 @@ import { ExternalLink, Video as VideoIcon, Link as LinkIcon } from 'lucide-react
 import { FaFilePdf, FaFileAlt } from 'react-icons/fa';
 import { getDirectImageUrl, getYouTubeId } from '../utilities.jsx';
 
-/* Badge icona + testo cliccabile, condiviso da PDF/DOC/VIDEO(fallback)/website-other. */
+/* Badge icona + testo cliccabile, condiviso da PDF/DOC/VIDEO(fallback)/website-other.
+   In modalità compact (tabella di confronto) la colonna è troppo stretta per un
+   badge icona+testo+freccia leggibile: mostriamo solo l'icona, centrata, con
+   nome ed etichetta disponibili come tooltip nativo (title) e per screen reader
+   (aria-label + testo visually-hidden), invece di rimpicciolire tutto in miniatura. */
 function IconLinkBadge({ url, icon: Icon, label, variant, compact, ariaLabel }) {
   return (
     <a
@@ -12,8 +16,14 @@ function IconLinkBadge({ url, icon: Icon, label, variant, compact, ariaLabel }) 
       aria-label={ariaLabel} title={ariaLabel}
     >
       <Icon className="file-link__icon" />
-      <span className="file-link__label">{label}</span>
-      <ExternalLink className="file-link__arrow" aria-hidden="true" />
+      {compact ? (
+        <span className="visually-hidden">{label}</span>
+      ) : (
+        <>
+          <span className="file-link__label">{label}</span>
+          <ExternalLink className="file-link__arrow" aria-hidden="true" />
+        </>
+      )}
     </a>
   );
 }

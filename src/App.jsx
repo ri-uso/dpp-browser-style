@@ -162,6 +162,14 @@ function App({ language, onCompanyCodeChange }) {
       try {
         const jsonData = JSON.parse(text);
         const parsed = new URL(api_url);
+        // Alcuni backend (es. Biotex) non restituiscono batch_code/item_code/
+        // productfamily_code/language in summary: senza questo identificativo,
+        // compareDppDatas confronterebbe solo undefined === undefined e
+        // tratterebbe prodotti diversi della stessa azienda come duplicati,
+        // impedendone il confronto. L'URL di richiesta (univoco per
+        // batch/item/famiglia/azienda/lingua) è sempre disponibile ed è la
+        // vera identità del prodotto scansionato.
+        jsonData._identity = api_url;
         if (jsonData?.linked_batches && Array.isArray(jsonData.linked_batches)) {
           jsonData.linked_batches = jsonData.linked_batches.map(batch => {
             if (!batch.company_webservice || batch.company_webservice.trim() === "") {
@@ -228,9 +236,13 @@ function App({ language, onCompanyCodeChange }) {
   const handleConfirmCompare = (itemsArray) => {
     setShowSelectPopup(false);
 
-    // Identità completa del prodotto (stessi campi usati da compareDppDatas):
+    // Identità completa del prodotto (stessa logica di compareDppDatas):
     // due lotti diversi dello stesso articolo devono restare distinti.
+    // _identity (l'URL di richiesta, vedi fetchData) è sempre presente per i
+    // dati caricati dall'app; il fallback sui campi summary resta solo per
+    // eventuali dati storici privi di _identity.
     const keyOf = (item) => {
+      if (item?._identity) return item._identity;
       const s = item?.summary ?? {};
       return [
         s.company_code,
