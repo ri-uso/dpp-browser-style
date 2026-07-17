@@ -146,7 +146,11 @@ function App({ language, onCompanyCodeChange }) {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          // Salta la pagina di avviso di ngrok quando il backend è esposto
+          // tramite un tunnel ngrok (es. in fase di test); ignorato da qualunque
+          // altro server, quindi innocuo da tenere sempre.
+          'ngrok-skip-browser-warning': 'true'
         }
       });
 
