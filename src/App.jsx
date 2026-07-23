@@ -142,16 +142,20 @@ function App({ language, onCompanyCodeChange }) {
 
       const token = await getIdToken();
 
+      const headers = {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      };
+      // Salta la pagina di avviso di ngrok solo quando il backend è
+      // effettivamente esposto tramite un tunnel ngrok: altri backend possono
+      // avere un CORS che non whitelista questo header e rifiutare il preflight.
+      if (new URL(api_url).hostname.endsWith('ngrok-free.app') || new URL(api_url).hostname.endsWith('ngrok.io') || new URL(api_url).hostname.endsWith('ngrok.app')) {
+        headers['ngrok-skip-browser-warning'] = 'true';
+      }
+
       const response = await fetch(api_url, {
         method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-          // Salta la pagina di avviso di ngrok quando il backend è esposto
-          // tramite un tunnel ngrok (es. in fase di test); ignorato da qualunque
-          // altro server, quindi innocuo da tenere sempre.
-          'ngrok-skip-browser-warning': 'true'
-        }
+        headers
       });
 
       const text = await response.text();
