@@ -126,7 +126,7 @@ export const defaultCompany = 'dpp';
  * @returns {object} Object with header and footer logo paths
  */
 export const getLogos = (companyCode) => {
-  return logoConfig[companyCode] ?? null;
+  return logoConfig[companyCode] ?? logoConfig[defaultCompany] ?? null;
 };
 
 /**
