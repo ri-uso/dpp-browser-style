@@ -1,29 +1,21 @@
 import PropTypes from 'prop-types';
-import { ExternalLink, Video as VideoIcon, Link as LinkIcon } from 'lucide-react';
+import { Video as VideoIcon, Link as LinkIcon } from 'lucide-react';
 import { FaFilePdf, FaFileAlt } from 'react-icons/fa';
 import { getDirectImageUrl, getYouTubeId } from '../utilities.jsx';
 
-/* Badge icona + testo cliccabile, condiviso da PDF/DOC/VIDEO(fallback)/website-other.
-   In modalità compact (tabella di confronto) la colonna è troppo stretta per un
-   badge icona+testo+freccia leggibile: mostriamo solo l'icona, centrata, con
-   nome ed etichetta disponibili come tooltip nativo (title) e per screen reader
-   (aria-label + testo visually-hidden), invece di rimpicciolire tutto in miniatura. */
-function IconLinkBadge({ url, icon: Icon, label, variant, compact, ariaLabel }) {
+/* Badge tondo con la sola icona, condiviso da PDF/DOC/VIDEO(fallback)/website-other,
+   usato sia da OutputForm (prodotto singolo) sia da CompareForms (confronto): stesso
+   aspetto in entrambe le viste. Nome/tipo di link restano disponibili come tooltip
+   nativo (title) e per screen reader (aria-label + testo visually-hidden). */
+function IconLinkBadge({ url, icon: Icon, label, variant, ariaLabel }) {
   return (
     <a
       href={url} target="_blank" rel="noopener noreferrer"
-      className={`file-link file-link--${variant}${compact ? " file-link--compact" : ""}`}
+      className={`file-link file-link--${variant}`}
       aria-label={ariaLabel} title={ariaLabel}
     >
       <Icon className="file-link__icon" />
-      {compact ? (
-        <span className="visually-hidden">{label}</span>
-      ) : (
-        <>
-          <span className="file-link__label">{label}</span>
-          <ExternalLink className="file-link__arrow" aria-hidden="true" />
-        </>
-      )}
+      <span className="visually-hidden">{label}</span>
     </a>
   );
 }
@@ -32,7 +24,6 @@ IconLinkBadge.propTypes = {
   icon: PropTypes.elementType.isRequired,
   label: PropTypes.string.isRequired,
   variant: PropTypes.string.isRequired,
-  compact: PropTypes.bool,
   ariaLabel: PropTypes.string.isRequired,
 };
 
@@ -73,24 +64,24 @@ export function UrlValue({ item, compact = false }) {
       );
     }
     return (
-      <IconLinkBadge url={url} icon={VideoIcon} label="VIDEO" variant="video" compact={compact} ariaLabel="Apri video" />
+      <IconLinkBadge url={url} icon={VideoIcon} label="VIDEO" variant="video" ariaLabel="Apri video" />
     );
   }
 
   if (urlType === "P" || urlType === "PDF") {
     return (
-      <IconLinkBadge url={url} icon={FaFilePdf} label="PDF" variant="pdf" compact={compact} ariaLabel="Apri PDF" />
+      <IconLinkBadge url={url} icon={FaFilePdf} label="PDF" variant="pdf" ariaLabel="Apri PDF" />
     );
   }
 
   if (urlType === "DOC" || urlType === "DOCUMENT") {
     return (
-      <IconLinkBadge url={url} icon={FaFileAlt} label="LINK" variant="doc" compact={compact} ariaLabel="Apri documento" />
+      <IconLinkBadge url={url} icon={FaFileAlt} label="LINK" variant="doc" ariaLabel="Apri documento" />
     );
   }
 
   return (
-    <IconLinkBadge url={url} icon={LinkIcon} label="LINK" variant="link" compact={compact} ariaLabel="Apri link" />
+    <IconLinkBadge url={url} icon={LinkIcon} label="LINK" variant="link" ariaLabel="Apri link" />
   );
 }
 

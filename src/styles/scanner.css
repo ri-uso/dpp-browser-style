@@ -62,8 +62,15 @@
     0 0 0 6px rgba(64,181,164,.35) !important;
 }
 
-/* Dropzone “Choose image / Or drop…” */
-#reader__dashboard_section > div > div[style*="dashed"]{
+/* Dropzone “Choose image / Or drop…”. La libreria nasconde/mostra questo
+   elemento via style.display inline ("none"/"block") a seconda che la
+   modalità attiva sia camera o file: qui NON forziamo la visibilità (in
+   precedenza "display: flex !important" la sovrascriveva sempre, mostrando
+   "Seleziona immagine" anche in modalità camera; la selezione veniva però
+   ignorata internamente dalla libreria perché la modalità attiva restava
+   "camera", dando l'impressione di un pulsante rotto). Applichiamo il layout
+   flex solo quando la libreria stessa lo rende visibile. */
+#reader__dashboard_section > div > div[style*="dashed"]:not([style*="display: none"]){
   width: 100% !important;
   max-width: 560px !important;
   margin: 10px auto !important;

@@ -25,9 +25,9 @@ Html5QrcodeScannerStrings.torchOffFailedMessage = () => "Impossibile spegnere la
 Html5QrcodeScannerStrings.textIfCameraScanSelected = () => "Scansiona un file immagine";
 Html5QrcodeScannerStrings.textIfFileScanSelected = () => "Scansiona direttamente con la fotocamera";
 Html5QrcodeScannerStrings.selectCamera = () => "Seleziona fotocamera";
-Html5QrcodeScannerStrings.fileSelectionChooseImage = () => "Scegli immagine";
-Html5QrcodeScannerStrings.fileSelectionChooseAnother = () => "Scegli un'altra immagine";
-Html5QrcodeScannerStrings.fileSelectionNoImageSelected = () => "Nessuna immagine selezionata";
+Html5QrcodeScannerStrings.fileSelectionChooseImage = () => "Seleziona immagine";
+Html5QrcodeScannerStrings.fileSelectionChooseAnother = () => "Seleziona un'altra immagine";
+Html5QrcodeScannerStrings.fileSelectionNoImageSelected = () => "";
 Html5QrcodeScannerStrings.dragAndDropMessage = () => "Oppure trascina qui un'immagine da scansionare";
 Html5QrcodeScannerStrings.dragAndDropMessageOnlyImages = () => "Oppure trascina qui un'immagine da scansionare (altri file non supportati)";
 Html5QrcodeScannerStrings.zoom = () => "zoom";
@@ -106,6 +106,19 @@ function Scanner({ loadNewElement }) {
     }
 
     scanner.render(success, error);
+
+    // La libreria mostra troppi controlli superflui per l'utente finale:
+    // un messaggio "trascina qui" non cliccabile e la coda " - " lasciata
+    // dal testo del bottone file (svuotato sopra). Ne bastano solo due:
+    // "Richiedi permessi fotocamera" e "Seleziona immagine".
+    const fileSelectionButton = document.getElementById('html5-qrcode-button-file-selection');
+    if (fileSelectionButton) {
+      fileSelectionButton.textContent = fileSelectionButton.textContent.replace(/\s*-\s*$/, '');
+    }
+    const dragAndDropMessage = fileSelectionButton?.parentElement?.parentElement?.querySelector('div:last-child');
+    if (dragAndDropMessage) {
+      dragAndDropMessage.style.display = 'none';
+    }
 
     return () => {
       isMountedRef.current = false;
