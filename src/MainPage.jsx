@@ -135,7 +135,7 @@ function MainPage({
       return (
         <div className="logo-form-wrap" key={index} data-aos="fade-down">
           {logoFields.map((d, i) => (
-            <img key={i} src={getDirectImageUrl(d.value_url)} alt="Logo" className="logo-form-img" />
+            <img key={i} src={getDirectImageUrl(d.value_url)} alt="Logo" className="logo-form-img" referrerPolicy="no-referrer" />
           ))}
         </div>
       );

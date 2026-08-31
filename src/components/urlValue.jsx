@@ -38,10 +38,14 @@ export function UrlValue({ item, compact = false }) {
 
   if (urlType === "IMAGE") {
     return (
+      // Google Drive (lh3.googleusercontent.com) risponde 429 quando la richiesta
+      // porta un header Referer di terze parti: senza referrerPolicy l'anteprima
+      // resta rotta anche con un link pubblico e corretto.
       <img
         src={getDirectImageUrl(url)}
         alt={item.label ?? "image"}
         className={compact ? "img-fluid cmp-img-thumb" : "img-fluid"}
+        referrerPolicy="no-referrer"
       />
     );
   }

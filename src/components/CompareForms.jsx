@@ -40,13 +40,12 @@ function normalize(valueObj) {
   return "";
 }
 
-function shapeValue(d, forceLinkIds = new Set(["CERT_AMBIENTALE"])) {
+function shapeValue(d) {
   if (!d) return { kind: "empty" };
 
   if (d.value_url) {
-    // caso speciale preesistente: forza sempre un link testuale generico,
-    // indipendentemente dal tipo (es. certificazioni con ID dedicato)
-    if (forceLinkIds.has(d.ID)) return { kind: "link", url: d.value_url, label: "Link" };
+    // Il rendering dipende solo da value_url_type, come nel prodotto singolo:
+    // nessuna proprieta' e' trattata in modo speciale in base al suo ID.
     return { kind: "url", item: d };
   }
 
@@ -61,13 +60,6 @@ function shapeValue(d, forceLinkIds = new Set(["CERT_AMBIENTALE"])) {
 function Cell({ value }) {
   if (!value || value.kind === "empty") return <span className="cmp-muted">—</span>;
   if (value.kind === "url") return <UrlValue item={value.item} compact />;
-  if (value.kind === "link") {
-    return (
-      <a className="cmp-link" href={value.url} target="_blank" rel="noopener noreferrer">
-        {value.label}
-      </a>
-    );
-  }
   return <span>{value.text}</span>;
 }
 Cell.propTypes = { value: PropTypes.any };
@@ -193,7 +185,7 @@ export default function CompareForms({ dataList, language, setShowCompare = () =
                 <div className="cmp-cell prod-col cmp-logo-col" role="cell" key={`logo-${pi}`}>
                   {logoFields.length > 0
                     ? logoFields.map((d, li) => (
-                        <img key={li} src={getDirectImageUrl(d.value_url)} alt="Logo" className="cmp-logo-img" />
+                        <img key={li} src={getDirectImageUrl(d.value_url)} alt="Logo" className="cmp-logo-img" referrerPolicy="no-referrer" />
                       ))
                     : <span className="cmp-muted">—</span>
                   }
