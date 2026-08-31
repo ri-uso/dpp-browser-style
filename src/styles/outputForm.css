@@ -214,12 +214,12 @@
     0 0 0 3px rgba(255,255,255,.9),
     0 0 0 6px rgba(37, 99, 235, 0.35);
 }
-/* PDF: icona neutra (non più rossa "stile Adobe Acrobat") */
+/* PDF: rosso per rendere subito riconoscibile il tipo di file */
 .file-link--pdf{
-  color: #64748b;
+  color: #dc2626;
 }
 .file-link--pdf:hover{
-  background: rgba(100, 116, 139, 0.08);
+  background: rgba(220, 38, 38, 0.08);
 }
 .file-link--doc{
   color: #3b82f6;
@@ -251,7 +251,6 @@
 @media (max-width: 899px){
   .output-form .output-item .label{ font-size: .76rem; }
   .output-form .output-item .value{ font-size: .94rem; }
-  .output-form .value--file{ justify-content: center; }
 }
 
 .output-form .output-item,
