@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types';
 import { Video as VideoIcon, Link as LinkIcon } from 'lucide-react';
-import { FaFilePdf, FaFileAlt } from 'react-icons/fa';
+import { FaFileAlt } from 'react-icons/fa';
+import { PiFilePdf } from 'react-icons/pi';
 import { getDirectImageUrl, getYouTubeId } from '../utilities.jsx';
 
 /* Badge tondo con la sola icona, condiviso da PDF/DOC/VIDEO(fallback)/website-other,
@@ -70,7 +71,7 @@ export function UrlValue({ item, compact = false }) {
 
   if (urlType === "P" || urlType === "PDF") {
     return (
-      <IconLinkBadge url={url} icon={FaFilePdf} label="PDF" variant="pdf" ariaLabel="Apri PDF" />
+      <IconLinkBadge url={url} icon={PiFilePdf} label="PDF" variant="pdf" ariaLabel="Apri PDF" />
     );
   }
 

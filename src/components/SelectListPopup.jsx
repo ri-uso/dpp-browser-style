@@ -31,7 +31,11 @@ function SelectListPopup({
     );
   };
 
-  const filteredHistory = history.filter((item) => compareDppDatas(item, curr_element));
+  // Un oggetto è selezionabile per il confronto solo se ha Item code valorizzato
+  // (se Item code è disabilitato non può essere confrontato).
+  const filteredHistory = history.filter(
+    (item) => item?.summary?.item_code && compareDppDatas(item, curr_element)
+  );
 
   const handleCompare = () => {
     handleConfirmCompare(selectedIndices.map((i) => filteredHistory[i]));

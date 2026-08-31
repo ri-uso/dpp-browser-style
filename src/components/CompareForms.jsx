@@ -149,6 +149,9 @@ export default function CompareForms({ dataList, language, setShowCompare = () =
   }
 
   const forms = Array.isArray(products[0]?.forms) ? products[0].forms : [];
+  // Header (parte fissa) del confronto: mostra Item name se valorizzato,
+  // altrimenti Item code. Un prodotto senza Item code non è confrontabile
+  // (vedi SelectListPopup), quindi qui item_code è sempre presente come fallback.
   const titles = products.map(
     (p) => p?.summary?.item_name || p?.summary?.item_code || "Prodotto"
   );
