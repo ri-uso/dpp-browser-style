@@ -150,10 +150,10 @@ export default function CompareForms({ dataList, language, setShowCompare = () =
 
   const forms = Array.isArray(products[0]?.forms) ? products[0].forms : [];
   // Header (parte fissa) del confronto: mostra Item name se valorizzato,
-  // altrimenti Item code. Un prodotto senza Item code non è confrontabile
-  // (vedi SelectListPopup), quindi qui item_code è sempre presente come fallback.
+  // altrimenti Item code, altrimenti il codice lotto. Item name e Item code sono
+  // campi strutturati opzionali: il DPP-software può non inviarli affatto.
   const titles = products.map(
-    (p) => p?.summary?.item_name || p?.summary?.item_code || "Prodotto"
+    (p) => p?.summary?.item_name || p?.summary?.item_code || p?.summary?.batch_code || "Prodotto"
   );
   const summaries = products.map(p => p?.summary ?? {});
 
@@ -213,11 +213,11 @@ export default function CompareForms({ dataList, language, setShowCompare = () =
     // lingua), la riga non viene mostrata, anche se altri prodotti hanno il valore.
     const visibleFields = fields.filter(f => !isPropertyEmptyForProduct(products[0], f.ID));
     // Fallback: #HEADER configurato ma senza campi valorizzati -> si usa item_name
-    // (o item_code se manca),
+    // (o item_code, o il codice lotto, se mancano),
     // altrimenti i prodotti resterebbero senza titolo (nome/codice sono soppressi
     // nella riga "Articolo" proprio perché #HEADER è presente).
     const useFallback = visibleFields.length === 0;
-    const fallbackTitle = s => s.item_name || s.item_code || "";
+    const fallbackTitle = s => s.item_name || s.item_code || s.batch_code || "";
     if (useFallback && !summaries.some(s => fallbackTitle(s))) return null;
     return (
       <section

@@ -152,7 +152,7 @@ function MainPage({
             // Fallback: nessun campo valorizzato -> nome articolo, o codice se il
             // nome manca. Senza questo il prodotto resterebbe senza titolo, dato
             // che con #HEADER presente ProductInfo non mostra piu' nome/codice.
-            const fb = data.summary?.item_name || data.summary?.item_code;
+            const fb = data.summary?.item_name || data.summary?.item_code || data.summary?.batch_code;
             return fb ? [fb] : [];
           })();
       if (displayTexts.length === 0) return null;
