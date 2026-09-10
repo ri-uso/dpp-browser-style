@@ -149,23 +149,13 @@ export default function CompareForms({ dataList, language, setShowCompare = () =
   );
   const summaries = products.map(p => p?.summary ?? {});
 
-  // Se il form #HEADER e' configurato, il titolo dei prodotti lo da' lui: nome e
-  // codice articolo non vengono ripetuti nella riga "Articolo" (come in MainPage).
-  const hasHeaderForm = forms.some(f => f.form_name === '#HEADER' && Array.isArray(f.fields));
-
   /* diff check per campi summary */
   const hasBatch   = summaries.some(s => s.batch_code);
-  const hasItem    = hasHeaderForm
-    ? summaries.some(s => s.item_description)
-    : summaries.some(s => s.item_code || s.item_name || s.item_description);
+  const hasItem    = summaries.some(s => s.item_code || s.item_name || s.item_description);
   const hasFamily  = summaries.some(s => s.productfamily_code || s.productfamily_name || s.productfamily_description);
 
   const batchDiff  = new Set(summaries.map(s => s.batch_code  || "")).size > 1;
-  // con #HEADER il codice articolo non e' visibile, quindi la differenza va
-  // valutata sul solo campo effettivamente renderizzato
-  const itemDiff   = hasHeaderForm
-    ? new Set(summaries.map(s => s.item_description || "")).size > 1
-    : new Set(summaries.map(s => s.item_code || "")).size > 1;
+  const itemDiff   = new Set(summaries.map(s => s.item_code   || "")).size > 1;
   const familyDiff = new Set(summaries.map(s => s.productfamily_code || "")).size > 1;
 
   /* ── Rendering per form_name speciali ── */
@@ -204,35 +194,15 @@ export default function CompareForms({ dataList, language, setShowCompare = () =
     // N.B.: se il primo prodotto non ha valore per questa proprietà (in nessuna
     // lingua), la riga non viene mostrata, anche se altri prodotti hanno il valore.
     const visibleFields = fields.filter(f => !isPropertyEmptyForProduct(products[0], f.ID));
-    // Fallback: #HEADER configurato ma senza campi valorizzati -> si usa item_name
-    // (o item_code, o il codice lotto, se mancano),
-    // altrimenti i prodotti resterebbero senza titolo (nome/codice sono soppressi
-    // nella riga "Articolo" proprio perché #HEADER è presente).
-    const useFallback = visibleFields.length === 0;
-    const fallbackTitle = s => s.item_name || s.item_code || s.batch_code || "";
-    if (useFallback && !summaries.some(s => fallbackTitle(s))) return null;
+    // Come in MainPage: il titolo lo danno solo le proprieta' di #HEADER, senza
+    // ripiegare sui campi strutturati.
+    if (visibleFields.length === 0) return null;
     return (
       <section
         className="cmp-section cmp-section--header"
         key={`sec-${sIdx}`}
         style={{ top: `${stickyTop}px` }}
       >
-        {useFallback && (
-          <div
-            className={`cmp-row cmp-row--header${new Set(summaries.map(fallbackTitle)).size > 1 ? " is-diff" : ""}`}
-            role="row"
-            style={{ "--cols": products.length }}
-          >
-            <div className="cmp-cell feat-col" role="cell" />
-            <div className="cmp-prods">
-              {summaries.map((s, pi) => (
-                <div className="cmp-cell prod-col" role="cell" key={`hfb-${sIdx}-${pi}`}>
-                  {fallbackTitle(s) ? <span>{fallbackTitle(s)}</span> : <span className="cmp-muted">—</span>}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
         {visibleFields.map((f, idx) => {
           const id = f.ID;
           const normVals = products.map((p) => normalize(pickDatum(p, id, language)));
@@ -299,11 +269,7 @@ export default function CompareForms({ dataList, language, setShowCompare = () =
             <div className="cmp-prods">
               {summaries.map((s, i) => (
                 <div className="cmp-cell prod-col" role="cell" key={`item-${i}`}>
-                  <SummaryCell
-                    name={hasHeaderForm ? undefined : s.item_name}
-                    code={hasHeaderForm ? undefined : s.item_code}
-                    description={s.item_description}
-                  />
+                  <SummaryCell name={s.item_name} code={s.item_code} description={s.item_description} />
                 </div>
               ))}
             </div>

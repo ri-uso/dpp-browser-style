@@ -112,12 +112,6 @@ function MainPage({
   const seenSpecial = new Set();
   const SPECIAL_FORM_NAMES = new Set(['LOGO', '#LOGOCOMPANY', '#HEADER', '#BATCH-ITEM-PRODUCTFAMILY', '#COMPANY']);
 
-  // Pre-pass: #HEADER puo' comparire dopo #BATCH-ITEM-PRODUCTFAMILY nel JSON, quindi
-  // la sua presenza va nota prima del ciclo di rendering. Se c'e', il titolo del
-  // prodotto lo da' lui e ProductInfo non ripete nome/codice articolo.
-  const hasHeaderForm = Array.isArray(data?.forms)
-    && data.forms.some(f => f.form_name === '#HEADER' && Array.isArray(f.fields));
-
   const renderForm = (form, index) => {
     const name = form.form_name;
 
@@ -146,25 +140,18 @@ function MainPage({
         .map(f => pickItem(data.data, f.ID, language))
         .filter(d => d?.value_text)
         .map(d => d.value_text);
-      const displayTexts = headerTexts.length > 0
-        ? headerTexts
-        : (() => {
-            // Fallback: nessun campo valorizzato -> nome articolo, o codice se il
-            // nome manca. Senza questo il prodotto resterebbe senza titolo, dato
-            // che con #HEADER presente ProductInfo non mostra piu' nome/codice.
-            const fb = data.summary?.item_name || data.summary?.item_code || data.summary?.batch_code;
-            return fb ? [fb] : [];
-          })();
-      if (displayTexts.length === 0) return null;
+      // Il titolo lo da' solo #HEADER: se nessuna delle sue proprieta' e'
+      // valorizzata non si mostra nulla, senza ripiegare sui campi strutturati.
+      if (headerTexts.length === 0) return null;
       return (
-        <StickyHeader key={index} texts={displayTexts} headerHeight={headerHeight} />
+        <StickyHeader key={index} texts={headerTexts} headerHeight={headerHeight} />
       );
     }
 
     if (name === '#BATCH-ITEM-PRODUCTFAMILY') {
       return (
         <React.Fragment key={index}>
-          <ProductInfo summary={data.summary} language={language} hideItemIdentity={hasHeaderForm} />
+          <ProductInfo summary={data.summary} language={language} />
           {form.fields.length > 0 && (
             <div className="output-row">
               <OutputForm form={{ ...form, form_name: '' }} data_list={data.data} language={language} />

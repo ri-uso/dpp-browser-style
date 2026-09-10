@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import translations from './Translations.json';
 import '../styles/ProductInfo.css';
 
-export default function ProductInfo({ summary, language, hideItemIdentity = false }) {
+export default function ProductInfo({ summary, language }) {
   const t = translations[language] ?? translations['IT'];
 
   const {
@@ -16,12 +16,10 @@ export default function ProductInfo({ summary, language, hideItemIdentity = fals
     productfamily_uom,
   } = summary;
 
-  // Se il form #HEADER e' configurato, il titolo del prodotto vive li': nome e
-  // codice articolo non vengono ripetuti qui (vedi MainPage/CompareForms).
   const rows = [
     batch_code            && { label: t.batch_code_text,              value: batch_code },
-    !hideItemIdentity && item_name && { label: t.item_name_text,      value: item_name },
-    !hideItemIdentity && item_code && { label: t.item_code_text,      value: item_code },
+    item_name             && { label: t.item_name_text,               value: item_name },
+    item_code             && { label: t.item_code_text,               value: item_code },
     item_description      && { label: t.item_description_text,        value: item_description },
     productfamily_name    && { label: t.productfamily_name_text,      value: productfamily_name },
     productfamily_code    && { label: t.productfamily_code_text,      value: productfamily_code },
@@ -47,7 +45,6 @@ export default function ProductInfo({ summary, language, hideItemIdentity = fals
 
 ProductInfo.propTypes = {
   language: PropTypes.string.isRequired,
-  hideItemIdentity: PropTypes.bool,
   summary: PropTypes.shape({
     item_name: PropTypes.string,
     item_code: PropTypes.string,
