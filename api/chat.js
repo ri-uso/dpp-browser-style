@@ -1,141 +1,151 @@
 /**
- * Serverless function for OpenAI Chat API
- * Handles chat completions with streaming support
- * Supports both Chat Completions API and Responses API for GPT-5 models
+ * Serverless function per la chat testuale.
+ *
+ * Il frontend riceve sempre uno stream SSE in formato "chat completions"
+ * (`data: {"choices":[{"delta":{"content":"..."}}]}`), qualunque sia l'API
+ * OpenAI usata a monte: cosi' il client ha un solo parser da mantenere.
  */
 
+import { applyCors, enforceRateLimit, validateMessages } from './_guard.js';
+
+/**
+ * Modello di default per la chat.
+ *
+ * gpt-5.6-luna e' il gradino piu' economico della famiglia 5.6 ($0.20/$1.20 per
+ * 1M token) ed e' il primo che supporta `reasoning.effort: "none"`. Serve
+ * proprio qui: nella Responses API i token di reasoning consumano
+ * `max_output_tokens`, e con gpt-5-nano (che non ha "none") le risposte si
+ * troncavano a meta' frase. Per risposte piu' elaborate: 'gpt-5.6-terra'.
+ */
+const DEFAULT_MODEL = 'gpt-5.6-luna';
+const DEFAULT_REASONING_EFFORT = 'none';
+const DEFAULT_MAX_OUTPUT_TOKENS = 800;
+
 export default async function handler(req, res) {
-  // Only allow POST requests
+  if (!applyCors(req, res)) return;
+
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+  if (!enforceRateLimit(req, res, 'chat')) return;
 
+  const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
   if (!OPENAI_API_KEY) {
-    console.error('OPENAI_API_KEY not configured');
+    console.error('[Chat API] OPENAI_API_KEY non configurata');
     return res.status(500).json({ error: 'Server configuration error' });
   }
 
+  const {
+    messages,
+    model = DEFAULT_MODEL,
+    max_completion_tokens = DEFAULT_MAX_OUTPUT_TOKENS,
+    reasoning_effort = DEFAULT_REASONING_EFFORT
+  } = req.body || {};
+
+  const validationError = validateMessages(messages);
+  if (validationError) {
+    return res.status(400).json({ error: validationError });
+  }
+
+  console.log(`[Chat API] ${messages.length} messaggi, modello ${model}`);
+
   try {
-    const { messages, model = 'gpt-5-nano', max_completion_tokens = 500, reasoning_effort = 'low' } = req.body;
+    // I modelli di reasoning (gpt-5.x) vanno sulla Responses API; le varianti
+    // "chat-latest" e i modelli non-reasoning restano su Chat Completions.
+    const useResponsesAPI = /^(gpt-5|o[134])/.test(model) && !model.includes('chat-latest');
 
-    // Validation
-    if (!messages || !Array.isArray(messages)) {
-      return res.status(400).json({ error: 'Messages array is required' });
-    }
+    const options = {
+      messages,
+      model,
+      maxOutputTokens: max_completion_tokens,
+      reasoningEffort: reasoning_effort,
+      apiKey: OPENAI_API_KEY
+    };
 
-    if (messages.length === 0) {
-      return res.status(400).json({ error: 'Messages array cannot be empty' });
-    }
-
-    console.log(`[Chat API] Request: ${messages.length} messages, model: ${model}`);
-
-    // Determine which API to use based on model
-    // gpt-5-chat-latest uses Chat Completions API
-    // gpt-5, gpt-5-mini, gpt-5-nano use Responses API
-    const useResponsesAPI = model.startsWith('gpt-5') && !model.includes('chat-latest');
-
-    if (useResponsesAPI) {
-      return await handleResponsesAPI(req, res, {
-        messages,
-        model,
-        max_completion_tokens,
-        reasoning_effort,
-        apiKey: OPENAI_API_KEY
-      });
-    } else {
-      return await handleChatCompletionsAPI(req, res, {
-        messages,
-        model,
-        max_completion_tokens,
-        reasoning_effort,
-        apiKey: OPENAI_API_KEY
-      });
-    }
-
+    return useResponsesAPI
+      ? await streamResponsesAPI(res, options)
+      : await streamChatCompletionsAPI(res, options);
   } catch (error) {
-    console.error('[Chat API] Error:', error);
-
-    if (res.headersSent) {
-      res.end();
-    } else {
-      res.status(500).json({
-        error: 'Failed to generate response',
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined
-      });
-    }
+    console.error('[Chat API] Errore:', error);
+    failRequest(res, error);
   }
 }
 
 /**
- * Handle requests using the Responses API (for GPT-5 models)
+ * In streaming gli header sono gia' partiti: l'unica cosa sensata e' chiudere.
+ * Prima che partano, invece, possiamo ancora restituire un JSON di errore.
  */
-async function handleResponsesAPI(req, res, { messages, model, max_completion_tokens, reasoning_effort, apiKey }) {
-  // Extract system prompt and build input array
-  let systemPrompt = '';
-  let input = [];
-  
-  for (const msg of messages) {
-    if (msg.role === 'system') {
-      systemPrompt = msg.content;
-    } else {
-      input.push({
-        role: msg.role,
-        content: msg.content
-      });
-    }
+function failRequest(res, error) {
+  if (res.headersSent) {
+    res.end();
+    return;
   }
+  res.status(500).json({
+    error: 'Failed to generate response',
+    details: process.env.NODE_ENV === 'development' ? error.message : undefined
+  });
+}
+
+function startSSE(res) {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  // Disattiva il buffering dei proxy, altrimenti lo streaming arriva a blocchi.
+  res.setHeader('X-Accel-Buffering', 'no');
+}
+
+function writeDelta(res, content) {
+  if (!content) return;
+  res.write(`data: ${JSON.stringify({ choices: [{ delta: { content } }] })}\n\n`);
+}
+
+async function readOpenAIError(openaiResponse) {
+  const text = await openaiResponse.text();
+  try {
+    return JSON.parse(text).error?.message || text;
+  } catch {
+    return text;
+  }
+}
+
+/**
+ * Responses API (modelli di reasoning).
+ */
+async function streamResponsesAPI(res, { messages, model, maxOutputTokens, reasoningEffort, apiKey }) {
+  // Nella Responses API il system prompt viaggia in `instructions`, separato
+  // dalla conversazione.
+  const systemPrompt = messages.filter(m => m.role === 'system').map(m => m.content).join('\n\n');
+  const input = messages
+    .filter(m => m.role !== 'system')
+    .map(m => ({ role: m.role, content: m.content }));
 
   const requestBody = {
     model,
-    input: input,
-    stream: true
+    input,
+    stream: true,
+    max_output_tokens: maxOutputTokens,
+    reasoning: { effort: reasoningEffort }
   };
 
-  // Add system instructions if present
-  if (systemPrompt) {
-    requestBody.instructions = systemPrompt;
-  }
-
-  // Add optional parameters
-  if (max_completion_tokens) {
-    requestBody.max_output_tokens = max_completion_tokens;
-  }
-
-  // Add reasoning config for GPT-5 nano (use 'low' for faster responses)
-  requestBody.reasoning = {
-    effort: reasoning_effort || 'low'
-  };
-
-  console.log('[Chat API] Responses API request body:', JSON.stringify(requestBody, null, 2));
+  if (systemPrompt) requestBody.instructions = systemPrompt;
 
   const openaiResponse = await fetch('https://api.openai.com/v1/responses', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`
+      Authorization: `Bearer ${apiKey}`
     },
     body: JSON.stringify(requestBody)
   });
 
   if (!openaiResponse.ok) {
-    const errorText = await openaiResponse.text();
-    console.error('[Chat API] OpenAI Responses API error:', errorText);
-    try {
-      const errorData = JSON.parse(errorText);
-      return res.status(openaiResponse.status).json({
-        error: errorData.error?.message || 'OpenAI API error'
-      });
-    } catch {
-      return res.status(openaiResponse.status).json({ error: errorText });
-    }
+    const message = await readOpenAIError(openaiResponse);
+    console.error('[Chat API] Errore Responses API:', message);
+    return res.status(openaiResponse.status).json({ error: message });
   }
 
-  // Set headers for streaming
-  res.setHeader('Content-Type', 'text/event-stream');
-  res.setHeader('Cache-Control', 'no-cache');
-  res.setHeader('Connection', 'keep-alive');
+  startSSE(res);
 
   const reader = openaiResponse.body.getReader();
   const decoder = new TextDecoder();
@@ -147,123 +157,88 @@ async function handleResponsesAPI(req, res, { messages, model, max_completion_to
       if (done) break;
 
       buffer += decoder.decode(value, { stream: true });
-      
-      // Process complete events from buffer
-      // SSE format: "event: type\ndata: json\n\n"
+
+      // Un evento SSE finisce con una riga vuota; l'ultimo pezzo del buffer puo'
+      // essere un evento incompleto, quindi resta in attesa del chunk seguente.
       const events = buffer.split('\n\n');
-      buffer = events.pop() || ''; // Keep incomplete event in buffer
+      buffer = events.pop() || '';
 
-      for (const eventBlock of events) {
-        if (!eventBlock.trim()) continue;
+      for (const block of events) {
+        const payload = block
+          .split('\n')
+          .filter(line => line.startsWith('data: '))
+          .map(line => line.slice(6))
+          .join('');
 
-        const lines = eventBlock.split('\n');
-        let eventType = '';
-        let eventData = '';
+        if (!payload || payload === '[DONE]') continue;
 
-        for (const line of lines) {
-          if (line.startsWith('event: ')) {
-            eventType = line.slice(7).trim();
-          } else if (line.startsWith('data: ')) {
-            eventData = line.slice(6);
-          }
+        let parsed;
+        try {
+          parsed = JSON.parse(payload);
+        } catch {
+          console.warn('[Chat API] Evento non parsabile:', payload.slice(0, 120));
+          continue;
         }
 
-        // Debug logging
-        if (eventType) {
-          console.log(`[Chat API] Event type: ${eventType}`);
-        }
+        switch (parsed.type) {
+          case 'response.output_text.delta':
+            writeDelta(res, parsed.delta);
+            break;
 
-        if (eventData && eventData !== '[DONE]') {
-          try {
-            const parsed = JSON.parse(eventData);
-            
-            // Handle text delta events
-            if (parsed.type === 'response.output_text.delta' || eventType === 'response.output_text.delta') {
-              const delta = parsed.delta || '';
-              if (delta) {
-                // Convert to Chat Completions format for frontend compatibility
-                const chunk = {
-                  choices: [{
-                    delta: { content: delta }
-                  }]
-                };
-                res.write(`data: ${JSON.stringify(chunk)}\n\n`);
-              }
-            }
-            // Also check for content_part delta (alternative format)
-            else if (parsed.type === 'response.content_part.delta') {
-              const delta = parsed.delta?.text || '';
-              if (delta) {
-                const chunk = {
-                  choices: [{
-                    delta: { content: delta }
-                  }]
-                };
-                res.write(`data: ${JSON.stringify(chunk)}\n\n`);
-              }
-            }
-            // Handle completion
-            else if (parsed.type === 'response.completed' || eventType === 'response.completed') {
-              console.log('[Chat API] Response completed');
-              res.write('data: [DONE]\n\n');
-            }
-            // Log other event types for debugging
-            else if (parsed.type) {
-              console.log(`[Chat API] Unhandled event: ${parsed.type}`);
-            }
-          } catch (e) {
-            console.warn('[Chat API] Failed to parse event data:', eventData.substring(0, 100));
-          }
+          // La risposta ha esaurito max_output_tokens. Il testo prodotto finora
+          // e' gia' stato inoltrato: segnaliamo il troncamento invece di
+          // chiudere in silenzio a meta' frase.
+          case 'response.incomplete':
+            console.warn('[Chat API] Risposta troncata:', parsed.response?.incomplete_details?.reason);
+            writeDelta(res, ' […]');
+            break;
+
+          case 'response.failed':
+          case 'error':
+            console.error('[Chat API] Errore in streaming:', parsed.response?.error || parsed.error);
+            break;
+
+          default:
+            break;
         }
       }
     }
   } finally {
+    // Un solo [DONE], sempre: il client lo usa per chiudere lo stream anche
+    // quando la risposta e' stata troncata o e' fallita a meta'.
+    res.write('data: [DONE]\n\n');
     reader.releaseLock();
     res.end();
   }
 }
 
 /**
- * Handle requests using the Chat Completions API
+ * Chat Completions API (modelli non-reasoning).
  */
-async function handleChatCompletionsAPI(req, res, { messages, model, max_completion_tokens, reasoning_effort, apiKey }) {
-  const requestBody = {
-    model,
-    messages,
-    stream: true
-  };
-
-  // Only include reasoning_effort for o1 series models
-  if (model.startsWith('o1-')) {
-    requestBody.reasoning_effort = reasoning_effort;
-    requestBody.max_completion_tokens = max_completion_tokens;
-  } else {
-    requestBody.max_completion_tokens = max_completion_tokens;
-  }
-
-  console.log('[Chat API] Using Chat Completions API for model:', model);
-
+async function streamChatCompletionsAPI(res, { messages, model, maxOutputTokens, apiKey }) {
   const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`
+      Authorization: `Bearer ${apiKey}`
     },
-    body: JSON.stringify(requestBody)
+    body: JSON.stringify({
+      model,
+      messages,
+      stream: true,
+      max_completion_tokens: maxOutputTokens
+    })
   });
 
   if (!openaiResponse.ok) {
-    const errorData = await openaiResponse.json();
-    console.error('[Chat API] OpenAI error:', errorData);
-    return res.status(openaiResponse.status).json({
-      error: errorData.error?.message || 'OpenAI API error'
-    });
+    const message = await readOpenAIError(openaiResponse);
+    console.error('[Chat API] Errore Chat Completions:', message);
+    return res.status(openaiResponse.status).json({ error: message });
   }
 
-  res.setHeader('Content-Type', 'text/event-stream');
-  res.setHeader('Cache-Control', 'no-cache');
-  res.setHeader('Connection', 'keep-alive');
+  startSSE(res);
 
+  // Il formato in uscita e' gia' quello atteso dal client: inoltro diretto.
   const reader = openaiResponse.body.getReader();
   const decoder = new TextDecoder();
 
@@ -271,12 +246,10 @@ async function handleChatCompletionsAPI(req, res, { messages, model, max_complet
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
-
-      const chunk = decoder.decode(value, { stream: true });
-      res.write(chunk);
+      res.write(decoder.decode(value, { stream: true }));
     }
   } catch (streamError) {
-    console.error('[Chat API] Streaming error:', streamError);
+    console.error('[Chat API] Errore di streaming:', streamError);
   } finally {
     reader.releaseLock();
     res.end();

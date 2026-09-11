@@ -1,92 +1,98 @@
 /**
- * ChatService - Manages chat conversations with OpenAI
+ * ChatService - conversazioni testuali con il prodotto.
  *
- * This service handles:
- * - Sending messages to OpenAI Chat API with streaming support
- * - Managing conversation history
- * - Handling system prompts for product personas
+ * Parla solo con il nostro backend (`/api/chat`), mai direttamente con OpenAI:
+ * la chiave resta server-side.
  */
 
-// Backend API endpoint (proxied in development, direct in production)
 const CHAT_API_ENDPOINT = '/api/chat';
 
 /**
- * Sends a message to OpenAI and streams the response
- * @param {Array} messages - Array of message objects [{role: 'system'|'user'|'assistant', content: string}]
- * @param {Function} onChunk - Callback for each chunk of response text
- * @param {Object} options - Optional configuration {model: string, temperature: number}
- * @returns {Promise<string>} - Complete response text
+ * Il modello e' scelto lato server; lo si puo' forzare da qui per esperimenti.
+ * @see api/chat.js per il default e il perche' della scelta.
+ */
+export const DEFAULT_MAX_COMPLETION_TOKENS = 800;
+
+/**
+ * Quanti messaggi di conversazione tenere oltre al system prompt.
+ *
+ * Il system prompt contiene gia' l'intera scheda prodotto: senza un tetto la
+ * history cresce a ogni turno e il costo per messaggio con lei. Venti messaggi
+ * (dieci scambi) coprono ampiamente una conversazione su un capo.
+ */
+const MAX_HISTORY_MESSAGES = 20;
+
+/**
+ * Invia i messaggi al backend e restituisce il testo completo, inoltrando
+ * ogni pezzo a `onChunk` mano a mano che arriva.
+ *
+ * @param {Array<{role: string, content: string}>} messages
+ * @param {Function} [onChunk] - chiamata per ogni frammento di testo
+ * @param {Object} [options] - {model, max_completion_tokens, signal}
+ * @returns {Promise<string>} testo completo della risposta
  */
 export async function sendChatMessage(messages, onChunk = null, options = {}) {
-  const {
-    model = 'gpt-5-nano',
-    max_completion_tokens = 500,
-  } = options;
+  const { model, max_completion_tokens = DEFAULT_MAX_COMPLETION_TOKENS, signal } = options;
 
-  try {
-    const response = await fetch(CHAT_API_ENDPOINT, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-        // No Authorization header - handled by backend
-      },
-      body: JSON.stringify({
-        model,
-        messages,
-        max_completion_tokens,
-      })
-    });
+  const body = { messages, max_completion_tokens };
+  if (model) body.model = model;
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(`OpenAI API error: ${error.error?.message || response.statusText}`);
-    }
+  const response = await fetch(CHAT_API_ENDPOINT, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+    signal
+  });
 
-    // The API always returns streaming responses
-    // Handle streaming with or without onChunk callback
-    return await handleStreamingResponse(response, onChunk || (() => {}));
-  } catch (error) {
-    console.error('Error in sendChatMessage:', error);
-    throw error;
+  if (!response.ok) {
+    // Gli errori del backend sono JSON, ma un 502 del proxy potrebbe non esserlo.
+    const detail = await response.json().catch(() => null);
+    throw new Error(detail?.error || `Errore del server (${response.status})`);
   }
+
+  return readStream(response, onChunk || (() => {}), signal);
 }
 
 /**
- * Processes streaming response from OpenAI
- * @param {Response} response - Fetch response object
- * @param {Function} onChunk - Callback for each chunk
- * @returns {Promise<string>} - Complete text
+ * Legge lo stream SSE del backend.
+ *
+ * Il punto delicato: i confini dei chunk di rete non coincidono con i confini
+ * delle righe. Una riga `data: {...}` puo' arrivare spezzata in due `read()`, e
+ * parsarla subito significherebbe buttare via quel pezzo di risposta. Per questo
+ * l'ultima riga incompleta resta nel buffer fino al chunk successivo.
  */
-async function handleStreamingResponse(response, onChunk) {
+async function readStream(response, onChunk, signal) {
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
+  let buffer = '';
   let fullText = '';
 
   try {
     while (true) {
+      if (signal?.aborted) break;
+
       const { done, value } = await reader.read();
       if (done) break;
 
-      const chunk = decoder.decode(value, { stream: true });
-      const lines = chunk.split('\n').filter(line => line.trim() !== '');
+      buffer += decoder.decode(value, { stream: true });
+
+      const lines = buffer.split('\n');
+      buffer = lines.pop() ?? '';
 
       for (const line of lines) {
-        if (line.startsWith('data: ')) {
-          const data = line.slice(6);
-          if (data === '[DONE]') continue;
+        if (!line.startsWith('data: ')) continue;
 
-          try {
-            const parsed = JSON.parse(data);
-            const content = parsed.choices[0]?.delta?.content;
+        const payload = line.slice(6).trim();
+        if (!payload || payload === '[DONE]') continue;
 
-            // Filtra chunk vuoti o undefined
-            if (content && content.length > 0) {
-              fullText += content;
-              onChunk(content);
-            }
-          } catch (e) {
-            console.warn('Failed to parse streaming chunk:', e);
+        try {
+          const content = JSON.parse(payload).choices?.[0]?.delta?.content;
+          if (content) {
+            fullText += content;
+            onChunk(content);
           }
+        } catch {
+          console.warn('Frammento SSE non parsabile:', payload.slice(0, 120));
         }
       }
     }
@@ -97,98 +103,57 @@ async function handleStreamingResponse(response, onChunk) {
   return fullText;
 }
 
-
 /**
- * Creates a new chat conversation
- * @param {string} systemPrompt - Initial system prompt for the conversation
- * @returns {Object} - Conversation object with methods
+ * Crea una conversazione con memoria, legata a un system prompt.
+ * @param {string} systemPrompt
  */
 export function createConversation(systemPrompt) {
-  const messages = [
-    {
-      role: 'system',
-      content: systemPrompt
+  let messages = [{ role: 'system', content: systemPrompt }];
+
+  /** Tiene il system prompt e scarta i turni piu' vecchi oltre il tetto. */
+  function trim() {
+    if (messages.length > MAX_HISTORY_MESSAGES + 1) {
+      messages = [messages[0], ...messages.slice(-MAX_HISTORY_MESSAGES)];
     }
-  ];
+  }
 
   return {
-    /**
-     * Gets all messages in the conversation
-     */
     getMessages: () => [...messages],
 
     /**
-     * Adds a user message and gets AI response
-     * @param {string} userMessage - User's message
-     * @param {Function} onChunk - Optional callback for streaming
-     * @param {Object} options - Optional configuration
-     * @returns {Promise<string>} - AI response
+     * Aggiunge il messaggio dell'utente e restituisce la risposta dell'AI.
+     * @param {string} userMessage
+     * @param {Function} [onChunk]
+     * @param {Object} [options] - accetta anche {signal} per annullare
      */
     sendMessage: async (userMessage, onChunk = null, options = {}) => {
-      // Add user message
-      messages.push({
-        role: 'user',
-        content: userMessage
-      });
+      messages.push({ role: 'user', content: userMessage });
+      trim();
 
       try {
-        // Get AI response
         const response = await sendChatMessage(messages, onChunk, options);
-
-        // Add assistant response to history
-        messages.push({
-          role: 'assistant',
-          content: response
-        });
-
+        messages.push({ role: 'assistant', content: response });
+        trim();
         return response;
       } catch (error) {
-        // Remove user message if request failed
+        // Richiesta fallita o annullata: la domanda non deve restare a penzoloni
+        // nella history, altrimenti il turno successivo riparte sbilanciato.
         messages.pop();
         throw error;
       }
     },
 
-    /**
-     * Clears conversation history (keeps system prompt)
-     */
     reset: () => {
-      messages.length = 1; // Keep only system prompt
+      messages = [messages[0]];
     },
 
-    /**
-     * Updates the system prompt
-     * @param {string} newSystemPrompt - New system prompt
-     */
     updateSystemPrompt: (newSystemPrompt) => {
-      messages[0] = {
-        role: 'system',
-        content: newSystemPrompt
-      };
+      messages[0] = { role: 'system', content: newSystemPrompt };
     },
 
-    /**
-     * Gets conversation metadata
-     */
     getMetadata: () => ({
-      messageCount: messages.length - 1, // Exclude system prompt
+      messageCount: messages.length - 1,
       systemPrompt: messages[0].content
     })
   };
-}
-
-/**
- * Tests the backend API connection
- * @returns {Promise<boolean>} - True if connection successful
- */
-export async function testConnection() {
-  try {
-    await sendChatMessage([
-      { role: 'user', content: 'test' }
-    ]);
-    return true;
-  } catch (error) {
-    console.error('Backend API connection test failed:', error);
-    return false;
-  }
 }

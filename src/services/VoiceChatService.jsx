@@ -1,457 +1,401 @@
 /**
- * VoiceChatService - Manages voice conversations with OpenAI Realtime API
+ * VoiceChatService - conversazione vocale con il prodotto (Realtime API GA).
  *
- * Adds handling for newer event cases:
- * - response.output_text.delta / response.output_text.done
- * - response.text.delta / response.text.done
- * - response.completed / response.in_progress / response.failed
- * - conversation.item.input_audio_transcription.delta
- * - conversation.item.input_audio_transcription.failed
- * - response.output_audio.done (compat)
+ * Usa WebRTC, il trasporto che OpenAI raccomanda per il browser: la cattura del
+ * microfono, il jitter buffer e la riproduzione li gestisce il browser stesso.
+ * La versione precedente faceva tutto a mano via WebSocket (AudioWorklet,
+ * conversione PCM16, coda di riproduzione chunk-per-chunk) ed e' stata rimossa:
+ * era la fonte dei click tra un chunk e l'altro e della latenza a ogni ripresa.
  *
- * Keeps older handlers too:
- * - response.audio_transcript.delta/done
- * - response.audio.delta/done
- * - response.done
+ * Flusso:
+ *   1. il nostro backend conia una chiave effimera `ek_...` (/api/realtime/token)
+ *      con il system prompt gia' dentro la sessione;
+ *   2. il browser crea una RTCPeerConnection e scambia l'SDP con
+ *      POST https://api.openai.com/v1/realtime/calls;
+ *   3. l'audio del modello arriva su una media track, gli eventi JSON sul data
+ *      channel "oai-events".
  */
 
-const OPENAI_REALTIME_MODEL = 'gpt-realtime-mini'; // change as needed
 const BACKEND_TOKEN_ENDPOINT = '/api/realtime/token';
+const OPENAI_CALLS_ENDPOINT = 'https://api.openai.com/v1/realtime/calls';
+
+/** @see api/realtime/token.js - il backend ignora valori non ammessi. */
+const VOICE = 'marin';
+
+const CONNECT_TIMEOUT_MS = 15_000;
+
+/**
+ * Ogni quanti turni dell'assistente ri-affermare le istruzioni di sessione.
+ *
+ * Nella chat scritta il system prompt viaggia in ogni richiesta, quindi la
+ * persona resta sempre alla stessa distanza dalla risposta. Qui invece le
+ * istruzioni vengono messe una volta sola nella chiave effimera e poi
+ * arretrano man mano che i turni audio si accumulano: il modello finiva per
+ * appoggiarsi alla conversazione recente e uscire di personaggio. Un
+ * `session.update` periodico le riporta in primo piano.
+ *
+ * Quattro turni sono un compromesso: abbastanza spesso da contenere la deriva,
+ * abbastanza raro da non pesare sul contesto a ogni scambio.
+ */
+const REASSERT_INSTRUCTIONS_EVERY = 4;
 
 export function createVoiceSession(systemPrompt, callbacks = {}) {
-  let ws = null;
-  let audioContext = null;
-  let mediaStream = null;
-  let audioWorkletNode = null;
-  let sourceNode = null;
-  let isRecording = false;
-  let audioQueue = [];
-  let isPlaying = false;
-  let playbackContext = null;
+  let pc = null;
+  let dataChannel = null;
+  let micStream = null;
+  let micTrack = null;
+  let audioElement = null;
+  let connectionState = 'disconnected';
 
-  // Track assistant streaming text across multiple event types
-  let assistantTextBuffer = '';
+  // Il transcript dell'assistente arriva a pezzi: lo accumuliamo per poter
+  // emettere una versione finale anche quando l'evento di chiusura non porta
+  // il testo completo.
+  let assistantBuffer = '';
 
-  const callbacksRef = {
+  // Di quale evento ci stiamo fidando per il testo della risposta in corso.
+  // La sessione puo' emettere sia `response.output_audio_transcript.delta` sia
+  // `response.output_text.delta` per lo stesso contenuto: trattandoli entrambi
+  // il testo compariva due volte di fila a schermo. Vince il primo che arriva.
+  let deltaSource = null;
+
+  // Il saluto di apertura si chiede una volta sola per sessione: se il data
+  // channel si riaprisse, un secondo `response.create` lo farebbe ripetere.
+  let greetingRequested = false;
+
+  // Turni gia' pronunciati dall'assistente, per scandire il ri-ancoraggio.
+  let assistantTurns = 0;
+
+  const handlers = {
     onTranscript: callbacks.onTranscript || (() => {}),
     onAudioResponse: callbacks.onAudioResponse || (() => {}),
     onError: callbacks.onError || (() => {}),
     onConnectionChange: callbacks.onConnectionChange || (() => {})
   };
 
+  function setState(state) {
+    if (connectionState === state) return;
+    connectionState = state;
+    handlers.onConnectionChange(state);
+  }
+
+  function fail(message) {
+    handlers.onError(message);
+  }
+
   async function getEphemeralToken() {
     const response = await fetch(BACKEND_TOKEN_ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: OPENAI_REALTIME_MODEL,
-        voice: 'alloy'
-      })
+      body: JSON.stringify({ voice: VOICE, instructions: systemPrompt })
     });
 
-    if (!response.ok) throw new Error(`Failed to get token: ${response.status}`);
-    const data = await response.json();
-    return data.client_secret?.value || data.token;
+    if (!response.ok) {
+      const detail = await response.json().catch(() => null);
+      throw new Error(detail?.error || `Impossibile ottenere il token (${response.status})`);
+    }
+
+    const { token } = await response.json();
+    if (!token) throw new Error('Il backend non ha restituito un token');
+    return token;
   }
 
   async function connect() {
-    callbacksRef.onConnectionChange('connecting');
+    if (pc) disconnect();
+    setState('connecting');
 
-    const token = await getEphemeralToken();
-    if (!token) throw new Error('No token received from backend');
+    try {
+      const token = await getEphemeralToken();
 
-    const wsUrl = `wss://api.openai.com/v1/realtime?model=${OPENAI_REALTIME_MODEL}`;
+      pc = new RTCPeerConnection();
 
-    // Keep your existing browser-auth subprotocol pattern
-    const protocols = [
-      'realtime',
-      `openai-insecure-api-key.${token}`,
-      'openai-beta.realtime-v1'
-    ];
+      // L'audio del modello: basta agganciare lo stream remoto a un <audio>.
+      audioElement = new Audio();
+      audioElement.autoplay = true;
+      pc.ontrack = (event) => {
+        audioElement.srcObject = event.streams[0];
+      };
 
-    ws = new WebSocket(wsUrl, protocols);
-
-    ws.onopen = () => {
-      // Session config – leaving your original shape to minimize changes.
-      // If your server rejects these fields, switch to the newer nested audio shape.
-      ws.send(JSON.stringify({
-        type: 'session.update',
-        session: {
-          modalities: ['text', 'audio'],
-          instructions: systemPrompt,
-          voice: 'alloy',
-          input_audio_format: 'pcm16',
-          output_audio_format: 'pcm16',
-          input_audio_transcription: { model: 'whisper-1' },
-          turn_detection: {
-            type: 'server_vad',
-            threshold: 0.5,
-            prefix_padding_ms: 300,
-            silence_duration_ms: 700
-          }
+      micStream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          channelCount: 1,
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true
         }
-      }));
-    };
+      });
 
-    ws.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        handleRealtimeEvent(data);
-      } catch (e) {
-        console.error('Failed to parse message:', e);
+      micTrack = micStream.getAudioTracks()[0];
+      // Si parte a microfono chiuso: e' l'utente a decidere quando parlare.
+      micTrack.enabled = false;
+      pc.addTrack(micTrack, micStream);
+
+      dataChannel = pc.createDataChannel('oai-events');
+
+      // Senza questo il prodotto resta muto finche' non parla l'utente, che si
+      // ritrova davanti un microfono e nessun contesto. Il saluto di apertura
+      // e' gia' descritto nelle istruzioni di sessione (una frase sola), quindi
+      // qui basta chiedere una risposta: nessun override, la persona resta.
+      dataChannel.onopen = () => {
+        if (greetingRequested) return;
+        greetingRequested = true;
+        send({ type: 'response.create' });
+      };
+
+      dataChannel.onmessage = (event) => {
+        try {
+          handleServerEvent(JSON.parse(event.data));
+        } catch (e) {
+          console.error('Evento realtime non parsabile:', e);
+        }
+      };
+
+      pc.onconnectionstatechange = () => {
+        if (!pc) return;
+        if (pc.connectionState === 'connected') {
+          setState('connected');
+        } else if (pc.connectionState === 'failed') {
+          // Diversamente dalla versione WebSocket, qui l'handler resta attivo
+          // per tutta la durata della sessione: gli errori a meta' conversazione
+          // arrivano davvero alla UI.
+          fail('Connessione audio interrotta');
+          setState('error');
+        } else if (pc.connectionState === 'disconnected' || pc.connectionState === 'closed') {
+          setState('disconnected');
+        }
+      };
+
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+
+      // Il modello e la configurazione di sessione viaggiano gia' dentro la
+      // chiave effimera: qui serve solo l'SDP, come corpo grezzo.
+      const sdpResponse = await fetch(OPENAI_CALLS_ENDPOINT, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/sdp'
+        },
+        body: offer.sdp,
+        signal: AbortSignal.timeout(CONNECT_TIMEOUT_MS)
+      });
+
+      if (!sdpResponse.ok) {
+        const detail = await sdpResponse.text();
+        throw new Error(`Scambio SDP fallito (${sdpResponse.status}): ${detail.slice(0, 200)}`);
       }
-    };
 
-    ws.onerror = (error) => {
-      console.error('WebSocket error:', error);
-      callbacksRef.onError('Connection error');
-      callbacksRef.onConnectionChange('error');
-    };
-
-    ws.onclose = () => {
-      callbacksRef.onConnectionChange('disconnected');
+      await pc.setRemoteDescription({
+        type: 'answer',
+        sdp: await sdpResponse.text()
+      });
+    } catch (error) {
       cleanup();
-    };
+      setState('error');
+      throw error;
+    }
+  }
 
-    return new Promise((resolve, reject) => {
-      const timeout = setTimeout(() => reject(new Error('Connection timeout')), 10000);
+  function send(event) {
+    if (dataChannel?.readyState === 'open') {
+      dataChannel.send(JSON.stringify(event));
+      return true;
+    }
+    return false;
+  }
 
-      const originalOnOpen = ws.onopen;
-      ws.onopen = (event) => {
-        clearTimeout(timeout);
-        if (originalOnOpen) originalOnOpen(event);
-        resolve();
-      };
-
-      ws.onerror = (error) => {
-        clearTimeout(timeout);
-        reject(error);
-      };
+  /**
+   * Rimette le istruzioni in primo piano senza toccare il resto della sessione.
+   *
+   * `session.update` e' un merge parziale: cambiano solo i campi indicati, e
+   * voce e modello restano quelli fissati alla creazione della chiave effimera
+   * (non sarebbero comunque modificabili a sessione avviata).
+   */
+  function reassertInstructions() {
+    if (!systemPrompt) return;
+    send({
+      type: 'session.update',
+      session: { type: 'realtime', instructions: systemPrompt }
     });
   }
 
-  function emitAssistantDeltaText(delta) {
-    if (!delta) return;
-    assistantTextBuffer += delta;
-    callbacksRef.onTranscript({ role: 'assistant', text: delta, isFinal: false });
+  function emitDelta(role, text) {
+    if (!text) return;
+    if (role === 'assistant') assistantBuffer += text;
+    handlers.onTranscript({ role, text, isFinal: false });
   }
 
-  function emitAssistantFinalText(finalText) {
-    const text = finalText ?? assistantTextBuffer;
-    if (text) {
-      callbacksRef.onTranscript({ role: 'assistant', text, isFinal: true });
+  /**
+   * Accetta i delta dell'assistente da una sola sorgente per risposta.
+   * @param {string} source - il tipo di evento che porta il delta
+   */
+  function emitAssistantDelta(source, text) {
+    if (deltaSource === null) deltaSource = source;
+    if (deltaSource !== source) return;
+    emitDelta('assistant', text);
+  }
+
+  function emitFinal(role, text) {
+    const finalText = text || (role === 'assistant' ? assistantBuffer : '');
+    if (finalText) handlers.onTranscript({ role, text: finalText, isFinal: true });
+    if (role === 'assistant') {
+      assistantBuffer = '';
+      // La risposta e' chiusa: la prossima ricomincia a scegliere la sorgente.
+      deltaSource = null;
     }
-    assistantTextBuffer = '';
   }
 
-  function handleRealtimeEvent(event) {
+  function handleServerEvent(event) {
     switch (event.type) {
-      // --------------------
-      // Session lifecycle
-      // --------------------
       case 'session.created':
-        callbacksRef.onConnectionChange('connected');
-        break;
-
       case 'session.updated':
-        // ok
+        setState('connected');
         break;
 
-      // --------------------
-      // Input audio buffer / VAD
-      // --------------------
-      case 'input_audio_buffer.speech_started':
-      case 'input_audio_buffer.speech_stopped':
-      case 'input_audio_buffer.committed':
-        // optional logging hooks
-        break;
-
-      // --------------------
-      // User transcription (completed + delta + failed)
-      // --------------------
+      // --- Trascrizione di cio' che dice l'utente ---
       case 'conversation.item.input_audio_transcription.delta':
-        // For some transcription models this can be incremental; for whisper-1 it may look “final-ish”.
-        if (event.transcript) {
-          callbacksRef.onTranscript({ role: 'user', text: event.transcript, isFinal: false });
-        }
+        emitDelta('user', event.delta);
         break;
 
       case 'conversation.item.input_audio_transcription.completed':
-        if (event.transcript) {
-          callbacksRef.onTranscript({ role: 'user', text: event.transcript, isFinal: true });
-        }
+        emitFinal('user', event.transcript);
         break;
 
       case 'conversation.item.input_audio_transcription.failed':
-        callbacksRef.onError(event.error?.message || 'Input audio transcription failed');
+        fail(event.error?.message || 'Trascrizione non riuscita');
         break;
 
-      // --------------------
-      // Assistant text (newer event names)
-      // --------------------
+      // --- Testo dell'assistente (nomi eventi GA) ---
+      // Una nuova risposta riparte da zero, sorgente dei delta compresa.
+      case 'response.created':
+        assistantBuffer = '';
+        deltaSource = null;
+        break;
+
+      case 'response.output_audio_transcript.delta':
+        emitAssistantDelta('audio_transcript', event.delta);
+        break;
+
       case 'response.output_text.delta':
-        // Newer streaming text event in the Responses-style stream. [web:26]
-        emitAssistantDeltaText(event.delta);
+        emitAssistantDelta('text', event.delta);
+        break;
+
+      case 'response.output_audio_transcript.done':
+        // Chiude solo la sorgente che ha effettivamente alimentato il testo,
+        // altrimenti la risposta verrebbe consegnata due volte alla UI.
+        if (deltaSource !== 'text') emitFinal('assistant', event.transcript);
         break;
 
       case 'response.output_text.done':
-        // Some streams provide the final assembled text; some do not.
-        // Try common fields, fall back to buffered deltas.
-        emitAssistantFinalText(event.text);
+        if (deltaSource !== 'audio_transcript') emitFinal('assistant', event.text);
         break;
 
-      case 'response.text.delta':
-        // Another variant used by some realtime stacks. [web:26]
-        emitAssistantDeltaText(event.delta);
+      // --- L'utente ha iniziato a parlare: il VAD del server taglia da solo
+      // la risposta in corso, alla UI basta saperlo. ---
+      case 'input_audio_buffer.speech_started':
+        handlers.onAudioResponse({ speaking: false });
         break;
 
-      case 'response.text.done':
-        emitAssistantFinalText(event.text);
+      // --- Il modello sta parlando (eventi specifici di WebRTC) ---
+      case 'output_audio_buffer.started':
+        handlers.onAudioResponse({ speaking: true });
         break;
 
-      // --------------------
-      // Assistant text (older audio-transcript names)
-      // --------------------
-      case 'response.audio_transcript.delta':
-        // Older streaming assistant text tied to audio output.
-        emitAssistantDeltaText(event.delta);
+      case 'output_audio_buffer.stopped':
+      case 'output_audio_buffer.cleared':
+        handlers.onAudioResponse({ speaking: false });
         break;
 
-      case 'response.audio_transcript.done':
-        // Older final assistant transcript.
-        emitAssistantFinalText(event.transcript);
-        break;
-
-      // --------------------
-      // Assistant audio (PCM16 base64)
-      // --------------------
-      case 'response.audio.delta':
-        if (event.delta) {
-          const audioData = base64ToInt16Array(event.delta);
-          audioQueue.push(audioData);
-          if (!isPlaying) playAudioQueue();
+      case 'response.done':
+        emitFinal('assistant', null);
+        if (event.response?.status === 'failed') {
+          fail(event.response?.status_details?.error?.message || 'Risposta non riuscita');
+        } else {
+          // A risposta conclusa, mai durante: aggiornare la sessione mentre il
+          // modello sta parlando non e' garantito che abbia effetto sul turno
+          // in corso.
+          assistantTurns += 1;
+          if (assistantTurns % REASSERT_INSTRUCTIONS_EVERY === 0) {
+            reassertInstructions();
+          }
         }
         break;
 
-      case 'response.audio.done':
-        callbacksRef.onAudioResponse({ complete: true });
-        break;
-
-      // Compatibility: some environments mention output_audio.done
-      case 'response.output_audio.done':
-        callbacksRef.onAudioResponse({ complete: true });
-        break;
-
-      // --------------------
-      // Response lifecycle (newer)
-      // --------------------
-      case 'response.in_progress':
-        // Response started generating. [web:29]
-        break;
-
-      case 'response.completed':
-        // Official completion event in some streams. [web:29]
-        // Ensure any buffered assistant text is finalized.
-        emitAssistantFinalText(undefined);
-        break;
-
-      case 'response.failed':
-        callbacksRef.onError(event.error?.message || 'Response failed');
-        break;
-
-      // --------------------
-      // Response lifecycle (older)
-      // --------------------
-      case 'response.done':
-        // Seen in some realtime guides/implementations.
-        emitAssistantFinalText(undefined);
-        break;
-
-      // --------------------
-      // General errors
-      // --------------------
       case 'error':
-        // Treat empty-commit as non-fatal
-        if (event.error?.code === 'input_audio_buffer_commit_empty') break;
-        callbacksRef.onError(event.error?.message || 'Unknown error');
+        fail(event.error?.message || 'Errore sconosciuto');
         break;
 
       default:
-        // ignore
         break;
     }
   }
 
-  async function startRecording() {
-    if (isRecording) return;
-
-    mediaStream = await navigator.mediaDevices.getUserMedia({
-      audio: {
-        channelCount: 1,
-        sampleRate: 24000,
-        echoCancellation: true,
-        noiseSuppression: true,
-        autoGainControl: true
-      }
-    });
-
-    audioContext = new AudioContext({ sampleRate: 24000 });
-    if (audioContext.state === 'suspended') await audioContext.resume();
-
-    sourceNode = audioContext.createMediaStreamSource(mediaStream);
-
-    const workletUrl = createAudioWorkletProcessor();
-    await audioContext.audioWorklet.addModule(workletUrl);
-    URL.revokeObjectURL(workletUrl);
-
-    audioWorkletNode = new AudioWorkletNode(audioContext, 'audio-processor', {
-      processorOptions: { bufferSize: 4096 }
-    });
-
-    audioWorkletNode.port.onmessage = (event) => {
-      if (ws && ws.readyState === WebSocket.OPEN && isRecording) {
-        const audioBase64 = int16ArrayToBase64(new Int16Array(event.data.buffer));
-        ws.send(JSON.stringify({ type: 'input_audio_buffer.append', audio: audioBase64 }));
-      }
-    };
-
-    sourceNode.connect(audioWorkletNode);
-    isRecording = true;
+  /** Apre il microfono. Con il VAD semantico il turno lo chiude il server. */
+  function startRecording() {
+    if (!micTrack) throw new Error('Microfono non disponibile');
+    micTrack.enabled = true;
   }
 
+  /** Chiude il microfono senza smontare la sessione. */
   function stopRecording() {
-    if (!isRecording) return;
-    isRecording = false;
-
-    if (ws && ws.readyState === WebSocket.OPEN) {
-      ws.send(JSON.stringify({ type: 'input_audio_buffer.commit' }));
-    }
-
-    if (mediaStream) {
-      mediaStream.getTracks().forEach(t => t.stop());
-      mediaStream = null;
-    }
-
-    if (sourceNode) {
-      sourceNode.disconnect();
-      sourceNode = null;
-    }
-
-    if (audioWorkletNode) {
-      audioWorkletNode.disconnect();
-      audioWorkletNode.port.close();
-      audioWorkletNode = null;
-    }
-
-    if (audioContext && audioContext.state !== 'closed') {
-      audioContext.close();
-      audioContext = null;
-    }
+    if (micTrack) micTrack.enabled = false;
   }
 
-  async function playAudioQueue() {
-    if (isPlaying || audioQueue.length === 0) return;
-    isPlaying = true;
-
-    if (!playbackContext || playbackContext.state === 'closed') {
-      playbackContext = new AudioContext({ sampleRate: 24000 });
-    }
-
-    while (audioQueue.length > 0) {
-      const pcmData = audioQueue.shift();
-      await playPCM16Chunk(pcmData);
-    }
-
-    isPlaying = false;
-  }
-
-  function playPCM16Chunk(int16Data) {
-    return new Promise((resolve) => {
-      if (!playbackContext || playbackContext.state === 'closed') {
-        playbackContext = new AudioContext({ sampleRate: 24000 });
-      }
-
-      const float32Data = new Float32Array(int16Data.length);
-      for (let i = 0; i < int16Data.length; i++) float32Data[i] = int16Data[i] / 32768.0;
-
-      const audioBuffer = playbackContext.createBuffer(1, float32Data.length, 24000);
-      audioBuffer.getChannelData(0).set(float32Data);
-
-      const source = playbackContext.createBufferSource();
-      source.buffer = audioBuffer;
-      source.connect(playbackContext.destination);
-      source.onended = resolve;
-      source.start();
-    });
-  }
-
+  /** Interrompe la risposta in corso (barge-in manuale). */
   function interrupt() {
-    if (ws && ws.readyState === WebSocket.OPEN) {
-      ws.send(JSON.stringify({ type: 'response.cancel' }));
-    }
-    audioQueue = [];
-    isPlaying = false;
-    assistantTextBuffer = '';
+    send({ type: 'response.cancel' });
+    assistantBuffer = '';
+    handlers.onAudioResponse({ speaking: false });
   }
 
   function sendTextMessage(text) {
-    if (!(ws && ws.readyState === WebSocket.OPEN)) return;
-
-    ws.send(JSON.stringify({
+    const queued = send({
       type: 'conversation.item.create',
       item: {
         type: 'message',
         role: 'user',
         content: [{ type: 'input_text', text }]
       }
-    }));
-
-    ws.send(JSON.stringify({ type: 'response.create' }));
+    });
+    if (queued) send({ type: 'response.create' });
+    return queued;
   }
 
   function cleanup() {
-    isRecording = false;
-    isPlaying = false;
-    assistantTextBuffer = '';
+    assistantBuffer = '';
+    deltaSource = null;
+    greetingRequested = false;
+    assistantTurns = 0;
 
-    if (mediaStream) {
-      mediaStream.getTracks().forEach(track => track.stop());
-      mediaStream = null;
+    if (micStream) {
+      micStream.getTracks().forEach(track => track.stop());
+      micStream = null;
+    }
+    micTrack = null;
+
+    if (dataChannel) {
+      dataChannel.onopen = null;
+      dataChannel.onmessage = null;
+      dataChannel.close();
+      dataChannel = null;
     }
 
-    if (sourceNode) {
-      sourceNode.disconnect();
-      sourceNode = null;
+    if (pc) {
+      pc.onconnectionstatechange = null;
+      pc.ontrack = null;
+      pc.close();
+      pc = null;
     }
 
-    if (audioWorkletNode) {
-      audioWorkletNode.disconnect();
-      audioWorkletNode = null;
+    if (audioElement) {
+      audioElement.pause();
+      audioElement.srcObject = null;
+      audioElement = null;
     }
-
-    if (audioContext && audioContext.state !== 'closed') {
-      audioContext.close();
-      audioContext = null;
-    }
-
-    if (playbackContext && playbackContext.state !== 'closed') {
-      playbackContext.close();
-      playbackContext = null;
-    }
-
-    audioQueue = [];
   }
 
   function disconnect() {
-    stopRecording();
-
-    if (ws) {
-      if (ws.readyState === WebSocket.OPEN) ws.close(1000, 'Client disconnect');
-      ws = null;
-    }
-
     cleanup();
-    callbacksRef.onConnectionChange('disconnected');
+    setState('disconnected');
   }
 
   async function checkMicrophoneAvailable() {
@@ -463,17 +407,6 @@ export function createVoiceSession(systemPrompt, callbacks = {}) {
     }
   }
 
-  function getConnectionState() {
-    if (!ws) return 'disconnected';
-    switch (ws.readyState) {
-      case WebSocket.CONNECTING: return 'connecting';
-      case WebSocket.OPEN: return 'connected';
-      case WebSocket.CLOSING: return 'disconnecting';
-      case WebSocket.CLOSED: return 'disconnected';
-      default: return 'unknown';
-    }
-  }
-
   return {
     connect,
     disconnect,
@@ -481,74 +414,16 @@ export function createVoiceSession(systemPrompt, callbacks = {}) {
     stopRecording,
     interrupt,
     sendTextMessage,
-    isRecording: () => isRecording,
-    isConnected: () => ws && ws.readyState === WebSocket.OPEN,
-    getConnectionState,
     checkMicrophoneAvailable,
+    isRecording: () => Boolean(micTrack?.enabled),
+    isConnected: () => connectionState === 'connected',
+    getConnectionState: () => connectionState,
 
-    set onTranscript(fn) { callbacksRef.onTranscript = fn; },
-    set onConnectionChange(fn) { callbacksRef.onConnectionChange = fn; },
-    set onError(fn) { callbacksRef.onError = fn; },
-    set onAudioResponse(fn) { callbacksRef.onAudioResponse = fn; }
+    set onTranscript(fn) { handlers.onTranscript = fn; },
+    set onConnectionChange(fn) { handlers.onConnectionChange = fn; },
+    set onError(fn) { handlers.onError = fn; },
+    set onAudioResponse(fn) { handlers.onAudioResponse = fn; }
   };
-}
-
-// ============= Helper Functions =============
-
-function base64ToInt16Array(base64) {
-  const binaryString = atob(base64);
-  const bytes = new Uint8Array(binaryString.length);
-  for (let i = 0; i < binaryString.length; i++) bytes[i] = binaryString.charCodeAt(i);
-  return new Int16Array(bytes.buffer);
-}
-
-function int16ArrayToBase64(int16Array) {
-  const uint8Array = new Uint8Array(int16Array.buffer);
-  let binary = '';
-  for (let i = 0; i < uint8Array.length; i++) binary += String.fromCharCode(uint8Array[i]);
-  return btoa(binary);
-}
-
-function createAudioWorkletProcessor() {
-  const processorCode = `
-    class AudioProcessor extends AudioWorkletProcessor {
-      constructor(options) {
-        super();
-        this.bufferSize = options.processorOptions?.bufferSize || 4096;
-        this.buffer = new Float32Array(this.bufferSize);
-        this.bufferIndex = 0;
-      }
-
-      process(inputs) {
-        const input = inputs[0];
-        if (!input || !input[0]) return true;
-        const inputChannel = input[0];
-
-        for (let i = 0; i < inputChannel.length; i++) {
-          this.buffer[this.bufferIndex++] = inputChannel[i];
-
-          if (this.bufferIndex >= this.bufferSize) {
-            const pcmData = new Int16Array(this.bufferSize);
-            for (let j = 0; j < this.bufferSize; j++) {
-              const sample = Math.max(-1, Math.min(1, this.buffer[j]));
-              pcmData[j] = sample < 0 ? sample * 0x8000 : sample * 0x7FFF;
-            }
-            this.port.postMessage({ buffer: pcmData.buffer }, [pcmData.buffer]);
-            this.buffer = new Float32Array(this.bufferSize);
-            this.bufferIndex = 0;
-          }
-        }
-        return true;
-      }
-    }
-    registerProcessor('audio-processor', AudioProcessor);
-  `;
-  const blob = new Blob([processorCode], { type: 'application/javascript' });
-  return URL.createObjectURL(blob);
-}
-
-if (typeof window !== 'undefined') {
-  window.AudioContext = window.AudioContext || window.webkitAudioContext;
 }
 
 export default createVoiceSession;

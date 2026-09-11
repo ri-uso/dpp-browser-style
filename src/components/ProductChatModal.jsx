@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import ChatInterface from './ChatInterface';
 import VoiceInterface from './VoiceInterface';
@@ -8,221 +8,192 @@ import { createProductPersonaPrompt, generateWelcomeMessage, validateProductData
 import { MessageSquare, Mic } from 'lucide-react';
 import '../styles/productChatModal.css';
 
+const LOADING_MESSAGES = {
+  IT: 'Sto preparando la mia storia...',
+  EN: 'Preparing my story...',
+  ES: 'Preparando mi historia...',
+  FR: 'Je prépare mon histoire...'
+};
+
 /**
- * ProductChatModal - Modal wrapper for product chat
- *
- * Opens a chat interface where users can talk to the product (text or voice)
+ * ProductChatModal - fa parlare il prodotto, a scelta per iscritto o a voce.
  */
 function ProductChatModal({ productData, language, translations, isOpen, onClose }) {
-  const [chatMode, setChatMode] = useState('text'); // 'text' | 'voice'
+  const [chatMode, setChatMode] = useState('text');
   const [conversation, setConversation] = useState(null);
   const [voiceSession, setVoiceSession] = useState(null);
   const [messages, setMessages] = useState([]);
   const [error, setError] = useState(null);
-  const voiceSessionRef = useRef(null);
 
-  // Initialize text conversation when modal opens
+  // Incrementato per forzare il rimontaggio della sessione vocale: le due
+  // setChatMode consecutive verrebbero accorpate da React e l'effect non
+  // rientrerebbe.
+  const [voiceEpoch, setVoiceEpoch] = useState(0);
+
+  // Le richieste in corso vanno annullate quando l'utente chiude il modal o
+  // cambia modalita': senza questo lo streaming continuava (e si pagava) a
+  // schermo chiuso.
+  const abortRef = useRef(null);
+
+  const withTimestamp = (message) => ({ ...message, timestamp: Date.now() });
+
+  // --- Modalita' testo -----------------------------------------------------
   useEffect(() => {
-    if (isOpen && productData && chatMode === 'text') {
-      if (!validateProductData(productData)) {
-        setError('Invalid product data');
-        return;
-      }
+    if (!isOpen || chatMode !== 'text' || !productData) return;
 
-      const initializeChat = async () => {
-        try {
-          // Create system prompt
-          const systemPrompt = createProductPersonaPrompt(productData, language);
-
-          // Create conversation
-          const newConversation = createConversation(systemPrompt);
-          setConversation(newConversation);
-
-          // Show loading message while generating story
-          const loadingMessages = {
-            IT: 'Sto preparando la mia storia...',
-            EN: 'Preparing my story...',
-            ES: 'Preparando mi historia...',
-            FR: 'Je prépare mon histoire...'
-          };
-
-          setMessages([
-            {
-              role: 'assistant',
-              content: loadingMessages[language] || loadingMessages.EN,
-              isLoading: true
-            }
-          ]);
-
-          // Generate AI-powered welcome story
-          const welcomeStory = await generateWelcomeMessage(
-            productData,
-            language,
-            (prompt) => newConversation.sendMessage(prompt)
-          );
-
-          // Replace loading message with actual story
-          setMessages([
-            {
-              role: 'assistant',
-              content: welcomeStory
-            }
-          ]);
-
-          setError(null);
-        } catch (err) {
-          console.error('Error initializing chat:', err);
-          setError('Failed to initialize chat');
-        }
-      };
-
-      initializeChat();
+    if (!validateProductData(productData)) {
+      setError('Dati prodotto non validi');
+      return;
     }
+
+    const controller = new AbortController();
+    abortRef.current = controller;
+    let cancelled = false;
+
+    const newConversation = createConversation(createProductPersonaPrompt(productData, language));
+    setConversation(newConversation);
+    setError(null);
+    setMessages([withTimestamp({
+      role: 'assistant',
+      content: LOADING_MESSAGES[language] || LOADING_MESSAGES.EN,
+      isLoading: true
+    })]);
+
+    generateWelcomeMessage(
+      productData,
+      language,
+      (prompt) => newConversation.sendMessage(prompt, null, { signal: controller.signal })
+    )
+      .then((welcomeStory) => {
+        if (cancelled) return;
+        setMessages([withTimestamp({ role: 'assistant', content: welcomeStory })]);
+      })
+      .catch((err) => {
+        if (cancelled || err?.name === 'AbortError') return;
+        console.error('Errore in apertura della chat:', err);
+        setError(err?.message || 'Impossibile avviare la chat');
+      });
+
+    return () => {
+      cancelled = true;
+      controller.abort();
+    };
   }, [isOpen, productData, language, chatMode]);
 
-  // Initialize voice session when switching to voice mode
+  // --- Modalita' voce ------------------------------------------------------
+  // L'effect non dipende da `voiceSession`: includerlo lo faceva rientrare a
+  // ogni creazione, e la cleanup leggeva un `chatMode` di una render precedente.
   useEffect(() => {
-    if (isOpen && chatMode === 'voice' && !voiceSession) {
-      const initializeVoice = async () => {
-        try {
-          const systemPrompt = createProductPersonaPrompt(productData, language);
+    if (!isOpen || chatMode !== 'voice' || !productData) return;
 
-          // Create voice session without callbacks initially
-          // VoiceInterface will set them up via the setter methods
-          const newVoiceSession = createVoiceSession(systemPrompt);
+    // 'voice' seleziona il blocco FORMATO parlato: turni corti, niente elenchi.
+    const session = createVoiceSession(createProductPersonaPrompt(productData, language, 'voice'));
+    setVoiceSession(session);
+    setError(null);
 
-          voiceSessionRef.current = newVoiceSession;
-          setVoiceSession(newVoiceSession);
+    let cancelled = false;
+    session.connect().catch((err) => {
+      if (cancelled) return;
+      console.error('Errore di connessione vocale:', err);
+      setError(err?.message || 'Impossibile avviare la chat vocale');
+    });
 
-          // Connect to OpenAI Realtime API via backend
-          // The backend will provide an ephemeral token securely
-          await newVoiceSession.connect();
-        } catch (err) {
-          console.error('Error initializing voice:', err);
-          setError('Failed to initialize voice chat');
-        }
-      };
-
-      initializeVoice();
-    }
-
-    // Cleanup voice session when switching away or closing
     return () => {
-      if (voiceSessionRef.current && chatMode !== 'voice') {
-        voiceSessionRef.current.disconnect();
-        voiceSessionRef.current = null;
-        setVoiceSession(null);
-      }
+      cancelled = true;
+      session.disconnect();
+      setVoiceSession(null);
     };
-  }, [isOpen, chatMode, productData, language, voiceSession]);
+  }, [isOpen, chatMode, productData, language, voiceEpoch]);
 
-  // Handle mode switch
   const handleModeSwitch = (mode) => {
     if (mode === chatMode) return;
-
-    // Cleanup previous mode
-    if (mode === 'voice' && voiceSessionRef.current) {
-      voiceSessionRef.current.disconnect();
-      voiceSessionRef.current = null;
-      setVoiceSession(null);
-    }
-
+    // La cleanup dell'effect smonta la modalita' uscente: qui basta annullare
+    // l'eventuale streaming testuale ancora aperto.
+    abortRef.current?.abort();
+    setError(null);
     setChatMode(mode);
   };
 
-  // Handle sending messages (text mode)
-  const handleSendMessage = async (userMessage, onChunk) => {
+  const handleSendMessage = useCallback(async (userMessage, onChunk) => {
     if (!conversation) return;
 
+    setMessages(prev => [...prev, withTimestamp({ role: 'user', content: userMessage })]);
+
     try {
-      // Add user message to display
-      setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
-
-      // Send to AI and get response
-      const response = await conversation.sendMessage(userMessage, onChunk);
-
-      // Add assistant response to display
-      setMessages(prev => [...prev, { role: 'assistant', content: response }]);
-    } catch (error) {
-      console.error('Error sending message:', error);
-      // Remove the user message if send failed
+      const response = await conversation.sendMessage(userMessage, onChunk, {
+        signal: abortRef.current?.signal
+      });
+      setMessages(prev => [...prev, withTimestamp({ role: 'assistant', content: response })]);
+    } catch (err) {
+      // Il messaggio dell'utente torna indietro: la domanda non e' stata posta.
       setMessages(prev => prev.slice(0, -1));
-      throw error;
+      throw err;
     }
-  };
+  }, [conversation]);
 
-  // Handle clearing chat
   const handleClearChat = async () => {
-    if (chatMode === 'text' && conversation) {
-      conversation.reset();
+    if (chatMode === 'voice') {
+      // Ricreare la peer connection lo fa la cleanup dell'effect: qui basta
+      // cambiare la sua chiave di rimontaggio.
+      setVoiceEpoch(n => n + 1);
+      return;
+    }
 
-      // Show loading message
-      const loadingMessages = {
-        IT: 'Sto preparando la mia storia...',
-        EN: 'Preparing my story...',
-        ES: 'Preparando mi historia...',
-        FR: 'Je prépare mon histoire...'
-      };
+    if (!conversation) return;
 
-      setMessages([
-        {
-          role: 'assistant',
-          content: loadingMessages[language] || loadingMessages.EN,
-          isLoading: true
-        }
-      ]);
+    conversation.reset();
+    setMessages([withTimestamp({
+      role: 'assistant',
+      content: LOADING_MESSAGES[language] || LOADING_MESSAGES.EN,
+      isLoading: true
+    })]);
 
-      try {
-        // Generate new welcome story
-        const welcomeStory = await generateWelcomeMessage(
-          productData,
-          language,
-          (prompt) => conversation.sendMessage(prompt)
-        );
-
-        setMessages([
-          {
-            role: 'assistant',
-            content: welcomeStory
-          }
-        ]);
-      } catch (err) {
-        console.error('Error regenerating welcome story:', err);
+    try {
+      const welcomeStory = await generateWelcomeMessage(
+        productData,
+        language,
+        (prompt) => conversation.sendMessage(prompt, null, { signal: abortRef.current?.signal })
+      );
+      setMessages([withTimestamp({ role: 'assistant', content: welcomeStory })]);
+    } catch (err) {
+      if (err?.name !== 'AbortError') {
+        console.error('Errore nel rigenerare la storia:', err);
+        setError(err?.message || 'Impossibile rigenerare la storia');
       }
-    } else if (chatMode === 'voice' && voiceSession) {
-      // Reconnect voice session
-      await voiceSession.disconnect();
-      await voiceSession.connect();
     }
   };
 
-  // Handle closing modal
   const handleClose = () => {
+    abortRef.current?.abort();
     setMessages([]);
     setConversation(null);
-
-    if (voiceSessionRef.current) {
-      voiceSessionRef.current.disconnect();
-      voiceSessionRef.current = null;
-    }
-    setVoiceSession(null);
+    setError(null);
     setChatMode('text');
-
     onClose();
   };
+
+  // Chiusura con Esc: il modal e' a schermo pieno su mobile.
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKeyDown = (e) => {
+      if (e.key === 'Escape') handleClose();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  });
 
   if (!isOpen) return null;
 
   return (
     <div className="chat-modal-overlay" onClick={handleClose}>
       <div className="chat-modal-container" onClick={(e) => e.stopPropagation()}>
-        {/* Header */}
         <div className="chat-modal-header">
           <h3 className="chat-modal-title">
             {translations[language]?.chat_title || 'Chat with Product'}
           </h3>
           <div className="chat-modal-actions">
             <button
+              type="button"
               className="chat-action-button"
               onClick={handleClearChat}
               title={translations[language]?.chat_clear || 'Clear chat'}
@@ -232,6 +203,7 @@ function ProductChatModal({ productData, language, translations, isOpen, onClose
               </svg>
             </button>
             <button
+              type="button"
               className="chat-close-button"
               onClick={handleClose}
               title={translations[language]?.chat_close || 'Close'}
@@ -243,12 +215,9 @@ function ProductChatModal({ productData, language, translations, isOpen, onClose
           </div>
         </div>
 
-        {/* Content */}
         <div className="chat-modal-content">
           {error ? (
-            <div className="chat-error-message">
-              {error}
-            </div>
+            <div className="chat-error-message">{error}</div>
           ) : chatMode === 'text' ? (
             conversation ? (
               <ChatInterface
@@ -279,9 +248,9 @@ function ProductChatModal({ productData, language, translations, isOpen, onClose
           )}
         </div>
 
-        {/* Mode Switcher - Bottom */}
         <div className="chat-mode-switcher">
           <button
+            type="button"
             className={`chat-mode-tab ${chatMode === 'text' ? 'active' : ''}`}
             onClick={() => handleModeSwitch('text')}
           >
@@ -289,6 +258,7 @@ function ProductChatModal({ productData, language, translations, isOpen, onClose
             <span>{translations[language]?.chat_mode_text || 'Text'}</span>
           </button>
           <button
+            type="button"
             className={`chat-mode-tab ${chatMode === 'voice' ? 'active' : ''}`}
             onClick={() => handleModeSwitch('voice')}
           >

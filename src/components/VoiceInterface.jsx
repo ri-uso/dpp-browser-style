@@ -1,15 +1,18 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import PropTypes from 'prop-types';
-import { Mic, MicOff, Loader2, AlertCircle, Volume2 } from 'lucide-react';
+import { Mic, MicOff, Loader2, AlertCircle, Volume2, Square } from 'lucide-react';
 import '../styles/voiceInterface.css';
 
 /**
- * VoiceInterface - Voice chat component with tap-to-speak
+ * VoiceInterface - conversazione vocale con il prodotto.
  *
- * Displays real-time transcription and audio visualization
+ * Il microfono e' un interruttore, non un pulsante da tenere premuto: la
+ * Realtime API usa il VAD semantico lato server, che decide da solo quando il
+ * turno dell'utente e' finito. Tenere premuto avrebbe significato due
+ * meccanismi di turno in conflitto.
  */
 function VoiceInterface({ voiceSession, language = 'EN', translations = {} }) {
-  const [isRecording, setIsRecording] = useState(false);
+  const [micOpen, setMicOpen] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState('disconnected');
   const [transcripts, setTranscripts] = useState([]);
   const [currentTranscript, setCurrentTranscript] = useState({ role: null, text: '' });
@@ -17,225 +20,138 @@ function VoiceInterface({ voiceSession, language = 'EN', translations = {} }) {
   const [isAISpeaking, setIsAISpeaking] = useState(false);
 
   const messagesEndRef = useRef(null);
-  const isRecordingRef = useRef(false);
 
-  // Keep ref in sync with state
-  useEffect(() => {
-    isRecordingRef.current = isRecording;
-  }, [isRecording]);
-
-  // Auto-scroll to bottom when new transcripts arrive
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [transcripts, currentTranscript]);
 
-  // Handle transcript updates
   const handleTranscript = useCallback(({ role, text, isFinal }) => {
-    if (isFinal && text) {
-      // Add to permanent transcript list
+    if (!text) return;
+
+    if (isFinal) {
       setTranscripts(prev => {
-        // Avoid duplicate entries
-        const lastEntry = prev[prev.length - 1];
-        if (lastEntry?.role === role && lastEntry?.text === text) {
-          return prev;
-        }
+        const last = prev[prev.length - 1];
+        if (last?.role === role && last?.text === text) return prev;
         return [...prev, { role, text, timestamp: Date.now() }];
       });
-      // Clear current streaming transcript
       setCurrentTranscript({ role: null, text: '' });
-    } else if (text) {
-      // Update current streaming transcript
-      setCurrentTranscript(prev => {
-        if (prev.role === role) {
-          // Same role - append text
-          return { role, text: prev.text + text };
-        } else {
-          // Different role - start fresh
-          return { role, text };
-        }
-      });
+      return;
     }
+
+    setCurrentTranscript(prev => (
+      prev.role === role ? { role, text: prev.text + text } : { role, text }
+    ));
   }, []);
 
-  // Handle connection status changes
   const handleConnectionChange = useCallback((status) => {
-    console.log('Connection status:', status);
     setConnectionStatus(status);
-
     if (status === 'connected') {
       setErrorMessage(null);
-    } else if (status === 'error') {
-      setIsRecording(false);
-    }
-  }, []);
-
-  // Handle errors
-  const handleError = useCallback((error) => {
-    console.error('Voice chat error:', error);
-    setErrorMessage(typeof error === 'string' ? error : error.message || 'Unknown error');
-    setConnectionStatus('error');
-    setIsRecording(false);
-  }, []);
-
-  // Handle audio response events
-  const handleAudioResponse = useCallback(({ complete }) => {
-    if (complete) {
+    } else if (status !== 'connecting') {
+      setMicOpen(false);
       setIsAISpeaking(false);
-    } else {
-      setIsAISpeaking(true);
     }
   }, []);
 
-  // Setup voice session callbacks
+  const handleError = useCallback((error) => {
+    console.error('Errore chat vocale:', error);
+    setErrorMessage(typeof error === 'string' ? error : error?.message || 'Errore sconosciuto');
+    setMicOpen(false);
+  }, []);
+
+  const handleAudioResponse = useCallback(({ speaking }) => {
+    setIsAISpeaking(Boolean(speaking));
+  }, []);
+
   useEffect(() => {
     if (!voiceSession) return;
-
-    // Set callbacks on the voice session
     voiceSession.onTranscript = handleTranscript;
     voiceSession.onConnectionChange = handleConnectionChange;
     voiceSession.onError = handleError;
     voiceSession.onAudioResponse = handleAudioResponse;
-
-    // Cleanup function
-    return () => {
-      // Only cleanup if we're unmounting, not just re-rendering
-    };
   }, [voiceSession, handleTranscript, handleConnectionChange, handleError, handleAudioResponse]);
 
-  // Handle mic button press
-  const handleMicPress = useCallback(async (e) => {
-    e.preventDefault();
+  const getTranslation = useCallback((key, fallback) => (
+    translations[language]?.[key] || translations.EN?.[key] || fallback
+  ), [translations, language]);
 
+  const toggleMic = useCallback(() => {
     if (connectionStatus !== 'connected') {
-      setErrorMessage(getTranslation('voice_not_connected', 'Not connected'));
+      setErrorMessage(getTranslation('voice_not_connected', 'Non connesso'));
       return;
     }
 
-    if (isRecordingRef.current) return;
-
     try {
       setErrorMessage(null);
-      await voiceSession.startRecording();
-      setIsRecording(true);
-    } catch (error) {
-      console.error('Failed to start recording:', error);
-      handleError(getTranslation('voice_mic_error', 'Failed to access microphone'));
+      if (micOpen) {
+        voiceSession.stopRecording();
+        setMicOpen(false);
+      } else {
+        voiceSession.startRecording();
+        setMicOpen(true);
+      }
+    } catch (err) {
+      console.error('Microfono non disponibile:', err);
+      handleError(getTranslation('voice_mic_error', 'Impossibile accedere al microfono'));
     }
-  }, [connectionStatus, voiceSession, handleError]);
+  }, [connectionStatus, micOpen, voiceSession, handleError, getTranslation]);
 
-  // Handle mic button release
-  const handleMicRelease = useCallback((e) => {
-    e.preventDefault();
-
-    if (isRecordingRef.current && voiceSession) {
-      voiceSession.stopRecording();
-      setIsRecording(false);
-    }
+  const handleInterrupt = useCallback(() => {
+    voiceSession.interrupt();
+    setIsAISpeaking(false);
   }, [voiceSession]);
 
-  // Handle keyboard accessibility
-  const handleKeyDown = useCallback((e) => {
-    if (e.key === ' ' || e.key === 'Enter') {
-      e.preventDefault();
-      handleMicPress(e);
-    }
-  }, [handleMicPress]);
+  const getStatusMessage = () => ({
+    disconnected: getTranslation('voice_disconnected', 'Non connesso'),
+    connecting: getTranslation('voice_connecting', 'Connessione...'),
+    connected: getTranslation('voice_ready', 'Pronto per parlare'),
+    error: errorMessage || getTranslation('voice_error', 'Errore di connessione')
+  }[connectionStatus]);
 
-  const handleKeyUp = useCallback((e) => {
-    if (e.key === ' ' || e.key === 'Enter') {
-      e.preventDefault();
-      handleMicRelease(e);
-    }
-  }, [handleMicRelease]);
-
-  // Translation helper
-  const getTranslation = (key, fallback) => {
-    return translations[language]?.[key] || translations['EN']?.[key] || fallback;
-  };
-
-  // Get status message
-  const getStatusMessage = () => {
-    const messages = {
-      disconnected: getTranslation('voice_disconnected', 'Not connected'),
-      connecting: getTranslation('voice_connecting', 'Connecting...'),
-      connected: getTranslation('voice_ready', 'Ready to speak'),
-      error: errorMessage || getTranslation('voice_error', 'Connection error')
-    };
-    return messages[connectionStatus];
-  };
-
-  // Get instruction message
   const getInstructionMessage = () => {
-    if (connectionStatus === 'connecting') {
-      return getTranslation('voice_please_wait', 'Please wait...');
-    }
-    if (connectionStatus !== 'connected') {
-      return getTranslation('voice_connect_first', 'Connect to start');
-    }
-    if (isRecording) {
-      return ''; // Don't show message while recording
-    }
-    if (isAISpeaking) {
-      return getTranslation('voice_ai_speaking', 'AI is speaking...');
-    }
-    return getTranslation('voice_tap_to_speak', 'Press to start conversation');
+    if (connectionStatus === 'connecting') return getTranslation('voice_please_wait', 'Attendere...');
+    if (connectionStatus !== 'connected') return getTranslation('voice_connect_first', 'Connetti per iniziare');
+    if (isAISpeaking) return getTranslation('voice_ai_speaking', 'Il prodotto sta parlando...');
+    if (micOpen) return getTranslation('voice_listening', 'Ti ascolto, parla pure');
+    return getTranslation('voice_tap_to_speak', 'Tocca per aprire il microfono');
   };
 
-  // Get status icon
   const getStatusIcon = () => {
-    switch (connectionStatus) {
-      case 'connecting':
-        return <Loader2 className="voice-status-icon spinning" size={16} />;
-      case 'error':
-        return <AlertCircle className="voice-status-icon error" size={16} />;
-      default:
-        return <span className="voice-status-dot"></span>;
+    if (connectionStatus === 'connecting') {
+      return <Loader2 className="voice-status-icon spinning" size={16} />;
     }
+    if (connectionStatus === 'error') {
+      return <AlertCircle className="voice-status-icon error" size={16} />;
+    }
+    return <span className="voice-status-dot"></span>;
   };
 
-  // Format timestamp
-  const formatTime = (timestamp) => {
-    return new Date(timestamp).toLocaleTimeString(
-      language === 'IT' ? 'it-IT' : 'en-US',
-      { hour: '2-digit', minute: '2-digit' }
-    );
-  };
+  const formatTime = (timestamp) => new Date(timestamp).toLocaleTimeString(
+    language === 'IT' ? 'it-IT' : 'en-US',
+    { hour: '2-digit', minute: '2-digit' }
+  );
 
-  // Clear error after 5 seconds
   useEffect(() => {
-    if (errorMessage) {
-      const timer = setTimeout(() => setErrorMessage(null), 5000);
-      return () => clearTimeout(timer);
-    }
+    if (!errorMessage) return;
+    const timer = setTimeout(() => setErrorMessage(null), 5000);
+    return () => clearTimeout(timer);
   }, [errorMessage]);
 
   return (
     <div className="voice-interface">
-      {/* Transcripts container */}
       <div className="voice-transcripts">
-        {transcripts.length === 0 && connectionStatus === 'connected' && !isRecording && !isAISpeaking && (
-          <div className="voice-empty-state">
-            {/* Empty state - no message needed */}
-          </div>
-        )}
-
-        {transcripts.map((transcript, index) => (
+        {transcripts.map((transcript) => (
           <div
-            key={`${transcript.timestamp}-${index}`}
+            key={`${transcript.role}-${transcript.timestamp}`}
             className={`voice-message ${
               transcript.role === 'user' ? 'voice-user-message' : 'voice-assistant-message'
             }`}
           >
-            <div className="voice-message-content">
-              {transcript.text}
-            </div>
-            <div className="voice-message-timestamp">
-              {formatTime(transcript.timestamp)}
-            </div>
+            <div className="voice-message-content">{transcript.text}</div>
+            <div className="voice-message-timestamp">{formatTime(transcript.timestamp)}</div>
           </div>
         ))}
 
-        {/* Current streaming transcript */}
         {currentTranscript.role && currentTranscript.text && (
           <div
             className={`voice-message ${
@@ -252,34 +168,26 @@ function VoiceInterface({ voiceSession, language = 'EN', translations = {} }) {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Voice control area */}
       <div className="voice-control-area">
-        {/* Status indicator */}
         <div className={`voice-status ${connectionStatus}`}>
           {getStatusIcon()}
           <span className="voice-status-text">{getStatusMessage()}</span>
         </div>
 
-        {/* Mic button */}
         <div className="voice-mic-container">
           <button
-            className={`voice-mic-button ${isRecording ? 'recording' : ''} ${
+            type="button"
+            className={`voice-mic-button ${micOpen ? 'recording' : ''} ${
               connectionStatus !== 'connected' ? 'disabled' : ''
             } ${isAISpeaking ? 'ai-speaking' : ''}`}
-            onMouseDown={handleMicPress}
-            onMouseUp={handleMicRelease}
-            onMouseLeave={handleMicRelease}
-            onTouchStart={handleMicPress}
-            onTouchEnd={handleMicRelease}
-            onTouchCancel={handleMicRelease}
-            onKeyDown={handleKeyDown}
-            onKeyUp={handleKeyUp}
+            onClick={toggleMic}
             disabled={connectionStatus !== 'connected'}
-            aria-label={isRecording ? 'Recording - release to send' : 'Hold to speak'}
-            aria-pressed={isRecording}
+            aria-label={micOpen
+              ? getTranslation('voice_mic_close', 'Chiudi il microfono')
+              : getTranslation('voice_mic_open', 'Apri il microfono')}
+            aria-pressed={micOpen}
           >
-            {/* Ripple effects for recording */}
-            {isRecording && (
+            {micOpen && (
               <>
                 <div className="voice-ripple"></div>
                 <div className="voice-ripple" style={{ animationDelay: '0.3s' }}></div>
@@ -287,30 +195,31 @@ function VoiceInterface({ voiceSession, language = 'EN', translations = {} }) {
               </>
             )}
 
-            {/* AI speaking indicator */}
-            {isAISpeaking && !isRecording && (
+            {isAISpeaking && !micOpen && (
               <div className="voice-speaking-indicator">
                 <Volume2 size={20} className="voice-volume-icon" />
               </div>
             )}
 
-            {/* Mic icon */}
             {connectionStatus === 'connecting' ? (
               <Loader2 size={40} className="voice-mic-icon spinning" />
-            ) : isRecording ? (
+            ) : micOpen ? (
               <Mic size={40} className="voice-mic-icon active" />
             ) : (
               <MicOff size={40} className="voice-mic-icon" />
             )}
           </button>
 
-          {/* Instruction text */}
-          <p className="voice-instruction">
-            {getInstructionMessage()}
-          </p>
+          <p className="voice-instruction">{getInstructionMessage()}</p>
+
+          {isAISpeaking && (
+            <button type="button" className="voice-interrupt-button" onClick={handleInterrupt}>
+              <Square size={14} />
+              <span>{getTranslation('voice_interrupt', 'Interrompi')}</span>
+            </button>
+          )}
         </div>
 
-        {/* Error toast */}
         {errorMessage && connectionStatus !== 'error' && (
           <div className="voice-error-toast">
             <AlertCircle size={16} />
@@ -326,6 +235,8 @@ VoiceInterface.propTypes = {
   voiceSession: PropTypes.shape({
     startRecording: PropTypes.func.isRequired,
     stopRecording: PropTypes.func.isRequired,
+    interrupt: PropTypes.func.isRequired,
+    // Setter di sola scrittura: la sessione li espone per ricevere i callback.
     onTranscript: PropTypes.func,
     onConnectionChange: PropTypes.func,
     onError: PropTypes.func,
@@ -343,28 +254,32 @@ VoiceInterface.defaultProps = {
       voice_connecting: 'Connecting...',
       voice_ready: 'Ready to speak',
       voice_error: 'Connection error',
-      voice_recording: 'Release to send...',
-      voice_tap_to_speak: 'Press to start conversation',
+      voice_listening: "I'm listening, go ahead",
+      voice_tap_to_speak: 'Tap to open the microphone',
       voice_not_connected: 'Not connected',
       voice_mic_error: 'Failed to access microphone',
+      voice_mic_open: 'Open the microphone',
+      voice_mic_close: 'Close the microphone',
       voice_please_wait: 'Please wait...',
       voice_connect_first: 'Connect to start',
-      voice_ai_speaking: 'AI is speaking...',
-      voice_start_conversation: 'Hold the microphone button to start speaking'
+      voice_ai_speaking: 'The product is speaking...',
+      voice_interrupt: 'Interrupt'
     },
     IT: {
       voice_disconnected: 'Non connesso',
       voice_connecting: 'Connessione...',
       voice_ready: 'Pronto per parlare',
       voice_error: 'Errore di connessione',
-      voice_recording: 'Rilascia per inviare...',
-      voice_tap_to_speak: 'Premi per avviare la conversazione',
+      voice_listening: 'Ti ascolto, parla pure',
+      voice_tap_to_speak: 'Tocca per aprire il microfono',
       voice_not_connected: 'Non connesso',
       voice_mic_error: 'Impossibile accedere al microfono',
+      voice_mic_open: 'Apri il microfono',
+      voice_mic_close: 'Chiudi il microfono',
       voice_please_wait: 'Attendere...',
       voice_connect_first: 'Connetti per iniziare',
-      voice_ai_speaking: 'L\'AI sta parlando...',
-      voice_start_conversation: 'Premi il pulsante del microfono per iniziare a parlare'
+      voice_ai_speaking: 'Il prodotto sta parlando...',
+      voice_interrupt: 'Interrompi'
     }
   }
 };

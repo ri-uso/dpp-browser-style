@@ -35,4 +35,12 @@ export default [
       ],
     },
   },
+  {
+    // Il backend (funzioni serverless e server di sviluppo) gira su Node:
+    // niente API del browser, ma `process` e compagnia sono globali legittime.
+    files: ['api/**/*.js', 'dev-server.js'],
+    languageOptions: {
+      globals: globals.node,
+    },
+  },
 ]

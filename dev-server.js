@@ -1,65 +1,69 @@
 /**
- * Local Development Server for API Functions
- * This simulates Vercel serverless functions locally without requiring Vercel CLI login
+ * Server API di sviluppo.
+ *
+ * Monta le stesse funzioni di `api/` che in produzione girano come serverless
+ * Vercel, senza richiedere il login alla CLI. Il frontend Vite (porta 5173) le
+ * raggiunge tramite il proxy configurato in vite.config.js.
  */
 
 import express from 'express';
-import cors from 'cors';
-import { readFileSync } from 'fs';
 import { config } from 'dotenv';
 
-// Load environment variables from .env.local
 config({ path: '.env.local' });
 
 const app = express();
 const PORT = 3000;
 
-// Middleware
-app.use(cors());
-app.use(express.json({ limit: '10mb' }));
+// Niente middleware cors() qui: la allowlist di origin vive in api/_guard.js,
+// cosi' sviluppo e produzione applicano esattamente la stessa regola.
+app.use(express.json({ limit: '256kb' }));
 
-// Import API handlers
 const chatHandler = await import('./api/chat.js').then(m => m.default);
-const ttsHandler = await import('./api/tts.js').then(m => m.default);
 const realtimeTokenHandler = await import('./api/realtime/token.js').then(m => m.default);
 
-// API Routes
-app.post('/api/chat', (req, res) => {
-  console.log('📨 [Dev Server] POST /api/chat');
+// I guard gestiscono anche le preflight, quindi le route accettano ogni metodo.
+app.all('/api/chat', (req, res) => {
+  if (req.method === 'POST') console.log('[Dev Server] POST /api/chat');
   chatHandler(req, res);
 });
 
-app.post('/api/tts', (req, res) => {
-  console.log('🔊 [Dev Server] POST /api/tts');
-  ttsHandler(req, res);
-});
-
-app.post('/api/realtime/token', (req, res) => {
-  console.log('🎙️ [Dev Server] POST /api/realtime/token');
+app.all('/api/realtime/token', (req, res) => {
+  if (req.method === 'POST') console.log('[Dev Server] POST /api/realtime/token');
   realtimeTokenHandler(req, res);
 });
 
-// Health check
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'ok',
-    message: 'Dev API server running',
+    hasApiKey: Boolean(process.env.OPENAI_API_KEY),
     timestamp: new Date().toISOString()
   });
 });
 
-// Start server
+// Un JSON malformato non deve abbattere il processo.
+app.use((err, req, res, next) => {
+  if (err?.type === 'entity.too.large') {
+    return res.status(413).json({ error: 'Payload troppo grande' });
+  }
+  if (err instanceof SyntaxError) {
+    return res.status(400).json({ error: 'JSON non valido' });
+  }
+  return next(err);
+});
+
 app.listen(PORT, () => {
   console.log('');
-  console.log('🚀 Development API Server running!');
-  console.log(`📍 Listening on http://localhost:${PORT}`);
+  console.log('Development API Server avviato');
+  console.log(`  http://localhost:${PORT}`);
   console.log('');
-  console.log('Available endpoints:');
   console.log('  POST /api/chat');
-  console.log('  POST /api/tts');
   console.log('  POST /api/realtime/token');
   console.log('  GET  /api/health');
   console.log('');
-  console.log('💡 Run "npm run dev" in another terminal to start the frontend');
+  if (!process.env.OPENAI_API_KEY) {
+    console.warn('  ATTENZIONE: OPENAI_API_KEY non trovata in .env.local');
+    console.log('');
+  }
+  console.log('  Avvia il frontend con "npm run dev" in un altro terminale');
   console.log('');
 });

@@ -1,330 +1,214 @@
-# Deployment Guide - DPP Browser with Secure OpenAI Backend
+# DPP Browser — chat testuale e vocale
 
-This guide explains how to deploy the DPP Browser application with secure OpenAI API integration.
+Guida al setup, all'esecuzione locale e al deploy della parte AI dell'app: la
+chat in cui il prodotto scansionato "parla" con l'utente, per iscritto o a voce.
 
-## ⚡ Quick Start (Most Common Issues)
+## Avvio rapido
 
-**Problem: "Failed to load resource: 400/500 Bad Request" or "VITE_OPENAI_API_KEY not found"**
-
-**Solution**: You need to run **TWO** terminals simultaneously:
+Servono **due terminali**: il server API e il frontend sono due processi distinti.
 
 ```bash
-# Terminal 1 - Start API Server (MUST run first!)
+# Terminale 1 — server API (avvialo per primo)
 npm run dev:api
 
-# Terminal 2 - Start Frontend (in a NEW terminal)
+# Terminale 2 — frontend
 npm run dev
 ```
 
-Then open [http://localhost:5173](http://localhost:5173)
+Apri <http://localhost:5173>. Senza il server API la chat risponde 404: il
+frontend inoltra `/api/*` alla porta 3000 tramite il proxy di
+[vite.config.js](vite.config.js).
 
-**⚠️ IMPORTANT**: Both servers MUST be running at the same time for chat and voice features to work!
-
----
-
-## Overview
-
-The application now uses a **serverless backend** architecture to keep your OpenAI API keys secure:
-
-- **Frontend**: React app (Vite) - runs in the browser
-- **Backend**: Serverless functions in `/api` folder - run on the server
-- **Security**: OpenAI API keys are never exposed to the client
-
-```
-Browser → Frontend → /api endpoints → OpenAI API
-                      (Serverless)     (Secure)
-```
-
-## Local Development
-
-### Option 1: Senza Login Vercel (Consigliata per iniziare) ⭐
-
-Questa opzione **non richiede login a Vercel** e usa un server API locale:
-
-**Terminal 1 - API Server:**
-```bash
-npm run dev:api
-```
-
-**Terminal 2 - Frontend:**
-```bash
-npm run dev
-```
-
-**Terminal 3 - Ngrok (opzionale):**
-```bash
-ngrok http 5173
-```
-
-Poi:
-- Apri `http://localhost:5173` nel browser
-- Condividi l'URL ngrok per testare con altri
-
-✅ **Vantaggi:**
-- Non serve login Vercel
-- Setup più veloce
-- Identico al tuo workflow attuale
-
-### Option 2: Con Vercel Dev
-
-Questa opzione simula esattamente l'ambiente di produzione Vercel, ma richiede login:
-
-**Prima volta:**
-```bash
-vercel login
-```
-
-**Poi:**
-```bash
-npm run dev:vercel
-```
-
-Apri `http://localhost:3000` nel browser
-
-✅ **Vantaggi:**
-- Ambiente identico alla produzione
-- Un solo comando
-- Rileva automaticamente le modifiche
-
-## Environment Variables
-
-### Local Development (`.env.local`)
-
-Create `.env.local` in the project root:
+Prima di tutto crea `.env.local` nella root:
 
 ```env
-# Backend Environment Variables (NEVER commit to Git!)
-OPENAI_API_KEY=sk-proj-your-actual-key-here
+OPENAI_API_KEY=sk-proj-la-tua-chiave
 NODE_ENV=development
 ```
 
-**Important**: `.env.local` is automatically ignored by Git and should NEVER be committed.
+`.env*` è già in `.gitignore`. Verifica con `curl http://localhost:3000/api/health`:
+il campo `hasApiKey` dice se la chiave è stata letta.
 
-### Frontend (`.env`)
+## Architettura
 
-The frontend `.env` file no longer contains sensitive keys:
-
-```env
-# Frontend Environment Variables (safe to commit)
-# Firebase config goes here (public keys)
+```
+Browser → frontend Vite → /api/*  →  OpenAI
+                          (la chiave vive solo qui)
 ```
 
-## Production Deployment
+Le funzioni in [api/](api/) girano come serverless su Vercel in produzione e,
+in sviluppo, dentro [dev-server.js](dev-server.js) — stesso codice, nessun
+bisogno di fare login alla CLI di Vercel.
 
-### Deploy to Vercel
+| File | Ruolo |
+|---|---|
+| [api/chat.js](api/chat.js) | Chat testuale in streaming SSE |
+| [api/realtime/token.js](api/realtime/token.js) | Chiave effimera per la voce |
+| [api/_guard.js](api/_guard.js) | CORS, rate limit, tetti sul payload (il prefisso `_` lo esclude dal routing Vercel) |
 
-1. **Install Vercel CLI:**
-   ```bash
-   npm install -g vercel
-   ```
+Lato frontend: [ChatService.jsx](src/services/ChatService.jsx) per il testo,
+[VoiceChatService.jsx](src/services/VoiceChatService.jsx) per la voce,
+[ProductPersonaService.jsx](src/services/ProductPersonaService.jsx) costruisce il
+prompt-persona dalla scheda prodotto.
 
-2. **Login to Vercel:**
-   ```bash
-   vercel login
-   ```
+## Modelli
 
-3. **Deploy:**
-   ```bash
-   vercel --prod
-   ```
+| Uso | Modello | Dove si cambia |
+|---|---|---|
+| Chat testuale | `gpt-5.6-luna` | `DEFAULT_MODEL` in [api/chat.js](api/chat.js) |
+| Chat vocale | `gpt-realtime-2.1` | `REALTIME_MODEL` in `.env.local`, o `DEFAULT_MODEL` in [api/realtime/token.js](api/realtime/token.js) |
+| Voce | `marin` | `VOICE` in [VoiceChatService.jsx](src/services/VoiceChatService.jsx) |
 
-4. **Set Environment Variables in Vercel Dashboard:**
-   - Go to your project on vercel.com
-   - Settings → Environment Variables
-   - Add: `OPENAI_API_KEY` = `sk-proj-your-production-key`
-   - Add: `NODE_ENV` = `production`
+**Perché `gpt-5.6-luna`.** Costa $0.20/$1.20 per 1M token (input/output) ed è il
+primo gradino della famiglia che supporta `reasoning.effort: "none"`. Serve
+davvero: nella Responses API i token di reasoning consumano
+`max_output_tokens`, e con `gpt-5-nano` — che non ha `"none"` — le risposte si
+troncavano a metà frase. Per risposte più argomentate: `gpt-5.6-terra`, dieci
+volte più caro.
 
-5. **Redeploy** (if variables were added after first deploy):
-   ```bash
-   vercel --prod
-   ```
+**Perché `gpt-realtime-2.1`.** Segue le istruzioni più da vicino e resta più
+saldo nel personaggio nelle sessioni lunghe, dove il modello speech-to-speech
+tende a scivolare verso il registro da assistente generico. Costa però $32/$64
+per 1M token audio contro i $10/$20 di `gpt-realtime-2.1-mini`: circa il triplo.
 
-### Deploy to Netlify
+Per confrontarli senza toccare il codice, metti in `.env.local`:
 
-1. **Install Netlify CLI:**
-   ```bash
-   npm install -g netlify-cli
-   ```
+```env
+REALTIME_MODEL=gpt-realtime-2.1-mini
+```
 
-2. **Build the project:**
-   ```bash
-   npm run build
-   ```
+e riavvia il server API. Sono gli unici due valori ammessi: il modello arriva
+dal corpo della richiesta, e l'allowlist in [api/realtime/token.js](api/realtime/token.js)
+impedisce a chi raggiunge l'endpoint di farci aprire sessioni su un modello a
+piacere.
 
-3. **Deploy:**
-   ```bash
-   netlify deploy --prod
-   ```
+`gpt-live-1` (full-duplex, $0.05/min) è stato valutato e scartato per ora: usa un
+endpoint proprio (`/v1/live/sessions`, non `/v1/realtime`) e la sua architettura
+presuppone un "backend agent" separato, con i costi del modello di backend
+fatturati a parte. Vale la pena riguardarlo quando la documentazione sarà matura.
 
-4. **Set Environment Variables:**
-   - Go to Site settings → Environment variables
-   - Add: `OPENAI_API_KEY`
-   - Add: `NODE_ENV` = `production`
+## Come funziona la chat vocale
 
-Note: For Netlify, you may need to adjust the serverless functions to use Netlify Functions format instead of Vercel format.
+Usa **WebRTC**, il trasporto raccomandato da OpenAI per il browser:
 
-## Testing with Ngrok
+1. il browser chiede a `/api/realtime/token` una chiave effimera `ek_...`;
+   il backend la conia con `POST /v1/realtime/client_secrets`, mettendoci dentro
+   modello, voce, VAD semantico e il prompt-persona;
+2. il browser crea una `RTCPeerConnection` e scambia l'SDP con
+   `POST https://api.openai.com/v1/realtime/calls`
+   (`Content-Type: application/sdp`, body = l'offerta grezza);
+3. l'audio del modello arriva su una media track, gli eventi JSON sul data
+   channel `oai-events`.
 
-Ngrok funziona esattamente come prima:
+Il microfono è un **interruttore**, non un pulsante da tenere premuto: il turno
+lo chiude il VAD semantico lato server.
 
-**Con Dev API Server (Opzione 1 - Consigliata):**
+> L'endpoint preview `/v1/realtime/sessions` è stato ritirato con la dismissione
+> della beta (30 aprile 2026), e l'header `OpenAI-Beta: realtime=v1` non va più
+> inviato. Chi trovasse codice vecchio che li usa, sappia che risponde
+> `Invalid URL (POST /v1/realtime/sessions)`.
+
+## Protezioni
+
+Gli endpoint sono un proxy verso OpenAI con la nostra chiave: chi raggiunge
+l'URL può spenderla. [api/_guard.js](api/_guard.js) applica:
+
+- **origin allowlist** — `localhost` più i domini dei tunnel (`*.ngrok-free.app`,
+  `*.ngrok.app`, `*.trycloudflare.com`). Altri origin: elencali in
+  `ALLOWED_ORIGINS`, separati da virgola. Le richieste senza header `Origin`
+  (curl, health check) passano: la CORS riguarda solo i browser;
+- **rate limit per IP** — 20 richieste/minuto per la chat, 6 per le sessioni
+  vocali, che sono a consumo;
+- **tetti sul payload** — max 40 messaggi e 60.000 caratteri per richiesta, corpo
+  JSON max 256 kB.
+
+Il contatore del rate limit è **in memoria di processo**: esatto con
+`npm run dev:api` (un solo processo), per-istanza su Vercel. Per un deploy
+pubblico servirebbe uno store condiviso (Redis/Upstash) e, meglio ancora, la
+verifica di un token Firebase sugli endpoint.
+
+## Test con ngrok
+
 ```bash
-# Terminal 1
+# Terminale 1
 npm run dev:api
-
-# Terminal 2
+# Terminale 2
 npm run dev
-
-# Terminal 3
+# Terminale 3
 ngrok http 5173
 ```
 
-**Con Vercel Dev (Opzione 2):**
-```bash
-# Terminal 1
-npm run dev:vercel
+Condividi l'URL ngrok: `/api/*` passa dal proxy di Vite e il dominio è già in
+allowlist. Entrambi i server devono essere attivi.
 
-# Terminal 2
-ngrok http 3000
-```
+Attenzione: finché il tunnel è aperto, chiunque abbia il link può usare la tua
+chiave OpenAI entro i limiti del rate limit. Chiudilo a test finito e tieni
+d'occhio i consumi sulla dashboard OpenAI.
 
-Condividi l'URL ngrok con i tester - gli endpoint API funzioneranno automaticamente!
-
-**Importante:** Con l'Opzione 1, devi avere **entrambi** i server avviati (API + Frontend) prima di usare ngrok.
-
-## API Endpoints
-
-The serverless functions expose these endpoints:
-
-- `POST /api/chat` - Chat completions with streaming
-- `POST /api/tts` - Text-to-speech conversion
-- `POST /api/realtime/token` - Get ephemeral token for voice chat
-
-All endpoints are automatically proxied in development and work directly in production.
-
-## Security Checklist
-
-Before deploying to production:
-
-- [ ] `.env.local` contains your OpenAI API key
-- [ ] `.env.local` is in `.gitignore` (already configured)
-- [ ] Frontend `.env` does NOT contain `VITE_OPENAI_API_KEY`
-- [ ] Production environment variables are set in Vercel/Netlify dashboard
-- [ ] Old OpenAI API key has been revoked (if it was exposed)
-- [ ] Generate a new API key for production use
-
-## File Structure
-
-```
-dpp-browser-style/
-├── api/                      # Serverless backend functions
-│   ├── chat.js              # Chat API endpoint
-│   ├── tts.js               # Text-to-speech endpoint
-│   └── realtime/
-│       └── token.js         # Realtime voice token endpoint
-├── src/
-│   └── services/            # Updated to use /api endpoints
-│       ├── ChatService.jsx
-│       ├── StoryService.jsx
-│       └── VoiceChatService.jsx
-├── .env                     # Frontend vars (safe to commit)
-├── .env.local              # Backend secrets (NEVER commit)
-├── vercel.json             # Vercel configuration
-└── vite.config.js          # Vite proxy configuration
-```
-
-## Troubleshooting
-
-### API endpoints return 404
-
-**Development (Opzione 1 - dev:api):**
-- Verifica che il server API sia avviato: `npm run dev:api`
-- Controlla i log nel terminale del server API
-- Verifica che il proxy in `vite.config.js` punti a `localhost:3000`
-
-**Development (Opzione 2 - Vercel):**
-- Make sure Vercel dev server is running (`npm run dev:vercel`)
-- Check that proxy is configured in `vite.config.js`
-
-**Production:**
-- Check that `vercel.json` is present
-- Verify API functions are in the `/api` folder
-- Redeploy after adding environment variables
-
-### "OPENAI_API_KEY not configured" error
-
-**Development:**
-- Verifica che `.env.local` esista nella root del progetto
-- Controlla che contenga `OPENAI_API_KEY=sk-proj-...`
-- Riavvia il server API (`npm run dev:api`) o Vercel dev
-- Se hai appena creato `.env.local`, riavvia TUTTI i terminali
-
-**Production:**
-- Go to Vercel/Netlify dashboard
-- Check Environment Variables section
-- Add `OPENAI_API_KEY` if missing
-- Redeploy the project
-
-### "Port 3000 already in use"
-
-**Development:**
-```bash
-# Trova e ferma il processo sulla porta 3000
-lsof -ti:3000 | xargs kill -9
-
-# Poi riavvia
-npm run dev:api
-```
-
-### CORS errors
-
-**Development:**
-- Il server dev include già CORS configurato
-- Se usi ngrok, non dovrebbero esserci problemi
-- Assicurati che ENTRAMBI i server siano avviati (API + Frontend)
-
-**Production:**
-- CORS è configurato in `vercel.json`
-- In development, il proxy gestisce CORS automaticamente
-- Se i problemi persistono, controlla la console del browser
-
-### Voice chat not connecting
-
-- Voice chat requires an ephemeral token from `/api/realtime/token`
-- Check that the endpoint is accessible
-- Verify OpenAI API key has Realtime API access
-- Check browser console for WebSocket errors
-
-## Cost Management
-
-To prevent unexpected OpenAI charges:
-
-1. **Set usage limits** in OpenAI dashboard
-2. **Monitor usage** regularly
-3. **Add rate limiting** (see OPENAI_BACKEND_SETUP.md for advanced options)
-4. **Use gpt-4o-mini** instead of gpt-4 for lower costs (already configured)
-
-## Support
-
-If you encounter issues:
-
-1. Check this guide and OPENAI_BACKEND_SETUP.md
-2. Verify environment variables are set correctly
-3. Check browser console and server logs
-4. Test API endpoints with curl:
+## Deploy su Vercel
 
 ```bash
-# Test chat endpoint
+npm install -g vercel
+vercel login
+vercel --prod
+```
+
+Poi, nella dashboard del progetto → Settings → Environment Variables:
+
+- `OPENAI_API_KEY` = la chiave di produzione
+- `NODE_ENV` = `production`
+- `ALLOWED_ORIGINS` = il dominio pubblico dell'app (senza, il browser viene
+  bloccato dalla allowlist)
+
+Rideploya dopo aver aggiunto le variabili. In alternativa, `npm run dev:vercel`
+(richiede `vercel login`) riproduce l'ambiente di produzione in locale sulla
+porta 3000.
+
+## Diagnostica
+
+**`/api/*` risponde 404** — il server API non è avviato (`npm run dev:api`), o il
+proxy in [vite.config.js](vite.config.js) non punta a `localhost:3000`. In
+produzione: controlla che [vercel.json](vercel.json) sia presente e che le
+funzioni siano in `api/`.
+
+**`Server configuration error`** — manca `OPENAI_API_KEY`. Controlla `.env.local`
+e riavvia il server API: dotenv legge il file solo all'avvio.
+
+**403 `Origin not allowed`** — stai servendo il frontend da un dominio fuori
+allowlist. Aggiungilo a `ALLOWED_ORIGINS`.
+
+**429** — rate limit. L'header `Retry-After` dice quanti secondi attendere.
+
+**La porta 3000 è occupata** (PowerShell):
+
+```powershell
+Get-NetTCPConnection -LocalPort 3000 | Select-Object -Expand OwningProcess | ForEach-Object { Stop-Process -Id $_ -Force }
+```
+
+**La voce non si connette** — apri la console del browser. Errori tipici: il
+permesso microfono negato; `Scambio SDP fallito` se la chiave effimera è scaduta
+(dura 10 minuti, vale solo per stabilire la connessione); nessun audio se la
+scheda è stata aperta senza un gesto dell'utente, perché il browser blocca
+l'autoplay.
+
+**Test manuale degli endpoint:**
+
+```bash
+curl http://localhost:3000/api/health
+
 curl -X POST http://localhost:3000/api/chat \
   -H "Content-Type: application/json" \
-  -d '{"messages":[{"role":"user","content":"Hello"}]}'
+  -d '{"messages":[{"role":"user","content":"Ciao"}]}'
+
+curl -X POST http://localhost:3000/api/realtime/token \
+  -H "Content-Type: application/json" -d '{}'
 ```
 
-## Next Steps
+## Controllo dei costi
 
-- [ ] Test all features locally with `npm run dev:vercel`
-- [ ] Deploy to Vercel with `vercel --prod`
-- [ ] Set production environment variables
-- [ ] Test production deployment
-- [ ] Revoke old API key if it was exposed
-- [ ] Set up usage monitoring in OpenAI dashboard
+- imposta un tetto di spesa nella dashboard OpenAI (la difesa più solida);
+- il prompt-persona include la scheda prodotto, troncata a 12.000 caratteri
+  (`MAX_CONTEXT_CHARS` in [ProductPersonaService.jsx](src/services/ProductPersonaService.jsx));
+- la cronologia della chat è limitata agli ultimi 20 messaggi
+  (`MAX_HISTORY_MESSAGES` in [ChatService.jsx](src/services/ChatService.jsx));
+- la voce costa a minuto di audio: chiudere il modal chiude la sessione.

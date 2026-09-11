@@ -231,3 +231,17 @@
     font-size: 14px;
   }
 }
+
+/* Errore di invio: sostituisce l'alert() bloccante che c'era prima. */
+.chat-error-toast {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 16px 8px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background-color: #fdecea;
+  color: #a8261c;
+  font-size: 14px;
+  line-height: 1.35;
+}

@@ -273,3 +273,25 @@
     padding: 20px 16px;
   }
 }
+
+/* Barge-in manuale: compare solo mentre il prodotto sta parlando. */
+.voice-interrupt-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  padding: 7px 16px;
+  border: 1px solid #d0d5dd;
+  border-radius: 20px;
+  background-color: #ffffff;
+  color: #344054;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.voice-interrupt-button:hover {
+  background-color: #f2f4f7;
+  border-color: #98a2b3;
+}
