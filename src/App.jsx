@@ -56,54 +56,69 @@ function App({ language, onCompanyCodeChange }) {
   }, [data_history, ask_to_compare]);
 
   useEffect(() => {
-    const origin   = window.location.origin;
-    const basePath = import.meta?.env?.BASE_URL ?? '/';
-    const appBase  = `${origin}${basePath}`;
+    try {
+      const origin   = window.location.origin;
+      const basePath = import.meta?.env?.BASE_URL ?? '/';
+      const appBase  = `${origin}${basePath}`;
 
-    const href = window.location.href;
-    if (!href.startsWith(appBase)) return;
+      const href = window.location.href;
+      if (!href.startsWith(appBase)) return;
 
-    // strip off the base
-    const extra = href.slice(appBase.length);
-    if (!extra.trim()) return;    // no deep‑link data
+      // strip off the base
+      const extra = href.slice(appBase.length);
+      if (!extra.trim()) return;    // no deep‑link data
 
-    let apiUrl;
+      let apiUrl;
 
-    if (extra.includes('=') && !extra.startsWith('/')) {
-      // ─── new "query‑string" style: ?batch_code=…&…&dpp_software=…
-      const qs = extra.startsWith('?') ? extra : `?${extra}`;
-      const params = new URLSearchParams(qs);
+      if (extra.includes('=') && !extra.startsWith('/')) {
+        // ─── new "query‑string" style: ?batch_code=…&…&dpp_software=…
+        const qs = extra.startsWith('?') ? extra : `?${extra}`;
+        const params = new URLSearchParams(qs);
 
-      const batch   = params.get('batch_code');
-      const item    = params.get('item_code');
-      const family  = params.get('productfamily_code');
-      const company = params.get('company_code');
-      const lang    = params.get('lang');
-      const swRaw   = params.get('dpp_software') || '';
+        const batch   = params.get('batch_code');
+        const item    = params.get('item_code');
+        const family  = params.get('productfamily_code');
+        const company = params.get('company_code');
+        const lang    = params.get('lang');
+        const swRaw   = params.get('dpp_software') || '';
 
-      // Only process deep link if all required parameters are present
-      if (!swRaw || !batch || !item || !family || !company || !lang) {
-        return; // Skip deep link processing if parameters are missing
+        // Only process deep link if all required parameters are present
+        if (!swRaw || !batch || !item || !family || !company || !lang) {
+          return; // Skip deep link processing if parameters are missing
+        }
+
+        // URLSearchParams.get() ha gia' percent-decodificato il valore: un
+        // secondo decodeURIComponent va in URIError se il risultato contiene
+        // un '%' letterale. Si prova il valore cosi' com'e' e si ripiega sulla
+        // doppia decodifica solo per i vecchi link codificati due volte.
+        let swUrl;
+        try {
+          swUrl = new URL(swRaw);
+        } catch {
+          swUrl = new URL(decodeURIComponent(swRaw));
+        }
+        const hostAndPath = `${swUrl.host}${swUrl.pathname}`.replace(/\/$/, '');
+
+        apiUrl = [
+          'https:/',
+          hostAndPath,
+          batch, item, family, company, lang
+        ].join('/');
+      } else {
+        // ─── old “path‑style”: extra === "80.211.143.55/.../it/?format=json"
+        // just prefix with https:// and call it a day
+        apiUrl = `https://${extra}`;
       }
 
-      const swUrl   = new URL(decodeURIComponent(swRaw));
-      const hostAndPath = `${swUrl.host}${swUrl.pathname}`.replace(/\/$/, '');
+      loadNewElement({ api_url: apiUrl });
 
-      apiUrl = [
-        'https:/',
-        hostAndPath,
-        batch, item, family, company, lang
-      ].join('/');
-    } else {
-      // ─── old “path‑style”: extra === "80.211.143.55/.../it/?format=json"
-      // just prefix with https:// and call it a day
-      apiUrl = `https://${extra}`;
+      // wipe the extra off the URL bar
+      window.history.replaceState({}, document.title, appBase);
+    } catch (err) {
+      // Un deep link malformato non deve far crashare l'intera app:
+      // si ignora il link e si mostra la schermata iniziale.
+      console.error('Deep link non valido, ignorato:', err);
     }
-
-    loadNewElement({ api_url: apiUrl });
-
-    // wipe the extra off the URL bar
-    window.history.replaceState({}, document.title, appBase);
   }, []);
 
   const pushElement = (new_element) => {
