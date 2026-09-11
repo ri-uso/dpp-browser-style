@@ -7,7 +7,7 @@
   --of-radius: 12px;
   --of-shadow: var(--shadow-sm, 0 1px 2px rgba(0,0,0,.06));
   --of-hover: #fafafa;
-  --of-accent-grad: linear-gradient(90deg, #8892c4 0%, #69a8ba 50%, #40b5a4 100%);
+  --of-accent-grad: var(--grad, linear-gradient(90deg, #8892c4 0%, #69a8ba 50%, #40b5a4 100%));
 }
 
 @keyframes of-fade {
@@ -103,6 +103,9 @@
   text-transform: uppercase;
   font-variant-caps: all-small-caps;
   margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .output-form .output-item .value{
@@ -150,6 +153,93 @@
   max-width: 100%; height: auto; display: block; border-radius: 8px;
 }
 
+/* video preview */
+.output-form .video-preview{
+  position: relative;
+  width: 100%;
+  padding-top: 56.25%; /* 16:9 */
+  border-radius: 8px;
+  overflow: hidden;
+}
+.output-form .video-iframe{
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+.output-form .video-preview-direct{
+  width: 100%;
+  max-width: 100%;
+  border-radius: 8px;
+  display: block;
+}
+
+/* file links (PDF, DOC) — bottone icona */
+.output-form .value--file{
+  display: flex;
+  align-items: center;
+}
+/* Badge tondo con la sola icona: stesso stile in prodotto singolo (OutputForm)
+   e in confronto (CompareForms), per questo non è scoped sotto ".output-form"
+   (CompareForms non ha quell'antenato nel DOM). Nome/tipo restano disponibili
+   come tooltip (title) e per screen reader (span visually-hidden). */
+.file-link{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  text-decoration: none;
+  border: 1.5px solid currentColor;
+  background: transparent;
+  cursor: pointer;
+  transition: background .18s ease, transform .15s ease, box-shadow .18s ease;
+}
+.file-link__icon{
+  font-size: 1.3rem;
+  width: 1.3rem;
+  height: 1.3rem;
+  line-height: 1;
+}
+.file-link:hover,
+.file-link:focus-visible{
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,.12);
+}
+.file-link:focus-visible{
+  outline: none;
+  box-shadow:
+    0 0 0 3px rgba(255,255,255,.9),
+    0 0 0 6px rgba(37, 99, 235, 0.35);
+}
+/* PDF: rosso per rendere subito riconoscibile il tipo di file */
+.file-link--pdf{
+  color: #dc2626;
+}
+.file-link--pdf:hover{
+  background: rgba(220, 38, 38, 0.08);
+}
+.file-link--doc{
+  color: #3b82f6;
+}
+.file-link--doc:hover{
+  background: rgba(59, 130, 246, 0.06);
+}
+.file-link--link{
+  color: #2563eb;
+}
+.file-link--link:hover{
+  background: rgba(37, 99, 235, 0.06);
+}
+.file-link--video{
+  color: #7c3aed;
+}
+.file-link--video:hover{
+  background: rgba(124, 58, 237, 0.06);
+}
+
 /* list */
 .output-form .output-list{
   margin: .25rem 0 0; padding-left: 1.1rem;
@@ -158,7 +248,7 @@
   list-style: disc; font-size: .95rem; color: var(--of-text);
 }
 
-@media (max-width: 600px){
+@media (max-width: 899px){
   .output-form .output-item .label{ font-size: .76rem; }
   .output-form .output-item .value{ font-size: .94rem; }
 }

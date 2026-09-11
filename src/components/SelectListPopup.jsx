@@ -6,6 +6,10 @@ import { useState, useEffect } from "react";
 import { compareDppDatas } from "../utilities";
 import "../styles/compareModal.css"; // make sure this path is correct
 
+// Etichetta di un prodotto in lista: nome articolo, altrimenti codice articolo,
+// altrimenti codice lotto (item_name/item_code possono essere entrambi assenti).
+const itemLabel = (s = {}) => s.item_name || s.item_code || s.batch_code || "";
+
 function SelectListPopup({
   show,
   history,
@@ -31,6 +35,9 @@ function SelectListPopup({
     );
   };
 
+  // L'Item code è un campo strutturato che il DPP-software può scegliere di non
+  // inviare: non deve mai condizionare la selezione. L'identità dei prodotti è
+  // garantita da compareDppDatas (che usa _identity, vedi utilities.jsx).
   const filteredHistory = history.filter((item) => compareDppDatas(item, curr_element));
 
   const handleCompare = () => {
@@ -83,7 +90,7 @@ function SelectListPopup({
                 onKeyDown={(e) => e.key === "Enter" && handleSelectedItem(index)}
                 style={{ flexGrow: 1, marginRight: "10px" }}
               >
-                {item.summary.item_name ? item.summary.item_name : item.summary.item_code}
+                {itemLabel(item.summary)}
               </span>
 
               <button

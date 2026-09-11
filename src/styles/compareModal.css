@@ -94,9 +94,9 @@
 
 .rb-modal-content .btn-primary {
   /* match your brand gradient + black outline look */
-  background: linear-gradient(90deg, #8892c4 0%, #69a8ba 50%, #40b5a4 100%);
-  color: #000;
-  border: 2px solid #000;
+  background: var(--grad, linear-gradient(90deg, #8892c4 0%, #69a8ba 50%, #40b5a4 100%));
+  color: #fff;
+  border: none;
   box-shadow: 0 1px 2px rgba(0,0,0,.06);
 }
 .rb-modal-content .btn-primary:hover {
@@ -155,7 +155,7 @@
 }
 .rb-modal-content .form-check-input {
   width: 1rem; height: 1rem;
-  accent-color: #40b5a4;
+  accent-color: var(--logo-500, #40b5a4);
 }
 
 /* Prevent body scroll when modal is open (React-Bootstrap adds the class) */

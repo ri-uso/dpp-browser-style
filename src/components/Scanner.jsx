@@ -1,10 +1,47 @@
 import { Html5QrcodeScanner } from "html5-qrcode";
+// Import "profondo" non ufficiale: html5-qrcode non espone Html5QrcodeScannerStrings
+// dal suo entry point pubblico, quindi va importato dal file interno. Fragile in
+// caso di aggiornamento della libreria (verificare se il path cambia).
+import { Html5QrcodeScannerStrings } from "html5-qrcode/esm/strings";
 import { useEffect, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
 import PropTypes from 'prop-types';
+
+// I testi dei controlli dello scanner (permessi camera, upload immagine, ecc.)
+// sono hardcoded in inglese dalla libreria html5-qrcode (con un typo:
+// "No image choosen"). Li sovrascriviamo in italiano, lingua principale
+// dell'app: lo scanner non riceve la lingua attiva dell'utente, quindi qui
+// non è dinamico rispetto a IT/EN/ES/FR.
+Html5QrcodeScannerStrings.cameraPermissionTitle = () => "Richiedi permessi fotocamera";
+Html5QrcodeScannerStrings.cameraPermissionRequesting = () => "Richiesta permessi fotocamera...";
+Html5QrcodeScannerStrings.noCameraFound = () => "Nessuna fotocamera trovata";
+Html5QrcodeScannerStrings.scanButtonStopScanningText = () => "Interrompi scansione";
+Html5QrcodeScannerStrings.scanButtonStartScanningText = () => "Avvia scansione";
+Html5QrcodeScannerStrings.scanButtonScanningStarting = () => "Avvio fotocamera...";
+Html5QrcodeScannerStrings.torchOnButton = () => "Accendi torcia";
+Html5QrcodeScannerStrings.torchOffButton = () => "Spegni torcia";
+Html5QrcodeScannerStrings.torchOnFailedMessage = () => "Impossibile accendere la torcia";
+Html5QrcodeScannerStrings.torchOffFailedMessage = () => "Impossibile spegnere la torcia";
+Html5QrcodeScannerStrings.textIfCameraScanSelected = () => "Scansiona un file immagine";
+Html5QrcodeScannerStrings.textIfFileScanSelected = () => "Scansiona direttamente con la fotocamera";
+Html5QrcodeScannerStrings.selectCamera = () => "Seleziona fotocamera";
+Html5QrcodeScannerStrings.fileSelectionChooseImage = () => "Seleziona immagine";
+Html5QrcodeScannerStrings.fileSelectionChooseAnother = () => "Seleziona un'altra immagine";
+Html5QrcodeScannerStrings.fileSelectionNoImageSelected = () => "";
+Html5QrcodeScannerStrings.dragAndDropMessage = () => "Oppure trascina qui un'immagine da scansionare";
+Html5QrcodeScannerStrings.dragAndDropMessageOnlyImages = () => "Oppure trascina qui un'immagine da scansionare (altri file non supportati)";
+Html5QrcodeScannerStrings.zoom = () => "zoom";
+Html5QrcodeScannerStrings.loadingImage = () => "Caricamento immagine...";
+Html5QrcodeScannerStrings.scanningStatus = () => "Scansione in corso";
+Html5QrcodeScannerStrings.idleStatus = () => "In attesa";
+Html5QrcodeScannerStrings.errorStatus = () => "Errore";
+Html5QrcodeScannerStrings.permissionStatus = () => "Permesso";
+Html5QrcodeScannerStrings.noCameraFoundErrorStatus = () => "Nessuna fotocamera";
 
 function Scanner({ loadNewElement }) {
   const scannerRef = useRef(null);
   const isMountedRef = useRef(true);
+  const [, setSearchParams] = useSearchParams();
 
   useEffect(() => {
     isMountedRef.current = true;
@@ -51,7 +88,12 @@ function Scanner({ loadNewElement }) {
       // const appBase = "https://dpp-browser-omega.vercel.app";
       const finalUrl = `https://${hostAndPath}/${batch}/${item}/${family}/${company}/${lang}`;
 
-      // 4) Fire off your loader and tear down
+      // 4) Update company_code in URL so MainRouter re-applies brand colors
+      if (company) {
+        setSearchParams({ company_code: company });
+      }
+
+      // 5) Fire off your loader and tear down
       loadNewElement({ api_url: finalUrl });
       if (isMountedRef.current) {
         scanner.clear().catch(e => console.error("clear failed", e));
@@ -64,6 +106,19 @@ function Scanner({ loadNewElement }) {
     }
 
     scanner.render(success, error);
+
+    // La libreria mostra troppi controlli superflui per l'utente finale:
+    // un messaggio "trascina qui" non cliccabile e la coda " - " lasciata
+    // dal testo del bottone file (svuotato sopra). Ne bastano solo due:
+    // "Richiedi permessi fotocamera" e "Seleziona immagine".
+    const fileSelectionButton = document.getElementById('html5-qrcode-button-file-selection');
+    if (fileSelectionButton) {
+      fileSelectionButton.textContent = fileSelectionButton.textContent.replace(/\s*-\s*$/, '');
+    }
+    const dragAndDropMessage = fileSelectionButton?.parentElement?.parentElement?.querySelector('div:last-child');
+    if (dragAndDropMessage) {
+      dragAndDropMessage.style.display = 'none';
+    }
 
     return () => {
       isMountedRef.current = false;

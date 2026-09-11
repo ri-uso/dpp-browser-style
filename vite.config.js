@@ -3,11 +3,28 @@ import react from '@vitejs/plugin-react'
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    {
+      name: 'webmanifest-mime',
+      configureServer(server) {
+        server.middlewares.use((req, res, next) => {
+          if (req.url?.endsWith('.webmanifest')) {
+            res.setHeader('Content-Type', 'application/manifest+json')
+          }
+          next()
+        })
+      }
+    }
+  ],
   server: {
+    watch: {
+      ignored: ['**/.venv/**', '**/node_modules/**'],
+    },
     host: false,
     allowedHosts: [
-      '70a8e749ee67.ngrok-free.app'
+      '.ngrok-free.app',
+      '.trycloudflare.com'
     ],
     // Proxy API calls to Vercel dev server when running locally
     // In production, /api routes are handled by Vercel serverless functions

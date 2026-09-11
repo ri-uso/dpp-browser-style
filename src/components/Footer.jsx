@@ -4,6 +4,8 @@ import { getLogos } from "../config/logos.js";
 export default function Footer({ companyCode }){
   const logos = getLogos(companyCode);
 
+  if (!logos?.footer) return null;
+
   return (
     <footer className="container custom-footer">
       <img

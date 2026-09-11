@@ -36,10 +36,6 @@ export const logoConfig = {
     footer: "/logos/Footer_RiUso.png"
   },
     "staffjersey": {
-    header: "/logos/Header_CarpiFasionSystem.jpg",
-    footer: "/logos/Footer_CentroQualitaTessile_CarpiFashionSystem.png"
-  },
-    "aziendaprova": {
     header: "/logos/Header_RiUso.png",
     footer: "/logos/Footer_RiUso.png"
   },
@@ -53,7 +49,8 @@ export const logoConfig = {
   },
   "utildeco-example": {
     header: "/logos/Header_Utildeco_Vinnovate.png",
-    footer: "/logos/Footer_Utildeco_Vinnovate.png"
+    footer: "/logos/Footer_Utildeco_Vinnovate.png",
+    accessibilityWidget: true
   },
     "souvenirclubbingsrl": {
     header: "/logos/Header_Centergross.png",
@@ -83,6 +80,35 @@ export const logoConfig = {
     header: "/logos/Header_Staff_Jersey_Just_Fashion.png",
     footer: "/logos/Footer_Staff_Jersey_Just_Fashion.png"
   },
+  "ream": {
+    header: "/logos/Header_REAM.png",
+    footer: "/logos/Footer_REAM.png"
+  },
+  "crea-si": {
+    header: "/logos/Header Crea-si.jpg",
+    footer: "/logos/Footer Crea-si.jpg"
+  },
+  "biotex": {
+    header: "/logos/Header_logo_Biotex.png",
+    footer: "/logos/Footer_Biotex_cqt.jpg",
+    colors: {
+      brand:       '#c8102e',
+      brand600:    '#a50c25',
+      logo500:     '#c8102e',
+      logo400:     '#e0294a',
+      logo300:     '#f06070',
+      logo100:     '#fce8ec',
+      grad:        'linear-gradient(90deg, #1a1a2e 0%, #8b0000 50%, #c8102e 100%)',
+      gradNav:     'linear-gradient(135deg, #1a1a2e 0%, #8b0000 50%, #c8102e 100%)',
+      shadowBrand: '0 4px 14px rgba(200, 16, 46, 0.4)',
+      cmpBrand1:   '#c8102e',
+      cmpBrand2:   '#1565c0',
+      cmpBrand3:   '#2e7d32',
+      btnBg:       '#c8102e',
+    }
+  },
+
+  
 
   // Example for adding new company:
   // azienda2: {  //Company code must be written here in lowercase
@@ -100,5 +126,51 @@ export const defaultCompany = 'dpp';
  * @returns {object} Object with header and footer logo paths
  */
 export const getLogos = (companyCode) => {
-  return logoConfig[companyCode] || logoConfig[defaultCompany];
+  return logoConfig[companyCode] ?? logoConfig[defaultCompany] ?? null;
+};
+
+/**
+ * Apply company brand colors as CSS custom properties on <html>.
+ * If the company has no `colors` defined, resets to the default CSS values.
+ * @param {string} companyCode - Company code identifier
+ */
+export const applyCompanyColors = (companyCode) => {
+  const config = logoConfig[companyCode] || logoConfig[defaultCompany];
+  const root = document.documentElement;
+
+  const VARS = [
+    '--brand', '--brand-600', '--logo-500', '--logo-400', '--logo-300', '--logo-100',
+    '--grad', '--grad-nav-primary', '--shadow-brand',
+    '--cmp-brand1', '--cmp-brand2', '--cmp-brand3',
+    '--btn-bg',
+  ];
+
+  if (config.colors) {
+    const c = config.colors;
+    root.style.setProperty('--brand',            c.brand);
+    root.style.setProperty('--brand-600',        c.brand600);
+    root.style.setProperty('--logo-500',         c.logo500);
+    root.style.setProperty('--logo-400',         c.logo400);
+    root.style.setProperty('--logo-300',         c.logo300);
+    root.style.setProperty('--logo-100',         c.logo100);
+    root.style.setProperty('--grad',             c.grad);
+    root.style.setProperty('--grad-nav-primary', c.gradNav);
+    root.style.setProperty('--shadow-brand',     c.shadowBrand);
+    root.style.setProperty('--cmp-brand1',       c.cmpBrand1);
+    root.style.setProperty('--cmp-brand2',       c.cmpBrand2);
+    root.style.setProperty('--cmp-brand3',       c.cmpBrand3);
+    root.style.setProperty('--btn-bg',           c.btnBg);
+  } else {
+    VARS.forEach(v => root.style.removeProperty(v));
+  }
+};
+
+/**
+ * Returns true if the company has opted in to the accessibility widget.
+ * @param {string} companyCode - Company code identifier
+ * @returns {boolean}
+ */
+export const hasAccessibilityWidget = (companyCode) => {
+  const config = logoConfig[companyCode] ?? logoConfig[defaultCompany];
+  return config?.accessibilityWidget === true;
 };

@@ -1,0 +1,35 @@
+/* Icona ⓘ accanto al nome proprietà (componente PropertyInfo) */
+.label__info{
+  background: transparent;
+  border: 0;
+  padding: 0;
+  line-height: 0;
+  cursor: pointer;
+  color: #6b7280;
+  opacity: .6;
+  border-radius: 4px;
+  transition: opacity .18s ease, color .18s ease;
+  flex: 0 0 auto;
+}
+.label__info:hover{
+  opacity: 1;
+  color: #111827;
+}
+.label__info:focus-visible{
+  opacity: 1;
+  outline: none;
+  box-shadow:
+    0 0 0 2px rgba(255,255,255,.9),
+    0 0 0 4px rgba(37, 99, 235, 0.35);
+}
+
+/* popover con la description: testo leggibile (non uppercase come le label) */
+.prop-desc-popover .popover-body{
+  text-transform: none;
+  font-variant-caps: normal;
+  letter-spacing: normal;
+  font-weight: 400;
+  font-size: .85rem;
+  line-height: 1.4;
+  color: #111827;
+}

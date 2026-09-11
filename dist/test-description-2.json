@@ -1,0 +1,146 @@
+{
+    "summary": {
+        "company_code": "AziendaProva",
+        "company_uuid": "74837917-b92e-4e26-bb86-a23c64cfa637",
+        "company_webservice": "",
+        "company_legalname": "Azienda Prova S.r.l.",
+        "company_vat": "IT01234567890",
+        "company_shortname": "Azienda Prova",
+        "company_address": "Via dell'Azienda Prova 52, 41012 Carpi (MO)",
+        "company_email": "info@aziendaprova.it",
+        "company_phonenumber": "+39 059 000000",
+        "company_website": "https://www.aziendaprova.it",
+        "company_note": "Produttore italiano di tessuti tecnici",
+        "productfamily_code": "TSPT",
+        "productfamily_name": "Tessuto Pantalone",
+        "productfamily_description": "Tessuto del pantalone. GSM è l'unità di misura per il peso dei tessuti (grammi per metro quadrato).",
+        "productfamily_uom": "GSM",
+        "item_code": "TP002",
+        "item_name": "Materiale Pantalone Slim",
+        "item_description": "Variante slim del materiale per pantaloni, misto cotone-elastan.",
+        "batch_code": "BATCH-2024-TP002-013",
+        "requested_language": "it"
+    },
+    "data": [
+        {
+            "ID": "DESC_BREVE",
+            "label": "Con description breve (ⓘ presente)",
+            "description": "Certificazione qualità aziendale",
+            "value_type": "String",
+            "property_language": "it",
+            "value_text": "ISO 14001",
+            "value_number": null,
+            "value_number_unit_of_measure": null,
+            "value_url": null,
+            "value_url_type": null
+        },
+        {
+            "ID": "DESC_NULL",
+            "label": "Description null (ⓘ assente)",
+            "description": null,
+            "value_type": "String",
+            "property_language": "it",
+            "value_text": "Nessuna icona accanto a questo nome",
+            "value_number": null,
+            "value_number_unit_of_measure": null,
+            "value_url": null,
+            "value_url_type": null
+        },
+        {
+            "ID": "DESC_VUOTA",
+            "label": "Description stringa vuota (ⓘ assente)",
+            "description": "",
+            "value_type": "String",
+            "property_language": "it",
+            "value_text": "Nessuna icona: description vuota",
+            "value_number": null,
+            "value_number_unit_of_measure": null,
+            "value_url": null,
+            "value_url_type": null
+        },
+        {
+            "ID": "DESC_SPAZI",
+            "label": "Description solo spazi (ⓘ assente)",
+            "description": "    ",
+            "value_type": "String",
+            "property_language": "it",
+            "value_text": "Nessuna icona: description con soli spazi",
+            "value_number": null,
+            "value_number_unit_of_measure": null,
+            "value_url": null,
+            "value_url_type": null
+        },
+        {
+            "ID": "DESC_LUNGA",
+            "label": "Con description lunga (ⓘ presente)",
+            "description": "Questa è una descrizione volutamente lunga per verificare che il popover vada a capo correttamente, non sfori i bordi dello schermo e resti leggibile anche su viewport mobile strette. Contiene più frasi e termina qui.",
+            "value_type": "String",
+            "property_language": "it",
+            "value_text": "Valore diverso dal primo prodotto",
+            "value_number": null,
+            "value_number_unit_of_measure": null,
+            "value_url": null,
+            "value_url_type": null
+        },
+        {
+            "ID": "DESC_NUMERO",
+            "label": "Tipo Value con description (ⓘ presente)",
+            "description": "Percentuale di cotone organico certificato GOTS sul totale delle fibre",
+            "value_type": "Value",
+            "property_language": "it",
+            "value_text": null,
+            "value_number": 95.0,
+            "value_number_unit_of_measure": "%",
+            "value_url": null,
+            "value_url_type": null
+        },
+        {
+            "ID": "DESC_URL_PDF",
+            "label": "Tipo URL/PDF con description (ⓘ presente)",
+            "description": "Global Organic Textile Standard — certificato scaricabile in PDF",
+            "value_type": "URL",
+            "property_language": "it",
+            "value_text": "Scarica certificato GOTS",
+            "value_number": null,
+            "value_number_unit_of_measure": null,
+            "value_url": "https://pdfobject.com/pdf/sample.pdf",
+            "value_url_type": "PDF"
+        },
+        {
+            "ID": "DESC_SPECIALI",
+            "label": "Description con caratteri speciali (ⓘ presente)",
+            "description": "Emissioni CO₂ ≤ 2,5 kg/kg — apice & simboli: \"virgolette\", 30°C",
+            "value_type": "String",
+            "property_language": "it",
+            "value_text": "Verifica caratteri speciali nel popover",
+            "value_number": null,
+            "value_number_unit_of_measure": null,
+            "value_url": null,
+            "value_url_type": null
+        }
+    ],
+    "forms": [
+        {
+            "form_language": "it",
+            "form_name": "#HEADER",
+            "fields": [
+                { "ID": "DESC_BREVE" }
+            ]
+        },
+        {
+            "form_language": "it",
+            "form_name": "Test description (icona ⓘ + popover)",
+            "fields": [
+                { "ID": "DESC_BREVE" },
+                { "ID": "DESC_NULL" },
+                { "ID": "DESC_VUOTA" },
+                { "ID": "DESC_SPAZI" },
+                { "ID": "DESC_LUNGA" },
+                { "ID": "DESC_NUMERO" },
+                { "ID": "DESC_URL_PDF" },
+                { "ID": "DESC_SPECIALI" }
+            ]
+        }
+    ],
+    "linked_batches": []
+}

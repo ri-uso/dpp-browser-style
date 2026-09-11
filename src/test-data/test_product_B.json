@@ -1,0 +1,54 @@
+{
+  "summary": {
+    "company_code": "BETA",
+    "company_uuid": "uuid-beta",
+    "company_webservice": "beta.example.com",
+    "company_shortname": "BETA",
+    "company_legalname": "Beta Textile Srl",
+    "company_vat": "IT09876543210",
+    "company_address": "Via Torino 9, Torino",
+    "company_email": "info@beta.example.com",
+    "company_phonenumber": "+39 011 7654321",
+    "company_website": "www.beta.example.com",
+    "company_note": "",
+    "productfamily_code": "FAM-002",
+    "productfamily_name": "Famiglia Test B",
+    "productfamily_description": "Descrizione famiglia di test B",
+    "productfamily_uom": "pz",
+    "item_code": "ITEM-002",
+    "item_description": "Articolo di Test B - Taglia L",
+    "batch_code": "BATCH-002",
+    "language": "it"
+  },
+  "data": [
+    { "ID": "LOGO1", "label": "Logo 1", "description": null, "value_type": "URL", "property_language": "it", "value_text": null, "value_number": null, "value_number_unit_of_measure": null, "value_url": "https://placehold.co/150x60/png?text=BetaLogo", "value_url_type": "IMAGE" },
+
+    { "ID": "HEADER_NAME", "label": "Nome prodotto", "description": null, "value_type": "String", "property_language": "it", "value_text": "Prodotto Beta L", "value_number": null, "value_number_unit_of_measure": null, "value_url": null, "value_url_type": null },
+
+    { "ID": "CERT_PDF", "label": "Certificato di conformità", "description": "Certificato di conformità (Beta).", "value_type": "URL", "property_language": "it", "value_text": null, "value_number": null, "value_number_unit_of_measure": null, "value_url": "https://sitobeta.com/scheda.doc", "value_url_type": "DOC" },
+    { "ID": "VIDEO_YT", "label": "Video di presentazione", "description": null, "value_type": "URL", "property_language": "it", "value_text": null, "value_number": null, "value_number_unit_of_measure": null, "value_url": "https://youtu.be/dQw4w9WgXcQ", "value_url_type": "VIDEO" },
+    { "ID": "VIDEO_VIMEO", "label": "Video making-of (Vimeo)", "description": null, "value_type": "URL", "property_language": "it", "value_text": null, "value_number": null, "value_number_unit_of_measure": null, "value_url": "https://vimeo.com/87654321", "value_url_type": "VIDEO" },
+    { "ID": "TESTO_PROP", "label": "Nota testuale", "description": null, "value_type": "String", "property_language": "it", "value_text": "Testo diverso per Beta", "value_number": null, "value_number_unit_of_measure": null, "value_url": null, "value_url_type": null },
+    { "ID": "VALORE_PROP", "label": "Peso", "description": "Peso del prodotto con unità di misura.", "value_type": "Value", "property_language": "it", "value_text": null, "value_number": 37, "value_number_unit_of_measure": "kg", "value_url": null, "value_url_type": null },
+
+    { "ID": "CERT_AMBIENTALE", "label": "Certificazione ambientale", "description": "Certificazione ambientale di prodotto (Beta).", "value_type": "URL", "property_language": "it", "value_text": null, "value_number": null, "value_number_unit_of_measure": null, "value_url": "https://sitobeta.com/cert-ambientale.doc", "value_url_type": "DOC" },
+
+    { "ID": "EXTRA_ONLY_IN_B", "label": "Proprietà presente solo in B (non deve comparire nel confronto)", "description": null, "value_type": "String", "property_language": "it", "value_text": "SE VEDI QUESTO TESTO IL CONFRONTO NON E' GUIDATO DAL PRIMO PRODOTTO", "value_number": null, "value_number_unit_of_measure": null, "value_url": null, "value_url_type": null }
+  ],
+  "forms": [
+    { "form_name": "#LOGOCOMPANY", "fields": [{ "ID": "LOGO1" }] },
+    { "form_name": "#HEADER", "fields": [{ "ID": "HEADER_NAME" }] },
+    { "form_name": "#BATCH-ITEM-PRODUCTFAMILY", "fields": [] },
+    { "form_name": "#COMPANY", "fields": [] },
+    { "form_name": "Documenti e Media", "fields": [
+      { "ID": "CERT_PDF" },
+      { "ID": "VIDEO_YT" },
+      { "ID": "VIDEO_VIMEO" },
+      { "ID": "TESTO_PROP" },
+      { "ID": "VALORE_PROP" }
+    ] },
+    { "form_name": "Certificazioni", "fields": [{ "ID": "CERT_AMBIENTALE" }] },
+    { "form_name": "Extra", "fields": [{ "ID": "EXTRA_ONLY_IN_B" }] }
+  ],
+  "linked_batches": []
+}
