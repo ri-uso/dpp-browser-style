@@ -17,10 +17,30 @@ const audioCache = new Map();
 
 /**
  * Generates a cache key based on product data and language
+ *
+ * I codici prodotto vivono sotto productData.summary, non alla radice
+ * dell'oggetto: leggendoli dalla radice la chiave era sempre
+ * "undefined_undefined_undefined_<lingua>" e tutti i prodotti condividevano
+ * una sola voce di cache, servendo la storia del primo prodotto scansionato
+ * per ogni scansione successiva.
+ *
+ * Si usa _identity (l'URL di richiesta assegnato in fetchData di App.jsx),
+ * identificativo sempre univoco e indipendente dai campi che il singolo
+ * backend sceglie di restituire; il fallback sui campi summary copre
+ * eventuali dati privi di _identity.
  */
 function getCacheKey(productData, language) {
-  const { batch_code, item_code, productfamily_code } = productData;
-  return `${batch_code}_${item_code}_${productfamily_code}_${language}`;
+  if (productData?._identity) {
+    return `${productData._identity}_${language}`;
+  }
+  const s = productData?.summary ?? {};
+  return [
+    s.company_code,
+    s.productfamily_code,
+    s.item_code,
+    s.batch_code,
+    language
+  ].join('_');
 }
 
 /**
