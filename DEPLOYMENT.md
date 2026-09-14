@@ -158,7 +158,11 @@ vercel --prod
 Poi, nella dashboard del progetto → Settings → Environment Variables:
 
 - `OPENAI_API_KEY` = la chiave di produzione
-- `NODE_ENV` = `production`
+
+Non impostare `NODE_ENV=production`: npm salterebbe le devDependencies, tra cui
+`vite`, e la build fallirebbe con `vite: command not found`. Per sicurezza
+[vercel.json](vercel.json) installa con `--include=dev`; in ogni caso le funzioni
+nascondono i dettagli degli errori già quando `NODE_ENV` non vale `development`.
 
 Rideploya dopo aver aggiunto le variabili. `ALLOWED_ORIGINS` non serve: frontend
 e API stanno sullo stesso dominio. [vercel.json](vercel.json) rimanda a
