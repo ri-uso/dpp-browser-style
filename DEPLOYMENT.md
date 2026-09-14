@@ -113,9 +113,11 @@ lo chiude il VAD semantico lato server.
 Gli endpoint sono un proxy verso OpenAI con la nostra chiave: chi raggiunge
 l'URL può spenderla. [api/_guard.js](api/_guard.js) applica:
 
-- **origin allowlist** — `localhost` più i domini dei tunnel (`*.ngrok-free.app`,
-  `*.ngrok.app`, `*.trycloudflare.com`). Altri origin: elencali in
-  `ALLOWED_ORIGINS`, separati da virgola. Le richieste senza header `Origin`
+- **origin allowlist** — `localhost`, i domini dei tunnel (`*.ngrok-free.app`,
+  `*.ngrok.app`, `*.trycloudflare.com`) e la stessa origine, cioè il dominio
+  che serve anche il frontend: così ogni deploy Vercel, preview comprese,
+  funziona senza configurazione. Un frontend ospitato altrove va elencato in
+  `ALLOWED_ORIGINS`, separato da virgola. Le richieste senza header `Origin`
   (curl, health check) passano: la CORS riguarda solo i browser;
 - **rate limit per IP** — 20 richieste/minuto per la chat, 6 per le sessioni
   vocali, che sono a consumo;
@@ -157,10 +159,17 @@ Poi, nella dashboard del progetto → Settings → Environment Variables:
 
 - `OPENAI_API_KEY` = la chiave di produzione
 - `NODE_ENV` = `production`
-- `ALLOWED_ORIGINS` = il dominio pubblico dell'app (senza, il browser viene
-  bloccato dalla allowlist)
 
-Rideploya dopo aver aggiunto le variabili. In alternativa, `npm run dev:vercel`
+Rideploya dopo aver aggiunto le variabili. `ALLOWED_ORIGINS` non serve: frontend
+e API stanno sullo stesso dominio. [vercel.json](vercel.json) rimanda a
+`index.html` ogni percorso fuori da `/api/`, così `/login` regge anche il
+ricaricamento della pagina.
+
+`/api/health` esiste solo in [dev-server.js](dev-server.js): su Vercel risponde
+404, ed è normale.
+
+Sul piano Hobby (gratuito) il rate limit in memoria vale per singola istanza e
+l'URL è pubblico: il vero argine è il tetto di spesa sull'organizzazione OpenAI. In alternativa, `npm run dev:vercel`
 (richiede `vercel login`) riproduce l'ambiente di produzione in locale sulla
 porta 3000.
 

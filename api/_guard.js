@@ -45,7 +45,12 @@ const TUNNEL_HOST_SUFFIXES = [
   '.trycloudflare.com'
 ];
 
-function isAllowedOrigin(origin) {
+/**
+ * @param {string} origin header Origin della richiesta
+ * @param {string} [host] header Host: su Vercel e' il dominio servito
+ *   (produzione, preview o dominio personalizzato)
+ */
+function isAllowedOrigin(origin, host) {
   if (!origin) return false;
 
   const extra = (process.env.ALLOWED_ORIGINS || '')
@@ -56,8 +61,14 @@ function isAllowedOrigin(origin) {
   if (STATIC_ORIGINS.includes(origin) || extra.includes(origin)) return true;
 
   try {
-    const { hostname, protocol } = new URL(origin);
+    const { host: originHost, hostname, protocol } = new URL(origin);
     if (protocol !== 'https:' && protocol !== 'http:') return false;
+
+    // Stessa origine: frontend e API serviti dallo stesso dominio. Copre ogni
+    // deploy Vercel (anche le preview, che hanno URL sempre diversi) senza
+    // aprire a tutto *.vercel.app, dove chiunque puo' pubblicare un sito.
+    if (host && originHost === host) return true;
+
     return TUNNEL_HOST_SUFFIXES.some(suffix => hostname.endsWith(suffix));
   } catch {
     return false;
@@ -85,7 +96,7 @@ export function applyCors(req, res) {
   const origin = req.headers.origin;
 
   if (origin) {
-    if (!isAllowedOrigin(origin)) {
+    if (!isAllowedOrigin(origin, req.headers.host)) {
       res.status(403).json({ error: 'Origin not allowed' });
       return false;
     }
