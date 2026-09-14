@@ -5,6 +5,7 @@ import VoiceInterface from './VoiceInterface';
 import { createConversation } from '../services/ChatService';
 import { createVoiceSession } from '../services/VoiceChatService';
 import { createProductPersonaPrompt, generateWelcomeMessage, validateProductData } from '../services/ProductPersonaService';
+import { VOICE_ACCENT } from '../config/experiments';
 import { MessageSquare, Mic } from 'lucide-react';
 import '../styles/productChatModal.css';
 
@@ -87,7 +88,10 @@ function ProductChatModal({ productData, language, translations, isOpen, onClose
     if (!isOpen || chatMode !== 'voice' || !productData) return;
 
     // 'voice' seleziona il blocco FORMATO parlato: turni corti, niente elenchi.
-    const session = createVoiceSession(createProductPersonaPrompt(productData, language, 'voice'));
+    // VOICE_ACCENT e' la variante sperimentale da URL (?voice_accent=modena).
+    const session = createVoiceSession(
+      createProductPersonaPrompt(productData, language, 'voice', { accent: VOICE_ACCENT })
+    );
     setVoiceSession(session);
     setError(null);
 

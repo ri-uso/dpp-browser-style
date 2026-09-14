@@ -4,6 +4,7 @@ import './styles/App.css';
 import { useLocation } from 'react-router-dom';
 import CompareForms from "./components/CompareForms.jsx";
 import { compareDppDatas } from './utilities.jsx';
+import { withoutExperimentParams } from './config/experiments.js';
 import { getIdToken } from "./components/AuthService.jsx";
 import MainPage from "./MainPage";
 import translations from "./components/Translations.json";
@@ -64,8 +65,9 @@ function App({ language, onCompanyCodeChange }) {
       const href = window.location.href;
       if (!href.startsWith(appBase)) return;
 
-      // strip off the base
-      const extra = href.slice(appBase.length);
+      // strip off the base, e i parametri sperimentali (es. voice_accent) che
+      // nel formato path-style finirebbero dentro l'URL dell'API DPP
+      const extra = withoutExperimentParams(href.slice(appBase.length));
       if (!extra.trim()) return;    // no deep‑link data
 
       let apiUrl;
