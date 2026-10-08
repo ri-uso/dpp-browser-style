@@ -8,8 +8,11 @@ export function pickItem(data_list, id, lang) {
   const list = Array.isArray(data_list) ? data_list.filter(it => String(it.ID) === String(id)) : [];
   if (!list.length) return null;
   const langLc = String(lang || "").toLowerCase();
-  const exact = list.find(it => String(it.property_language || "").toLowerCase() === langLc);
-  return exact || list[0] || null;
+  const langOf = it => String(it.property_language || "").toLowerCase();
+  // Lingua richiesta, poi la versione neutra "default", poi la prima disponibile.
+  const exact = list.find(it => langOf(it) === langLc);
+  const neutral = list.find(it => langOf(it) === "default");
+  return exact || neutral || list[0] || null;
 }
 
 export function getDirectImageUrl(url) {
