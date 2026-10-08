@@ -14,10 +14,20 @@ const languages = {
   GB: "EN",
   ES: "ES",
   FR: "FR",
+  RO: "RO",
 };
 
+// Lingua dell'interfaccia richiesta dal QR (?lang=it|en|fr|ro). Il codice e'
+// quello usato dal selettore (react-flags-select): GB per l'inglese.
+const qrLangToCountry = { it: "IT", en: "GB", es: "ES", fr: "FR", ro: "RO" };
+
+function countryFromUrl() {
+  const lang = new URLSearchParams(window.location.search).get('lang');
+  return qrLangToCountry[String(lang || '').toLowerCase()] || 'IT';
+}
+
 function Header({ setLanguage, language, companyCode }) {
-  const [selectedCountry, setCountry] = useState('IT');
+  const [selectedCountry, setCountry] = useState(countryFromUrl);
   const [user, setUser] = useState(null);
   const logos = getLogos(companyCode);
 
@@ -41,8 +51,8 @@ function Header({ setLanguage, language, companyCode }) {
     return () => unsubscribe();
   }, []);
 
-  const customLabelsFull = { IT: "Italiano", GB: "English", ES: "Español", FR: "Français" };
-  const customLabelsShort = { IT: "IT", GB: "EN", ES: "ES", FR: "FR" };
+  const customLabelsFull = { IT: "Italiano", GB: "English", ES: "Español", FR: "Français", RO: "Română" };
+  const customLabelsShort = { IT: "IT", GB: "EN", ES: "ES", FR: "FR", RO: "RO" };
 
   return (
     <header className="main-header">
@@ -64,7 +74,7 @@ function Header({ setLanguage, language, companyCode }) {
         <div className='lingue-login'>
           <div className='lingue-select'> 
             <Select
-              countries={["IT", "GB", "ES", "FR"]}
+              countries={["IT", "GB", "ES", "FR", "RO"]}
               customLabels={screenWidth > 420 ? customLabelsFull : customLabelsShort}
               onSelect={setCountry}
               selected={selectedCountry}
