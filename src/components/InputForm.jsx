@@ -130,7 +130,7 @@ function InputForm({ loadNewElement, language, openScanner = false, setOpenScann
                 <span>{translations[language].back_text}</span>
               </button>
             </div>
-            <Scanner handleShowButtonClick={handleShowButtonClick} btnLabel={btnLabel} loadNewElement={loadNewElement}/>
+            <Scanner handleShowButtonClick={handleShowButtonClick} btnLabel={btnLabel} loadNewElement={loadNewElement} language={language}/>
           </div>
         )
       }

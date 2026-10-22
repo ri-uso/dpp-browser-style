@@ -6,45 +6,51 @@ import { Html5QrcodeScannerStrings } from "html5-qrcode/esm/strings";
 import { useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import PropTypes from 'prop-types';
+import translations from './Translations.json';
 
 // I testi dei controlli dello scanner (permessi camera, upload immagine, ecc.)
 // sono hardcoded in inglese dalla libreria html5-qrcode (con un typo:
-// "No image choosen"). Li sovrascriviamo in italiano, lingua principale
-// dell'app: lo scanner non riceve la lingua attiva dell'utente, quindi qui
-// non è dinamico rispetto a IT/EN/ES/FR.
-Html5QrcodeScannerStrings.cameraPermissionTitle = () => "Richiedi permessi fotocamera";
-Html5QrcodeScannerStrings.cameraPermissionRequesting = () => "Richiesta permessi fotocamera...";
-Html5QrcodeScannerStrings.noCameraFound = () => "Nessuna fotocamera trovata";
-Html5QrcodeScannerStrings.scanButtonStopScanningText = () => "Interrompi scansione";
-Html5QrcodeScannerStrings.scanButtonStartScanningText = () => "Avvia scansione";
-Html5QrcodeScannerStrings.scanButtonScanningStarting = () => "Avvio fotocamera...";
-Html5QrcodeScannerStrings.torchOnButton = () => "Accendi torcia";
-Html5QrcodeScannerStrings.torchOffButton = () => "Spegni torcia";
-Html5QrcodeScannerStrings.torchOnFailedMessage = () => "Impossibile accendere la torcia";
-Html5QrcodeScannerStrings.torchOffFailedMessage = () => "Impossibile spegnere la torcia";
-Html5QrcodeScannerStrings.textIfCameraScanSelected = () => "Scansiona un file immagine";
-Html5QrcodeScannerStrings.textIfFileScanSelected = () => "Scansiona direttamente con la fotocamera";
-Html5QrcodeScannerStrings.selectCamera = () => "Seleziona fotocamera";
-Html5QrcodeScannerStrings.fileSelectionChooseImage = () => "Seleziona immagine";
-Html5QrcodeScannerStrings.fileSelectionChooseAnother = () => "Seleziona un'altra immagine";
-Html5QrcodeScannerStrings.fileSelectionNoImageSelected = () => "";
-Html5QrcodeScannerStrings.dragAndDropMessage = () => "Oppure trascina qui un'immagine da scansionare";
-Html5QrcodeScannerStrings.dragAndDropMessageOnlyImages = () => "Oppure trascina qui un'immagine da scansionare (altri file non supportati)";
-Html5QrcodeScannerStrings.zoom = () => "zoom";
-Html5QrcodeScannerStrings.loadingImage = () => "Caricamento immagine...";
-Html5QrcodeScannerStrings.scanningStatus = () => "Scansione in corso";
-Html5QrcodeScannerStrings.idleStatus = () => "In attesa";
-Html5QrcodeScannerStrings.errorStatus = () => "Errore";
-Html5QrcodeScannerStrings.permissionStatus = () => "Permesso";
-Html5QrcodeScannerStrings.noCameraFoundErrorStatus = () => "Nessuna fotocamera";
+// "No image choosen"). Li sovrascriviamo con la lingua attiva dell'app
+// (chiavi qr_scanner_*_text in Translations.json) ogni volta che lo scanner
+// si monta, perche' la libreria li legge dall'oggetto globale.
+function applyScannerStrings(t) {
+  const S = Html5QrcodeScannerStrings;
+  S.cameraPermissionTitle = () => t.qr_scanner_camera_permission_title_text;
+  S.cameraPermissionRequesting = () => t.qr_scanner_camera_permission_requesting_text;
+  S.noCameraFound = () => t.qr_scanner_no_camera_found_text;
+  S.scanButtonStopScanningText = () => t.qr_scanner_stop_scanning_text;
+  S.scanButtonStartScanningText = () => t.qr_scanner_start_scanning_text;
+  S.scanButtonScanningStarting = () => t.qr_scanner_scan_starting_text;
+  S.torchOnButton = () => t.qr_scanner_torch_on_text;
+  S.torchOffButton = () => t.qr_scanner_torch_off_text;
+  S.torchOnFailedMessage = () => t.qr_scanner_torch_on_failed_text;
+  S.torchOffFailedMessage = () => t.qr_scanner_torch_off_failed_text;
+  S.textIfCameraScanSelected = () => t.qr_scanner_scan_image_file_text;
+  S.textIfFileScanSelected = () => t.qr_scanner_scan_with_camera_text;
+  S.selectCamera = () => t.qr_scanner_select_camera_text;
+  S.fileSelectionChooseImage = () => t.qr_scanner_choose_image_text;
+  S.fileSelectionChooseAnother = () => t.qr_scanner_choose_another_image_text;
+  S.fileSelectionNoImageSelected = () => "";
+  S.dragAndDropMessage = () => t.qr_scanner_drag_drop_text;
+  S.dragAndDropMessageOnlyImages = () => t.qr_scanner_drag_drop_only_images_text;
+  S.zoom = () => t.qr_scanner_zoom_text;
+  S.loadingImage = () => t.qr_scanner_loading_image_text;
+  S.scanningStatus = () => t.qr_scanner_status_scanning_text;
+  S.idleStatus = () => t.qr_scanner_status_idle_text;
+  S.errorStatus = () => t.qr_scanner_status_error_text;
+  S.permissionStatus = () => t.qr_scanner_status_permission_text;
+  S.noCameraFoundErrorStatus = () => t.qr_scanner_status_no_camera_text;
+}
 
-function Scanner({ loadNewElement }) {
+function Scanner({ loadNewElement, language }) {
   const scannerRef = useRef(null);
   const isMountedRef = useRef(true);
   const [, setSearchParams] = useSearchParams();
 
   useEffect(() => {
     isMountedRef.current = true;
+
+    applyScannerStrings(translations[language] || translations.IT);
 
     const scanner = new Html5QrcodeScanner(
       'reader',
@@ -110,7 +116,7 @@ function Scanner({ loadNewElement }) {
     // La libreria mostra troppi controlli superflui per l'utente finale:
     // un messaggio "trascina qui" non cliccabile e la coda " - " lasciata
     // dal testo del bottone file (svuotato sopra). Ne bastano solo due:
-    // "Richiedi permessi fotocamera" e "Seleziona immagine".
+    // il pulsante dei permessi fotocamera e "Seleziona immagine".
     const fileSelectionButton = document.getElementById('html5-qrcode-button-file-selection');
     if (fileSelectionButton) {
       fileSelectionButton.textContent = fileSelectionButton.textContent.replace(/\s*-\s*$/, '');
@@ -129,7 +135,7 @@ function Scanner({ loadNewElement }) {
       }
     };
 
-  }, [loadNewElement]);
+  }, [loadNewElement, language]);
 
   return (
     <div>
@@ -139,6 +145,7 @@ function Scanner({ loadNewElement }) {
 }
 Scanner.propTypes = {
   loadNewElement: PropTypes.func.isRequired,
+  language: PropTypes.string,
 };
 
 export default Scanner;
