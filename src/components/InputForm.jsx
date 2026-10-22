@@ -81,9 +81,9 @@ function InputForm({ loadNewElement, language, openScanner = false, setOpenScann
     <div className="qr-button-wrapper">
       <button className="mt-2 mb-2 btn-qr-unified" onClick={handleShowButtonClick}>
         <img src="/images/qr-code.png" className="qr" alt="" />
-        <span className="btn-qr-text">QR Code Scanner</span>
+        <span className="btn-qr-text">{btnLabel}</span>
         <span className="visually-hidden">
-          Scan the QR code with your camera to learn more about your product
+          {translations[language].qr_scan_hint_text}
         </span>
       </button>
     </div>
