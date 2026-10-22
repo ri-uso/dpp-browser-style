@@ -4,6 +4,7 @@ import { ArrowLeft, QrCode, Globe, Mail, Phone, MapPin } from "lucide-react";
 import { getApiUrl, getDirectImageUrl } from '../utilities.jsx';
 import { UrlValue } from './urlValue.jsx';
 import PropertyInfo from './PropertyInfo.jsx';
+import translations from './Translations.json';
 import "../styles/CompareForms.css";
 
 /* --------- helpers --------- */
@@ -86,6 +87,7 @@ SummaryCell.propTypes = {
 
 /* --------- main (multi-prodotto) --------- */
 export default function CompareForms({ dataList, language, setShowCompare = () => {}, onAddProduct = () => {}, loadNewElement }) {
+  const t = translations[language] ?? translations.IT;
 
   const railRef = useRef(null);
   const sentinelRef = useRef(null);
@@ -135,7 +137,7 @@ export default function CompareForms({ dataList, language, setShowCompare = () =
   if (products.length < 2) {
     return (
       <div className="cmp-wrap">
-        <p className="cmp-muted">Seleziona almeno due prodotti da confrontare.</p>
+        <p className="cmp-muted">{t.compare_min_products_text}</p>
       </div>
     );
   }
@@ -145,7 +147,7 @@ export default function CompareForms({ dataList, language, setShowCompare = () =
   // altrimenti Item code, altrimenti il codice lotto. Item name e Item code sono
   // campi strutturati opzionali: il DPP-software può non inviarli affatto.
   const titles = products.map(
-    (p) => p?.summary?.item_name || p?.summary?.item_code || p?.summary?.batch_code || "Prodotto"
+    (p) => p?.summary?.item_name || p?.summary?.item_code || p?.summary?.batch_code || t.product_section_text
   );
   const summaries = products.map(p => p?.summary ?? {});
 
@@ -222,7 +224,7 @@ export default function CompareForms({ dataList, language, setShowCompare = () =
             >
               <div className="cmp-cell feat-col" role="cell">
                 <span className="cmp-feat-label">{label}</span>
-                <PropertyInfo description={description} label={label} />
+                <PropertyInfo description={description} label={label} language={language} />
               </div>
               <div className="cmp-prods">
                 {products.map((p, pi) => (
@@ -243,13 +245,13 @@ export default function CompareForms({ dataList, language, setShowCompare = () =
     return (
       <section className="cmp-section" key={`sec-${sIdx}`}>
         <div className="cmp-sec-title">
-          <span className="cmp-sec-title-span">Prodotto</span>
+          <span className="cmp-sec-title-span">{t.product_section_text}</span>
         </div>
 
         {hasBatch && (
           <div className={`cmp-row${batchDiff ? " is-diff" : ""}`} role="row" style={{ "--cols": products.length }}>
             <div className="cmp-cell feat-col" role="cell">
-              <span className="cmp-feat-label">Lotto</span>
+              <span className="cmp-feat-label">{t.footer_batch_text}</span>
             </div>
             <div className="cmp-prods">
               {summaries.map((s, i) => (
@@ -264,7 +266,7 @@ export default function CompareForms({ dataList, language, setShowCompare = () =
         {hasItem && (
           <div className={`cmp-row${itemDiff ? " is-diff" : ""}`} role="row" style={{ "--cols": products.length }}>
             <div className="cmp-cell feat-col" role="cell">
-              <span className="cmp-feat-label">Articolo</span>
+              <span className="cmp-feat-label">{t.footer_item_text}</span>
             </div>
             <div className="cmp-prods">
               {summaries.map((s, i) => (
@@ -279,7 +281,7 @@ export default function CompareForms({ dataList, language, setShowCompare = () =
         {hasFamily && (
           <div className={`cmp-row${familyDiff ? " is-diff" : ""}`} role="row" style={{ "--cols": products.length }}>
             <div className="cmp-cell feat-col" role="cell">
-              <span className="cmp-feat-label">Famiglia</span>
+              <span className="cmp-feat-label">{t.footer_family_text}</span>
             </div>
             <div className="cmp-prods">
               {summaries.map((s, i) => (
@@ -318,7 +320,7 @@ export default function CompareForms({ dataList, language, setShowCompare = () =
             >
               <div className="cmp-cell feat-col" role="cell">
                 <span className="cmp-feat-label">{label}</span>
-                <PropertyInfo description={description} label={label} />
+                <PropertyInfo description={description} label={label} language={language} />
               </div>
               <div className="cmp-prods">
                 {products.map((p, pi) => (
@@ -339,7 +341,7 @@ export default function CompareForms({ dataList, language, setShowCompare = () =
     return (
       <section className="cmp-section" key={`sec-${sIdx}`}>
         <div className="cmp-sec-title">
-          <span className="cmp-sec-title-span">Azienda</span>
+          <span className="cmp-sec-title-span">{t.company_label_text}</span>
         </div>
         <div className="cmp-row cmp-row--company" role="row" style={{ "--cols": products.length }}>
           <div className="cmp-cell feat-col" role="cell" />
@@ -349,7 +351,7 @@ export default function CompareForms({ dataList, language, setShowCompare = () =
               return (
                 <div className="cmp-cell prod-col cmp-company-col" role="cell" key={`co-${si}`}>
                   {name && <span className="cmp-company-name">{name}</span>}
-                  {s.company_vat && <span className="cmp-company-field">P.IVA {s.company_vat}</span>}
+                  {s.company_vat && <span className="cmp-company-field">{t.vat_label_text} {s.company_vat}</span>}
                   {s.company_address && <span className="cmp-company-field"><MapPin size={11} />{s.company_address}</span>}
                   {s.company_email && <a className="cmp-company-field cmp-company-link" href={`mailto:${s.company_email}`}><Mail size={11} />{s.company_email}</a>}
                   {s.company_phonenumber && <a className="cmp-company-field cmp-company-link" href={`tel:${s.company_phonenumber}`}><Phone size={11} />{s.company_phonenumber}</a>}
@@ -386,7 +388,7 @@ export default function CompareForms({ dataList, language, setShowCompare = () =
             >
               <div className="cmp-cell feat-col" role="cell">
                 <span className="cmp-feat-label">{label}</span>
-                <PropertyInfo description={description} label={label} />
+                <PropertyInfo description={description} label={label} language={language} />
               </div>
               <div className="cmp-prods">
                 {products.map((p, pi) => (
@@ -437,7 +439,7 @@ export default function CompareForms({ dataList, language, setShowCompare = () =
             >
               <div className="cmp-cell feat-col" role="cell">
                 <span className="cmp-feat-label">{label}</span>
-                <PropertyInfo description={description} label={label} />
+                <PropertyInfo description={description} label={label} language={language} />
               </div>
               <div className="cmp-prods">
                 {products.map((p, pi) => (
@@ -460,21 +462,21 @@ export default function CompareForms({ dataList, language, setShowCompare = () =
       {/* Pulsanti navigazione mobile */}
       <div className="cmp-nav-mobile">
         <button type="button" className="nav-btn nav-btn--back" onClick={() => setShowCompare(false)}>
-          <ArrowLeft size={18} /><span>Indietro</span>
+          <ArrowLeft size={18} /><span>{t.back_text}</span>
         </button>
         <button type="button" className="nav-btn nav-btn--primary" onClick={onAddProduct}>
-          <QrCode size={18} /><span>Aggiungi prodotto al confronto</span>
+          <QrCode size={18} /><span>{t.add_to_compare_text}</span>
         </button>
       </div>
 
       {/* Barra titolo con navigazione (solo desktop) */}
       <div className="cmp-title-bar">
         <button type="button" className="nav-btn nav-btn--back" onClick={() => setShowCompare(false)}>
-          <ArrowLeft size={18} /><span className="cmp-nav-btn-text">Indietro</span>
+          <ArrowLeft size={18} /><span className="cmp-nav-btn-text">{t.back_text}</span>
         </button>
-        <h1 className="cmp-title">Sostenibilità a confronto</h1>
+        <h1 className="cmp-title">{t.compare_title_text}</h1>
         <button type="button" className="nav-btn nav-btn--primary" onClick={onAddProduct}>
-          <QrCode size={18} /><span className="cmp-nav-btn-text">Aggiungi prodotto al confronto</span>
+          <QrCode size={18} /><span className="cmp-nav-btn-text">{t.add_to_compare_text}</span>
         </button>
       </div>
 
@@ -496,8 +498,8 @@ export default function CompareForms({ dataList, language, setShowCompare = () =
         className={`cmp-head-rail${railStuck ? " cmp-head-rail--stuck" : ""}`}
         style={railStuck ? { top: `${headerHeight}px` } : undefined}
       >
-        <h1 className="cmp-title cmp-title--mobile">Sostenibilità a confronto</h1>
-        <div role="tablist" aria-label="Prodotti in confronto">
+        <h1 className="cmp-title cmp-title--mobile">{t.compare_title_text}</h1>
+        <div role="tablist" aria-label={t.compare_products_aria}>
           {titles.map((t, i) => (
             <div className="cmp-head-pill" role="tab" key={`hp-${i}`} title={t}>{t}</div>
           ))}
@@ -505,7 +507,7 @@ export default function CompareForms({ dataList, language, setShowCompare = () =
       </div>
 
       {/* Tabella di confronto */}
-      <div className="cmp-table" role="table" aria-label="Confronto prodotti" style={{ "--cols": products.length }}>
+      <div className="cmp-table" role="table" aria-label={t.compare_table_aria} style={{ "--cols": products.length }}>
 
         {/* ── Sezioni: ordine e contenuto definiti dal JSON del primo prodotto ── */}
         {forms.map((section, sIdx) => {
@@ -528,7 +530,7 @@ export default function CompareForms({ dataList, language, setShowCompare = () =
         {products.some(p => p.linked_batches?.length > 0) && (
           <section className="cmp-section">
             <div className="cmp-sec-title">
-              <span className="cmp-sec-title-span">Tracciabilità</span>
+              <span className="cmp-sec-title-span">{t.traceability_text}</span>
             </div>
             <div className="cmp-row cmp-row--linked" role="row" style={{ "--cols": products.length }}>
               <div className="cmp-cell feat-col" role="cell" />

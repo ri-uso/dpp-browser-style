@@ -222,8 +222,8 @@ function App({ language, onCompanyCodeChange }) {
       // Errore linked batch: resta sulla pagina corrente e mostra un toast
       setError(null);
       const msg = status === 404
-        ? 'Lotto non trovato sul server del fornitore.'
-        : 'Impossibile caricare il lotto collegato.';
+        ? translations[language].linked_batch_not_found_text
+        : translations[language].linked_batch_error_text;
       showToast(msg);
     }
   };
@@ -291,7 +291,7 @@ function App({ language, onCompanyCodeChange }) {
             <div className="app-toast__body">
               <span className="app-toast__message">{toast.message}</span>
               <div className="app-toast__footer">
-                <button className="app-toast__close" onClick={() => setToast(null)}>Chiudi</button>
+                <button className="app-toast__close" onClick={() => setToast(null)}>{translations[language].close_text}</button>
               </div>
             </div>
           </div>

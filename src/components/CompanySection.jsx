@@ -1,8 +1,10 @@
 import PropTypes from 'prop-types';
 import { MapPin, Mail, Phone, Globe } from 'lucide-react';
+import translations from './Translations.json';
 import '../styles/CompanySection.css';
 
-export default function CompanySection({ summary }) {
+export default function CompanySection({ summary, language }) {
+  const t = translations[language] ?? translations.IT;
   const {
     company_legalname,
     company_shortname,
@@ -28,42 +30,42 @@ export default function CompanySection({ summary }) {
 
         {name && (
           <div className="company-section__row">
-            <span className="company-section__row-label">Azienda</span>
+            <span className="company-section__row-label">{t.company_label_text}</span>
             <span className="company-section__row-value company-section__val--name">{name}</span>
           </div>
         )}
 
         {company_vat && (
           <div className="company-section__row">
-            <span className="company-section__row-label">P.IVA</span>
+            <span className="company-section__row-label">{t.vat_label_text}</span>
             <span className="company-section__row-value">{company_vat}</span>
           </div>
         )}
 
         {company_address && (
           <div className="company-section__row">
-            <span className="company-section__row-label"><MapPin size={11} />Indirizzo</span>
+            <span className="company-section__row-label"><MapPin size={11} />{t.address_label_text}</span>
             <span className="company-section__row-value">{company_address}</span>
           </div>
         )}
 
         {company_email && (
           <div className="company-section__row">
-            <span className="company-section__row-label"><Mail size={11} />Email</span>
+            <span className="company-section__row-label"><Mail size={11} />{t.email_label_text}</span>
             <a className="company-section__row-value company-section__link" href={`mailto:${company_email}`}>{company_email}</a>
           </div>
         )}
 
         {company_phonenumber && (
           <div className="company-section__row">
-            <span className="company-section__row-label"><Phone size={11} />Telefono</span>
+            <span className="company-section__row-label"><Phone size={11} />{t.phone_label_text}</span>
             <a className="company-section__row-value company-section__link" href={`tel:${company_phonenumber}`}>{company_phonenumber}</a>
           </div>
         )}
 
         {websiteHref && (
           <div className="company-section__row">
-            <span className="company-section__row-label"><Globe size={11} />Sito web</span>
+            <span className="company-section__row-label"><Globe size={11} />{t.website_label_text}</span>
             <a className="company-section__row-value company-section__link" href={websiteHref} target="_blank" rel="noopener noreferrer">{company_website}</a>
           </div>
         )}
@@ -83,4 +85,5 @@ CompanySection.propTypes = {
     company_phonenumber: PropTypes.string,
     company_website: PropTypes.string,
   }).isRequired,
+  language: PropTypes.string.isRequired,
 };

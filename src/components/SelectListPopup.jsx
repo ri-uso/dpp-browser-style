@@ -108,8 +108,8 @@ function SelectListPopup({
                   lineHeight: 1,
                   fontSize: "1.5em",
                 }}
-                aria-label="Rimuovi"
-                title="Rimuovi"
+                aria-label={translations[language].remove_text}
+                title={translations[language].remove_text}
               >
                 &times;
               </button>

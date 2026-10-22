@@ -164,7 +164,7 @@ function MainPage({
     if (name === '#COMPANY') {
       return (
         <React.Fragment key={index}>
-          <CompanySection summary={data.summary} />
+          <CompanySection summary={data.summary} language={language} />
           {form.fields.length > 0 && (
             <div className="output-row">
               <OutputForm form={{ ...form, form_name: '' }} data_list={data.data} language={language} />

@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
 import { Info } from 'lucide-react';
+import translations from "./Translations.json";
 import "../styles/propertyInfo.css";
 
 /**
@@ -8,7 +9,8 @@ import "../styles/propertyInfo.css";
  * con la description. Non renderizza nulla se la description è vuota.
  * Usata sia in OutputForm (prodotto singolo) sia in CompareForms (confronto).
  */
-function PropertyInfo({ description, label = "", size = 14 }) {
+function PropertyInfo({ description, label = "", size = 14, language = "IT" }) {
+  const t = translations[language] ?? translations.IT;
   if (!description || !String(description).trim()) return null;
 
   return (
@@ -25,7 +27,7 @@ function PropertyInfo({ description, label = "", size = 14 }) {
       <button
         type="button"
         className="label__info"
-        aria-label={`Descrizione: ${label}`}
+        aria-label={`${t.property_description_aria}: ${label}`}
       >
         <Info size={size} aria-hidden="true" />
       </button>
@@ -37,6 +39,7 @@ PropertyInfo.propTypes = {
   description: PropTypes.string,
   label: PropTypes.string,
   size: PropTypes.number,
+  language: PropTypes.string,
 };
 
 export default PropertyInfo;

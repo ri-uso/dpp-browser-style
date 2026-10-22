@@ -78,7 +78,7 @@ function OutputForm({ form, data_list = [], language = "IT" }) {
               <div className="output-item" key={item.ID ?? index}>
                 <div className="label">
                   <span className="label__text">{item.label ?? ""}</span>
-                  <PropertyInfo description={item.description} label={item.label ?? ""} />
+                  <PropertyInfo description={item.description} label={item.label ?? ""} language={language} />
                 </div>
                 <div className={valueClassNames[index]}>
                   {valueContent}
