@@ -15,7 +15,9 @@ export function getVideoEmbedUrl(url) {
     const hash = vimeo[2] ? `?h=${vimeo[2]}` : "";
     return `https://player.vimeo.com/video/${vimeo[1]}${hash}`;
   }
-  const drive = url?.match(/drive\.google\.com\/file\/d\/([\w-]+)/);
+  // Link copiato da "Condividi" (/file/d/ID/view) oppure nel formato vecchio (open?id=ID, uc?id=ID)
+  const drive = url?.match(/drive\.google\.com\/file\/d\/([\w-]+)/)
+    || url?.match(/drive\.google\.com\/(?:open|uc)\?(?:[^#]*&)?id=([\w-]+)/);
   if (drive) return `https://drive.google.com/file/d/${drive[1]}/preview`;
   return null;
 }
