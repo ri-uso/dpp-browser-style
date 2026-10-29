@@ -4,6 +4,22 @@ export function getYouTubeId(url) {
   return match ? match[1] : null;
 }
 
+// Indirizzo "embed" per i video che si possono guardare dentro la pagina:
+// YouTube, Vimeo e Google Drive (quest'ultimo solo se il file e' condiviso con
+// "chiunque abbia il link"). Per qualsiasi altro host restituisce null.
+export function getVideoEmbedUrl(url) {
+  const ytId = getYouTubeId(url);
+  if (ytId) return `https://www.youtube.com/embed/${ytId}`;
+  const vimeo = url?.match(/vimeo\.com\/(?:video\/)?(\d+)(?:\/([0-9a-f]+))?/);
+  if (vimeo) {
+    const hash = vimeo[2] ? `?h=${vimeo[2]}` : "";
+    return `https://player.vimeo.com/video/${vimeo[1]}${hash}`;
+  }
+  const drive = url?.match(/drive\.google\.com\/file\/d\/([\w-]+)/);
+  if (drive) return `https://drive.google.com/file/d/${drive[1]}/preview`;
+  return null;
+}
+
 // Ordine di ripiego quando la proprieta' non esiste nella lingua richiesta:
 // versione neutra "default", poi inglese (piu' riconosciuta), poi italiano
 // (lingua di inserimento dei dati), poi la prima disponibile.

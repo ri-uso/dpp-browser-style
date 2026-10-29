@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import { Video as VideoIcon, Link as LinkIcon } from 'lucide-react';
 import { FaFileAlt } from 'react-icons/fa';
 import { PiFilePdf } from 'react-icons/pi';
-import { getDirectImageUrl, getYouTubeId } from '../utilities.jsx';
+import { getDirectImageUrl, getVideoEmbedUrl } from '../utilities.jsx';
 
 /* Badge tondo con la sola icona, condiviso da PDF/DOC/VIDEO(fallback)/website-other,
    usato sia da OutputForm (prodotto singolo) sia da CompareForms (confronto): stesso
@@ -52,15 +52,15 @@ export function UrlValue({ item, compact = false }) {
 
   if (urlType === "VIDEO") {
     // Nel confronto (compact) l'anteprima piena è troppo pesante con più colonne
-    // affiancate: mostriamo sempre l'icona, anche per YouTube. Nel prodotto singolo
-    // manteniamo l'anteprima embed per YouTube; per gli altri (Vimeo, mp4 diretti
-    // non riconosciuti) mostriamo l'icona invece di un player che non funzionerebbe.
-    const ytId = !compact ? getYouTubeId(url) : null;
-    if (ytId) {
+    // affiancate: mostriamo sempre l'icona. Nel prodotto singolo l'anteprima embed
+    // c'e' per YouTube, Vimeo e Google Drive; per gli altri (mp4 diretti, altri
+    // siti) mostriamo l'icona invece di un player che non funzionerebbe.
+    const embedUrl = !compact ? getVideoEmbedUrl(url) : null;
+    if (embedUrl) {
       return (
         <div className="video-preview">
           <iframe
-            src={`https://www.youtube.com/embed/${ytId}`}
+            src={embedUrl}
             title={item.label ?? "video"}
             allowFullScreen
             className="video-iframe"
