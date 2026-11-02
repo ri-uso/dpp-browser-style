@@ -39,6 +39,29 @@ export function pickItem(data_list, id, lang) {
   return list[0];
 }
 
+// Titolo del form: stringa (come sempre) oppure oggetto per lingua
+// {"it": "...", "en": "..."}. Per un oggetto vale lo stesso ordine di ripiego
+// delle proprieta': lingua richiesta, default, inglese, italiano, la prima.
+export function pickFormName(formName, lang) {
+  if (!formName || typeof formName !== "object" || Array.isArray(formName)) return formName;
+  const lc = {};
+  for (const [k, v] of Object.entries(formName)) {
+    if (typeof v === "string" && v.trim()) lc[k.toLowerCase()] = v;
+  }
+  for (const candidate of [String(lang || "").toLowerCase(), ...FALLBACK_LANGUAGES]) {
+    if (lc[candidate]) return lc[candidate];
+  }
+  return Object.values(lc)[0] ?? "";
+}
+
+// Chiede al server tutte le versioni linguistiche: la lingua si sceglie qui e si
+// puo' cambiare senza ricaricare. I server che non conoscono il parametro lo ignorano.
+export function withAllLanguages(apiUrl) {
+  const u = new URL(apiUrl);
+  u.searchParams.set("all_languages", "1");
+  return u.toString();
+}
+
 export function getDirectImageUrl(url) {
   const driveMatch = url?.match(/drive\.google\.com\/file\/d\/([^/?]+)/);
   if (driveMatch) {

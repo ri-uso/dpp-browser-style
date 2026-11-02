@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import './styles/App.css';
 import { useLocation } from 'react-router-dom';
 import CompareForms from "./components/CompareForms.jsx";
-import { compareDppDatas } from './utilities.jsx';
+import { compareDppDatas, withAllLanguages } from './utilities.jsx';
 import { getIdToken } from "./components/AuthService.jsx";
 import MainPage from "./MainPage";
 import translations from "./components/Translations.json";
@@ -153,7 +153,7 @@ function App({ language, onCompanyCodeChange }) {
         headers['ngrok-skip-browser-warning'] = 'true';
       }
 
-      const response = await fetch(api_url, {
+      const response = await fetch(withAllLanguages(api_url), {
         method: 'GET',
         headers
       });

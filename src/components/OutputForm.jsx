@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import PropertyInfo from './PropertyInfo.jsx';
 import { UrlValue } from './urlValue.jsx';
 import translations from "./Translations.json";
-import { pickItem } from '../utilities.jsx';
+import { pickItem, pickFormName } from '../utilities.jsx';
 import "../styles/outputForm.css";
 
 function isItemEmpty(item) {
@@ -41,6 +41,7 @@ function OutputForm({ form, data_list = [], language = "IT" }) {
   });
 
   const formNameClass = "mb-3 mt-4 text-start";
+  const formTitle = pickFormName(form?.form_name, language);
 
   // Nessun campo valorizzato: non mostrare la sezione (evita il titolo a vuoto)
   if (orderedData.length === 0) return null;
@@ -48,9 +49,9 @@ function OutputForm({ form, data_list = [], language = "IT" }) {
   return (
     <section className="output-form">
       <div className="output-row">
-        {form?.form_name ? (
+        {formTitle ? (
           <div className="output-title">
-            <h2 className={formNameClass}>{form.form_name}</h2>
+            <h2 className={formNameClass}>{formTitle}</h2>
           </div>
         ) : null}
 
@@ -94,7 +95,7 @@ function OutputForm({ form, data_list = [], language = "IT" }) {
 
 OutputForm.propTypes = {
   form: PropTypes.shape({
-    form_name: PropTypes.string,
+    form_name: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
     fields: PropTypes.arrayOf(PropTypes.shape({ ID: PropTypes.any })).isRequired,
   }).isRequired,
   language: PropTypes.string,

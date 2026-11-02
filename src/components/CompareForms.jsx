@@ -1,7 +1,7 @@
 import PropTypes from "prop-types";
 import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, QrCode, Globe, Mail, Phone, MapPin } from "lucide-react";
-import { getApiUrl, getDirectImageUrl } from '../utilities.jsx';
+import { getApiUrl, getDirectImageUrl, pickItem, pickFormName } from '../utilities.jsx';
 import { UrlValue } from './urlValue.jsx';
 import PropertyInfo from './PropertyInfo.jsx';
 import translations from './Translations.json';
@@ -10,10 +10,8 @@ import "../styles/CompareForms.css";
 /* --------- helpers --------- */
 function pickDatum(product, id, lang) {
   if (!product?.data) return null;
-  const list = product.data.filter((d) => d.ID === id);
-  if (!list.length) return null;
-  const langLc = (lang || "").toLowerCase();
-  return list.find((d) => (d.property_language || "").toLowerCase() === langLc) || list[0];
+  // stesso ordine di ripiego della scheda prodotto: lingua, default, en, it, prima
+  return pickItem(product.data, id, lang);
 }
 
 function isDatumEmpty(d) {
@@ -414,7 +412,7 @@ export default function CompareForms({ dataList, language, setShowCompare = () =
       <section className="cmp-section" key={`sec-${sIdx}`}>
         {!(typeof name === 'string' && name.startsWith('#')) && (
           <div className="cmp-sec-title">
-            <span className="cmp-sec-title-span">{name}</span>
+            <span className="cmp-sec-title-span">{pickFormName(name, language)}</span>
           </div>
         )}
         {fields.map((f, idx) => {
