@@ -161,6 +161,9 @@
   border-radius: 8px;
   overflow: hidden;
 }
+.output-form .video-preview--drive{
+  padding-top: 75%; /* 4:3: compromesso per video Drive quadrati o verticali */
+}
 .output-form .video-iframe{
   position: absolute;
   inset: 0;

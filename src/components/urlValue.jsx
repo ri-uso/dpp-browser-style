@@ -53,12 +53,13 @@ export function UrlValue({ item, compact = false }) {
   if (urlType === "VIDEO") {
     // Nel confronto (compact) l'anteprima piena è troppo pesante con più colonne
     // affiancate: mostriamo sempre l'icona. Nel prodotto singolo l'anteprima embed
-    // c'e' per YouTube, Vimeo e Google Drive; per gli altri (mp4 diretti, altri
+    // c'e' per YouTube, Vimeo e Google Drive (per Drive il riquadro e' piu' alto: i video
+    // sono spesso quadrati o verticali e in un 16:9 il poster verrebbe tagliato); per gli altri (mp4 diretti, altri
     // siti) mostriamo l'icona invece di un player che non funzionerebbe.
     const embedUrl = !compact ? getVideoEmbedUrl(url) : null;
     if (embedUrl) {
       return (
-        <div className="video-preview">
+        <div className={`video-preview${embedUrl.includes("drive.google.com") ? " video-preview--drive" : ""}`}>
           <iframe
             src={embedUrl}
             title={item.label ?? "video"}
